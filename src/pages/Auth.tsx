@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from '@/components/ui/use-toast';
+import { ArrowRight, Mail, Lock, User, Loader2 } from 'lucide-react';
 
 export default function Auth() {
   const { user, isLoading, signIn, signUp } = useAuth();
@@ -14,6 +16,23 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Background animation effect
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
 
   // If user is already logged in, redirect to dashboard
   if (user && !isLoading) {
@@ -27,8 +46,17 @@ export default function Auth() {
     try {
       setIsSubmitting(true);
       await signIn(email, password);
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
     } catch (error) {
       console.error('Sign in error:', error);
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -41,8 +69,17 @@ export default function Auth() {
     try {
       setIsSubmitting(true);
       await signUp(email, password, name);
+      toast({
+        title: "Account created",
+        description: "Please check your email to verify your account.",
+      });
     } catch (error) {
       console.error('Sign up error:', error);
+      toast({
+        title: "Sign up failed",
+        description: "Please check your information and try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -50,30 +87,58 @@ export default function Auth() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin h-8 w-8 border-4 border-purple-500 border-t-transparent rounded-full"></div>
+      <div className="flex justify-center items-center h-screen bg-theme-dark">
+        <div className="animate-pulse-glow">
+          <Loader2 className="h-12 w-12 text-theme-blue animate-spin" />
+        </div>
       </div>
     );
   }
 
+  const backgroundStyle = {
+    backgroundImage: `radial-gradient(circle at ${mousePosition.x * 100}% ${mousePosition.y * 100}%, rgba(59, 130, 246, 0.15) 0%, rgba(18, 18, 18, 0.95) 50%)`,
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Sales Dashboard</CardTitle>
-          <CardDescription>Sign in to access your dashboard</CardDescription>
-        </CardHeader>
-        <Tabs defaultValue="signin">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+    <div 
+      className="min-h-screen flex flex-col items-center justify-center bg-theme-dark p-4 transition-all duration-300"
+      style={backgroundStyle}
+    >
+      <div className="mb-10 text-center">
+        <h1 className="text-4xl font-bold gradient-text mb-2">Sales Dashboard</h1>
+        <p className="text-gray-400 max-w-md">Visualize your sales metrics and grow your business</p>
+      </div>
+      
+      <Card className="w-full max-w-md bg-theme-dark-lighter border border-gray-800 shadow-2xl animate-fade-in">
+        <div className="p-6 text-center border-b border-gray-800">
+          <h2 className="text-2xl font-bold text-white">Welcome</h2>
+          <p className="text-gray-400 text-sm mt-1">Sign in to access your dashboard</p>
+        </div>
+        
+        <Tabs defaultValue="signin" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-theme-dark-card rounded-none border-b border-gray-800">
+            <TabsTrigger 
+              value="signin" 
+              className="data-[state=active]:bg-theme-dark-lighter data-[state=active]:text-theme-blue data-[state=active]:border-b-2 data-[state=active]:border-theme-blue rounded-none py-3"
+            >
+              Sign In
+            </TabsTrigger>
+            <TabsTrigger 
+              value="signup" 
+              className="data-[state=active]:bg-theme-dark-lighter data-[state=active]:text-theme-blue data-[state=active]:border-b-2 data-[state=active]:border-theme-blue rounded-none py-3"
+            >
+              Sign Up
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="signin">
+          <TabsContent value="signin" className="mt-0">
             <form onSubmit={handleSignIn}>
-              <CardContent className="space-y-4 pt-4">
+              <CardContent className="space-y-6 pt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-gray-300 flex items-center gap-2">
+                    <Mail size={16} className="text-theme-blue" />
+                    Email Address
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -81,10 +146,14 @@ export default function Auth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-gray-300 flex items-center gap-2">
+                    <Lock size={16} className="text-theme-blue" />
+                    Password
+                  </Label>
                   <Input
                     id="password"
                     type="password"
@@ -92,43 +161,57 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
                   />
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex flex-col gap-4">
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full bg-gradient-to-r from-theme-blue to-theme-blue-dark hover:from-theme-blue-dark hover:to-theme-blue transition-all duration-300"
                   disabled={isSubmitting || !email || !password}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       Signing in...
                     </span>
                   ) : (
-                    'Sign In'
+                    <span className="flex items-center justify-center gap-2">
+                      Sign In
+                      <ArrowRight size={16} />
+                    </span>
                   )}
                 </Button>
+                <p className="text-xs text-gray-500 text-center">
+                  By signing in, you agree to our Terms of Service and Privacy Policy
+                </p>
               </CardFooter>
             </form>
           </TabsContent>
           
-          <TabsContent value="signup">
+          <TabsContent value="signup" className="mt-0">
             <form onSubmit={handleSignUp}>
-              <CardContent className="space-y-4 pt-4">
+              <CardContent className="space-y-6 pt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Name</Label>
+                  <Label htmlFor="signup-name" className="text-gray-300 flex items-center gap-2">
+                    <User size={16} className="text-theme-blue" />
+                    Full Name
+                  </Label>
                   <Input
                     id="signup-name"
                     placeholder="Enter your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email" className="text-gray-300 flex items-center gap-2">
+                    <Mail size={16} className="text-theme-blue" />
+                    Email Address
+                  </Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -136,10 +219,14 @@ export default function Auth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password" className="text-gray-300 flex items-center gap-2">
+                    <Lock size={16} className="text-theme-blue" />
+                    Password
+                  </Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -147,24 +234,31 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
                   />
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex flex-col gap-4">
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full bg-gradient-to-r from-theme-blue to-theme-blue-dark hover:from-theme-blue-dark hover:to-theme-blue transition-all duration-300"
                   disabled={isSubmitting || !email || !password || !name}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       Creating account...
                     </span>
                   ) : (
-                    'Create Account'
+                    <span className="flex items-center justify-center gap-2">
+                      Create Account
+                      <ArrowRight size={16} />
+                    </span>
                   )}
                 </Button>
+                <p className="text-xs text-gray-500 text-center">
+                  By signing up, you agree to our Terms of Service and Privacy Policy
+                </p>
               </CardFooter>
             </form>
           </TabsContent>

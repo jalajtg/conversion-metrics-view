@@ -22,18 +22,29 @@ export function ProductSection({ metrics }: ProductSectionProps) {
     <div 
       className={`mb-8 rounded-xl p-6 transition-all duration-300 ${
         isHovered 
-          ? 'bg-purple-100 dark:bg-purple-900/30 shadow-lg' 
-          : 'bg-gray-50 dark:bg-gray-800/20 shadow-sm'
+          ? 'bg-theme-dark-lighter border border-theme-blue/20 shadow-lg shadow-theme-blue/5' 
+          : 'bg-theme-dark-card border border-gray-800'
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <h2 className="text-2xl font-bold mb-4">{metrics.product.name}</h2>
-      <p className={`transition-colors duration-300 mb-6 ${
-        isHovered ? 'text-purple-700 dark:text-purple-300' : 'text-gray-500 dark:text-gray-400'
-      }`}>
-        {metrics.product.description}
-      </p>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+        <div>
+          <h2 className={`text-2xl font-bold transition-colors ${
+            isHovered ? 'text-theme-blue-light' : 'text-white'
+          }`}>{metrics.product.name}</h2>
+          <p className={`transition-colors duration-300 ${
+            isHovered ? 'text-gray-300' : 'text-gray-400'
+          }`}>
+            {metrics.product.description}
+          </p>
+        </div>
+        <div className={`mt-2 md:mt-0 px-3 py-1 rounded-full text-xs font-medium ${
+          isHovered ? 'bg-theme-blue/20 text-theme-blue-light' : 'bg-theme-dark bg-opacity-50 text-gray-400'
+        }`}>
+          Product Performance
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard 
