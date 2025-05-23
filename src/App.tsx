@@ -12,7 +12,6 @@ import { Layout } from "./components/layout/Layout";
 // Pages
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
 import FAQPage from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 
@@ -36,7 +35,6 @@ const App = () => (
             <Route element={<PrivateRoute />}>
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/profile" element={<Profile />} />
                 <Route path="/faq" element={<FAQPage />} />
               </Route>
             </Route>

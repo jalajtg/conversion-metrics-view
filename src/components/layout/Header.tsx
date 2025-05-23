@@ -42,7 +42,7 @@ export function Header() {
                     <div className="h-6 w-6 rounded-full bg-theme-blue/20 flex items-center justify-center">
                       <User className="h-4 w-4 text-theme-blue" />
                     </div>
-                    <span className="hidden sm:inline text-gray-300">{profile?.name || user.email}</span>
+                    <span className="hidden sm:inline text-white">{profile?.name || user.email}</span>
                     <ChevronDown className="h-4 w-4 text-gray-400" />
                   </div>
                 </Button>
@@ -52,13 +52,9 @@ export function Header() {
                   {profile?.name || user.email}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-gray-800" />
-                <DropdownMenuItem onClick={() => navigate('/profile')} className="text-white hover:bg-theme-dark hover:text-theme-blue cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate('/dashboard')} className="text-white hover:bg-theme-dark hover:text-theme-blue cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/settings')} className="text-white hover:bg-theme-dark hover:text-theme-blue cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
+                  <span>Dashboard</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-800" />
                 <DropdownMenuItem onClick={() => signOut()} className="text-white hover:bg-theme-dark hover:text-red-400 cursor-pointer">

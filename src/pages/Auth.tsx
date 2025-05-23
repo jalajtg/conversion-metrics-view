@@ -104,8 +104,15 @@ export default function Auth() {
       className="min-h-screen flex flex-col items-center justify-center bg-theme-dark p-4 transition-all duration-300"
       style={backgroundStyle}
     >
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold gradient-text mb-2">Sales Dashboard</h1>
+      <div className="mb-10 text-center flex flex-col items-center">
+        <div className="mb-4 flex items-center gap-3">
+          <img 
+            src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" 
+            alt="Logo" 
+            className="h-12" 
+          />
+          <h1 className="text-3xl font-bold text-white">Tora Tech</h1>
+        </div>
         <p className="text-gray-400 max-w-md">Visualize your sales metrics and grow your business</p>
       </div>
       

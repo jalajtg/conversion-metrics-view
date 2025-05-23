@@ -12,12 +12,12 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, User, LogOut, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, LogOut, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function AppSidebar() {
   const location = useLocation();
-  const { signOut, profile } = useAuth();
+  const { signOut } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -39,8 +39,17 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/dashboard')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                  <Link to="/dashboard" className={isActive('/dashboard') ? "text-theme-blue" : "text-white"}>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={isActive('/dashboard')} 
+                  className="hover:bg-theme-dark-card hover:text-theme-blue"
+                >
+                  <Link 
+                    to="/dashboard" 
+                    className={isActive('/dashboard') 
+                      ? "bg-theme-dark-card text-theme-blue" 
+                      : "text-white"}
+                  >
                     <LayoutDashboard />
                     <span>Dashboard</span>
                   </Link>
@@ -48,17 +57,17 @@ export function AppSidebar() {
               </SidebarMenuItem>
               
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/profile')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                  <Link to="/profile" className={isActive('/profile') ? "text-theme-blue" : "text-white"}>
-                    <User />
-                    <span>Profile</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/faq')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                  <Link to="/faq" className={isActive('/faq') ? "text-theme-blue" : "text-white"}>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={isActive('/faq')} 
+                  className="hover:bg-theme-dark-card hover:text-theme-blue"
+                >
+                  <Link 
+                    to="/faq" 
+                    className={isActive('/faq') 
+                      ? "bg-theme-dark-card text-theme-blue" 
+                      : "text-white"}
+                  >
                     <HelpCircle />
                     <span>FAQ</span>
                   </Link>
@@ -68,12 +77,17 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         
-        <SidebarGroup>
+        <div className="flex-grow"></div>
+        
+        <SidebarGroup className="mt-auto">
           <SidebarGroupLabel className="text-gray-400">Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => signOut()} className="text-white hover:bg-red-500/10 hover:text-red-400">
+                <SidebarMenuButton 
+                  onClick={() => signOut()} 
+                  className="text-white hover:bg-red-500/10 hover:text-red-400"
+                >
                   <LogOut />
                   <span>Log out</span>
                 </SidebarMenuButton>
