@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { Dashboard } from "@/components/dashboard/Dashboard";
+import { Dashboard as DashboardComponent } from "@/components/dashboard/Dashboard";
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Dashboard />
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Dashboard Overview</h1>
+      <DashboardComponent />
     </div>
   );
 }
