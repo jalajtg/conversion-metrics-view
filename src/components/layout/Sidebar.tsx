@@ -15,7 +15,7 @@ export function AppSidebar() {
           <img src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" alt="Logo" className="h-8" />
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-zinc-800">
         <SidebarGroup className="bg-zinc-800">
           <SidebarGroupLabel className="text-gray-400">Pages</SidebarGroupLabel>
           <SidebarGroupContent>
