@@ -15,28 +15,11 @@ import {
 import { LayoutDashboard, User, LogOut, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Helper function to get page title from pathname
-const getPageTitle = (pathname: string): string => {
-  switch (pathname) {
-    case '/dashboard':
-      return 'Dashboard';
-    case '/profile':
-      return 'Profile';
-    case '/faq':
-      return 'FAQ';
-    case '/settings':
-      return 'Settings';
-    default:
-      return 'Dashboard';
-  }
-};
-
 export function AppSidebar() {
   const location = useLocation();
   const { signOut, profile } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
-  const currentPageTitle = getPageTitle(location.pathname);
   
   return (
     <Sidebar className="bg-theme-dark border-r border-gray-800">
@@ -48,11 +31,6 @@ export function AppSidebar() {
             className="h-8" 
           />
           <h2 className="text-xl font-bold text-white">Tora Tech</h2>
-        </div>
-        <div className="px-4 pb-2">
-          <p className="text-sm font-medium text-theme-blue">
-            {currentPageTitle}
-          </p>
         </div>
       </SidebarHeader>
       <SidebarContent>

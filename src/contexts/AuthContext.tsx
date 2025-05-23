@@ -149,6 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
+      navigate('/auth');
     } catch (error: any) {
       toast({
         variant: "destructive",
