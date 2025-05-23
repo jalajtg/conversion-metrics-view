@@ -167,7 +167,7 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue text-white"
                   />
                 </div>
               </CardContent>
@@ -210,7 +210,7 @@ export default function Auth() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue text-white"
                   />
                 </div>
                 <div className="space-y-2">
@@ -225,7 +225,7 @@ export default function Auth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue text-white"
                   />
                 </div>
                 <div className="space-y-2">
@@ -240,7 +240,7 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue text-white"
                   />
                 </div>
               </CardContent>
