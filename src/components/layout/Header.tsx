@@ -29,7 +29,6 @@ export function Header() {
               alt="Logo" 
               className="h-8 md:h-10" 
             />
-            <h2 className="text-xl font-bold text-white">Tora Tech</h2>
           </div>
         </div>
         
