@@ -9,7 +9,203 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          scheduled_at: string
+          status: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          scheduled_at: string
+          status?: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          scheduled_at?: string
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          notes: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          notes?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      costs: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          product_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          product_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "costs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          client_name: string
+          created_at: string
+          email: string | null
+          id: string
+          phone: string | null
+          product_id: string
+          status: string
+        }
+        Insert: {
+          client_name: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone?: string | null
+          product_id: string
+          status?: string
+        }
+        Update: {
+          client_name?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone?: string | null
+          product_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          lead_id: string
+          product_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          lead_id: string
+          product_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          lead_id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
