@@ -27,7 +27,7 @@ export function MetricCard({
         transition-all duration-300 rounded-xl shadow-sm p-4 card-glow
         ${isHovered 
           ? 'bg-gradient-to-br from-theme-blue/20 to-theme-dark-card text-white shadow-lg shadow-theme-blue/10' 
-          : 'bg-theme-dark-card text-white'
+          : 'bg-gradient-to-br from-theme-dark-lighter to-theme-dark-card text-white'
         }
         ${className}
       `}

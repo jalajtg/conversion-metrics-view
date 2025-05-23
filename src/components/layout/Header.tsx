@@ -21,9 +21,16 @@ export function Header() {
   return (
     <header className="border-b border-gray-800 bg-theme-dark sticky top-0 z-30 flex h-16 items-center">
       <div className="container flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <SidebarTrigger className="lg:hidden text-theme-blue hover:bg-theme-dark-lighter" />
-          <h1 className="text-xl font-bold gradient-text">Sales Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" 
+              alt="Logo" 
+              className="h-8 md:h-10" 
+            />
+            <h1 className="text-xl font-bold gradient-text">Sales Dashboard</h1>
+          </div>
         </div>
         
         {user && (
