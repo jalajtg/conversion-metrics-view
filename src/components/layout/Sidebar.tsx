@@ -22,7 +22,7 @@ export function AppSidebar() {
   const isActive = (path: string) => location.pathname === path;
   
   return (
-    <Sidebar className="bg-theme-dark-lighter border-r border-gray-800">
+    <Sidebar className="border-b border-gray-800 bg-theme-dark-lighter">
       <SidebarHeader>
         <div className="px-4 py-4 flex items-center gap-3">
           <img 
@@ -30,12 +30,11 @@ export function AppSidebar() {
             alt="Logo" 
             className="h-8" 
           />
-          <h2 className="text-xl font-bold text-white">Tora Tech</h2>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-400">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-gray-400">Pages</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
