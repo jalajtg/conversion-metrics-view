@@ -29,6 +29,7 @@ export function Header() {
               alt="Logo" 
               className="h-8 md:h-10" 
             />
+            <h2 className="text-xl font-bold text-white">Tora Tech</h2>
           </div>
         </div>
         
@@ -47,20 +48,20 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-theme-dark-card border border-gray-800">
-                <DropdownMenuLabel className="text-gray-300">
+                <DropdownMenuLabel className="text-white">
                   {profile?.name || user.email}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-gray-800" />
-                <DropdownMenuItem onClick={() => navigate('/profile')} className="text-gray-300 hover:bg-theme-dark hover:text-theme-blue cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate('/profile')} className="text-white hover:bg-theme-dark hover:text-theme-blue cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/settings')} className="text-gray-300 hover:bg-theme-dark hover:text-theme-blue cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate('/settings')} className="text-white hover:bg-theme-dark hover:text-theme-blue cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-800" />
-                <DropdownMenuItem onClick={() => signOut()} className="text-gray-300 hover:bg-theme-dark hover:text-red-400 cursor-pointer">
+                <DropdownMenuItem onClick={() => signOut()} className="text-white hover:bg-theme-dark hover:text-red-400 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

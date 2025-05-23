@@ -148,10 +148,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
+      setIsLoading(true);
+      
+      // First set the user and session to null to avoid race conditions
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      // Then perform the actual signout
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+      
       navigate('/auth');
-      console.log("Signed out successfully");
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out",
+      });
     } catch (error: any) {
       console.error("Sign out error:", error);
       toast({
@@ -159,6 +173,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Sign out failed",
         description: error.message || "Failed to sign out. Please try again.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
