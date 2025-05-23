@@ -40,7 +40,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive('/dashboard')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                  <Link to="/dashboard" className={isActive('/dashboard') ? "text-theme-blue" : "text-gray-300"}>
+                  <Link to="/dashboard" className={isActive('/dashboard') ? "text-theme-blue" : "text-white"}>
                     <LayoutDashboard />
                     <span>Dashboard</span>
                   </Link>
@@ -49,7 +49,7 @@ export function AppSidebar() {
               
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive('/profile')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                  <Link to="/profile" className={isActive('/profile') ? "text-theme-blue" : "text-gray-300"}>
+                  <Link to="/profile" className={isActive('/profile') ? "text-theme-blue" : "text-white"}>
                     <User />
                     <span>Profile</span>
                   </Link>
@@ -58,7 +58,7 @@ export function AppSidebar() {
               
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive('/faq')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                  <Link to="/faq" className={isActive('/faq') ? "text-theme-blue" : "text-gray-300"}>
+                  <Link to="/faq" className={isActive('/faq') ? "text-theme-blue" : "text-white"}>
                     <HelpCircle />
                     <span>FAQ</span>
                   </Link>
@@ -73,7 +73,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => signOut()} className="text-gray-300 hover:bg-red-500/10 hover:text-red-400">
+                <SidebarMenuButton onClick={() => signOut()} className="text-white hover:bg-red-500/10 hover:text-red-400">
                   <LogOut />
                   <span>Log out</span>
                 </SidebarMenuButton>
