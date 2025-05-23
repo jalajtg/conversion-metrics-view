@@ -29,7 +29,7 @@ export function Header() {
               alt="Logo" 
               className="h-8 md:h-10" 
             />
-            <h1 className="text-xl font-bold gradient-text">Sales Dashboard</h1>
+            <h1 className="text-xl font-bold gradient-text">Tora Tech</h1>
           </div>
         </div>
         
