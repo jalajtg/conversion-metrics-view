@@ -111,7 +111,6 @@ export default function Auth() {
             alt="Logo" 
             className="h-12" 
           />
-          <h1 className="text-3xl font-bold text-white">Tora Tech</h1>
         </div>
         <p className="text-gray-400 max-w-md">Visualize your sales metrics and grow your business</p>
       </div>
@@ -153,7 +152,7 @@ export default function Auth() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue"
+                    className="bg-theme-dark-card border-gray-700 focus:border-theme-blue text-white"
                   />
                 </div>
                 <div className="space-y-2">
