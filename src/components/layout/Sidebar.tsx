@@ -22,7 +22,7 @@ export function AppSidebar() {
   const isActive = (path: string) => location.pathname === path;
   
   return (
-    <Sidebar className="bg-theme-dark border-r border-gray-800">
+    <Sidebar className="bg-theme-dark-lighter border-r border-gray-800">
       <SidebarHeader>
         <div className="px-4 py-4 flex items-center gap-3">
           <img 
@@ -39,7 +39,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/dashboard')} className="hover:bg-theme-blue/10 hover:text-theme-blue">
+                <SidebarMenuButton asChild isActive={isActive('/dashboard')} className="hover:bg-theme-dark-card hover:text-theme-blue">
                   <Link to="/dashboard" className={isActive('/dashboard') ? "text-theme-blue" : "text-gray-300"}>
                     <LayoutDashboard />
                     <span>Dashboard</span>
@@ -48,7 +48,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/profile')} className="hover:bg-theme-blue/10 hover:text-theme-blue">
+                <SidebarMenuButton asChild isActive={isActive('/profile')} className="hover:bg-theme-dark-card hover:text-theme-blue">
                   <Link to="/profile" className={isActive('/profile') ? "text-theme-blue" : "text-gray-300"}>
                     <User />
                     <span>Profile</span>
@@ -57,7 +57,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/faq')} className="hover:bg-theme-blue/10 hover:text-theme-blue">
+                <SidebarMenuButton asChild isActive={isActive('/faq')} className="hover:bg-theme-dark-card hover:text-theme-blue">
                   <Link to="/faq" className={isActive('/faq') ? "text-theme-blue" : "text-gray-300"}>
                     <HelpCircle />
                     <span>FAQ</span>
