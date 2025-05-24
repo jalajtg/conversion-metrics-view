@@ -27,6 +27,8 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
   const { data: bookings, isLoading, error } = useQuery({
     queryKey: ["all-bookings", filters],
     queryFn: async (): Promise<Booking[]> => {
+      console.log('Fetching bookings with filters:', filters);
+      
       let query = supabase
         .from('bookings')
         .select('*')
@@ -37,12 +39,14 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
         query = query.in('clinic_id', filters.clinicIds);
       }
 
-      // Filter by month and year if needed
+      // Filter by month and year if specified
       if (filters.month && filters.year) {
         const year = parseInt(filters.year);
         const month = parseInt(filters.month);
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0, 23, 59, 59);
+
+        console.log('Date range:', { startDate: startDate.toISOString(), endDate: endDate.toISOString() });
 
         query = query
           .gte('booking_time', startDate.toISOString())
@@ -56,9 +60,10 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
         throw error;
       }
 
+      console.log('Fetched bookings:', data);
       return data || [];
     },
-    enabled: filters.clinicIds.length > 0,
+    enabled: true, // Always enabled to show bookings
   });
 
   if (isLoading) {
@@ -132,7 +137,12 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                 <Calendar className="h-8 w-8 text-blue-400" />
               </div>
               <h3 className="text-lg font-medium text-white mb-2">No bookings found</h3>
-              <p className="text-gray-400">No appointment bookings for the selected criteria</p>
+              <p className="text-gray-400">
+                {filters.clinicIds.length === 0 
+                  ? "Please select at least one clinic to view bookings"
+                  : "No appointment bookings found for the selected criteria"
+                }
+              </p>
             </div>
           ) : (
             <div className="overflow-hidden">
