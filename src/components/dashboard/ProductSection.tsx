@@ -87,37 +87,31 @@ function SingleProductSection({ metrics }: { metrics: ProductMetrics }) {
             title="Total Leads"
             value={metrics.leadCount}
             icon={<Users className="h-4 w-4" />}
-            color="blue"
           />
           <MetricCard
             title="Conversations"
             value={metrics.conversationCount}
             icon={<MessageSquare className="h-4 w-4" />}
-            color="green"
           />
           <MetricCard
             title="Paid Amount"
             value={`$${metrics.paidAmount.toFixed(2)}`}
             icon={<DollarSign className="h-4 w-4" />}
-            color="yellow"
           />
           <MetricCard
             title="Verbal Appointments"
             value={metrics.verbalAppointments}
             icon={<Calendar className="h-4 w-4" />}
-            color="purple"
           />
           <MetricCard
             title="Bookings"
             value={metrics.bookings}
             icon={<CheckCircle className="h-4 w-4" />}
-            color="orange"
           />
           <MetricCard
             title="Cost per Lead"
             value={`$${metrics.costPerLead.toFixed(2)}`}
             icon={<Calculator className="h-4 w-4" />}
-            color="red"
           />
         </div>
       </CardContent>
