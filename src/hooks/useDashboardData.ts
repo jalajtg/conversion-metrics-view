@@ -16,8 +16,10 @@ interface DashboardData {
 }
 
 const fetchDashboardDataRecursively = async (filters: DashboardFilters): Promise<DashboardData> => {
-  const promises = [];
-  
+  // Get the current user ID first
+  const { data: { user } } = await supabase.auth.getUser();
+  const userId = user?.id;
+
   // Define all queries
   const queries = [
     {
@@ -62,7 +64,7 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters): Promise
       query: () => supabase
         .from('clinics')
         .select('*')
-        .eq('owner_id', (supabase.auth.getUser().then(u => u.data.user?.id)))
+        .eq('owner_id', userId)
     },
     {
       name: 'products',
@@ -191,6 +193,6 @@ export const useDashboardData = (filters: DashboardFilters) => {
     queryFn: () => fetchDashboardDataRecursively(filters),
     enabled: filters.clinicIds.length > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
   });
 };
