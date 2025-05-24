@@ -67,51 +67,55 @@ export function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[400px]">
+      <div className="flex flex-col justify-center items-center min-h-[400px] px-4">
         <Loader2 className="h-12 w-12 text-theme-blue animate-spin" />
-        <p className="mt-4 text-gray-400">Loading your dashboard data...</p>
+        <p className="mt-4 text-gray-400 text-center">Loading your dashboard data...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 gradient-text">Sales Dashboard</h1>
-        <p className="text-gray-400">Track your sales metrics across all clinics and products</p>
+    <div className="min-h-screen w-full bg-theme-dark">
+      <div className="container mx-auto py-4 sm:py-8 px-4 max-w-7xl">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 gradient-text">Sales Dashboard</h1>
+          <p className="text-gray-400 text-sm sm:text-base">Track your sales metrics across all clinics and products</p>
+        </div>
+        
+        {clinics && (
+          <DashboardFilters
+            clinics={clinics}
+            filters={filters}
+            onFiltersChange={setFilters}
+          />
+        )}
+        
+        <div className="px-2 sm:px-0">
+          {filters.clinicIds.length === 0 ? (
+            <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
+                <BarChart className="h-8 w-8 text-theme-blue" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No clinics selected</h3>
+              <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Select one or more clinics to view your dashboard metrics.</p>
+            </div>
+          ) : productMetrics?.length === 0 ? (
+            <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
+                <BarChart className="h-8 w-8 text-theme-blue" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No data available</h3>
+              <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {productMetrics?.map((metrics) => (
+                <ProductSection key={metrics.product.id} metrics={metrics} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-      
-      {clinics && (
-        <DashboardFilters
-          clinics={clinics}
-          filters={filters}
-          onFiltersChange={setFilters}
-        />
-      )}
-      
-      {filters.clinicIds.length === 0 ? (
-        <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
-            <BarChart className="h-8 w-8 text-theme-blue" />
-          </div>
-          <h3 className="text-xl font-medium text-white mb-2">No clinics selected</h3>
-          <p className="text-gray-400 max-w-md mx-auto">Select one or more clinics to view your dashboard metrics.</p>
-        </div>
-      ) : productMetrics?.length === 0 ? (
-        <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
-            <BarChart className="h-8 w-8 text-theme-blue" />
-          </div>
-          <h3 className="text-xl font-medium text-white mb-2">No data available</h3>
-          <p className="text-gray-400 max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
-        </div>
-      ) : (
-        <>
-          {productMetrics?.map((metrics) => (
-            <ProductSection key={metrics.product.id} metrics={metrics} />
-          ))}
-        </>
-      )}
     </div>
   );
 }

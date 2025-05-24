@@ -59,86 +59,88 @@ export function MultiSelectDropdown({
   );
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-between bg-theme-dark-lighter border-gray-700 text-white hover:bg-theme-dark-lighter/80",
-            className
-          )}
+    <div className={cn("w-full", className)}>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-full justify-between bg-theme-dark-lighter border-gray-700 text-white hover:bg-theme-dark-lighter/80 min-h-[40px]"
+          >
+            <span className="text-left truncate">
+              {selectedValues.length === 0 ? (
+                <span className="text-gray-400">{placeholder}</span>
+              ) : (
+                <span className="text-white">
+                  {selectedValues.length} clinic{selectedValues.length !== 1 ? 's' : ''} selected
+                </span>
+              )}
+            </span>
+            <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="w-full min-w-[var(--radix-dropdown-menu-trigger-width)] bg-theme-dark-lighter border-gray-700 max-h-64 overflow-y-auto z-50"
+          align="start"
         >
-          <div className="flex flex-wrap gap-1 max-w-full">
-            {selectedValues.length === 0 ? (
-              <span className="text-gray-400">{placeholder}</span>
-            ) : selectedValues.length <= 2 ? (
-              selectedOptions.map((option) => (
-                <Badge
-                  key={option.value}
-                  variant="secondary"
-                  className="bg-theme-blue/20 text-theme-blue border-theme-blue/30 text-xs"
+          <DropdownMenuCheckboxItem
+            checked={selectedValues.length === options.length && options.length > 0}
+            onCheckedChange={handleSelectAll}
+            className="text-white hover:bg-theme-blue/20 focus:bg-theme-blue/20"
+          >
+            <div className="flex items-center justify-between w-full">
+              <span>Select All</span>
+              {selectedValues.length > 0 && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleClearAll();
+                  }}
+                  className="text-xs text-gray-400 hover:text-white ml-2"
                 >
-                  {option.label}
-                  <button
-                    className="ml-1 hover:bg-theme-blue/30 rounded-full p-0.5"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleSelect(option.value, false);
-                    }}
-                  >
-                    <X className="h-2 w-2" />
-                  </button>
-                </Badge>
-              ))
-            ) : (
-              <Badge
-                variant="secondary"
-                className="bg-theme-blue/20 text-theme-blue border-theme-blue/30 text-xs"
-              >
-                {selectedValues.length} selected
-              </Badge>
-            )}
-          </div>
-          <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-full min-w-[200px] bg-theme-dark-lighter border-gray-700 max-h-64 overflow-y-auto"
-        align="start"
-      >
-        <DropdownMenuCheckboxItem
-          checked={selectedValues.length === options.length && options.length > 0}
-          onCheckedChange={handleSelectAll}
-          className="text-white hover:bg-theme-blue/20 focus:bg-theme-blue/20"
-        >
-          <div className="flex items-center justify-between w-full">
-            <span>Select All</span>
-            {selectedValues.length > 0 && (
+                  Clear
+                </button>
+              )}
+            </div>
+          </DropdownMenuCheckboxItem>
+          {options.map((option) => (
+            <DropdownMenuCheckboxItem
+              key={option.value}
+              checked={selectedValues.includes(option.value)}
+              onCheckedChange={(checked) => handleSelect(option.value, checked)}
+              className="text-white hover:bg-theme-blue/20 focus:bg-theme-blue/20"
+            >
+              {option.label}
+            </DropdownMenuCheckboxItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      
+      {/* Selected chips displayed below the input */}
+      {selectedValues.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {selectedOptions.map((option) => (
+            <Badge
+              key={option.value}
+              variant="secondary"
+              className="bg-theme-blue/20 text-theme-blue border-theme-blue/30 text-sm px-3 py-1 flex items-center gap-2 hover:bg-theme-blue/30 transition-colors"
+            >
+              <span className="max-w-[150px] sm:max-w-[200px] truncate">{option.label}</span>
               <button
+                className="hover:bg-theme-blue/40 rounded-full p-0.5 transition-colors"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleClearAll();
+                  handleSelect(option.value, false);
                 }}
-                className="text-xs text-gray-400 hover:text-white"
+                aria-label={`Remove ${option.label}`}
               >
-                Clear
+                <X className="h-3 w-3" />
               </button>
-            )}
-          </div>
-        </DropdownMenuCheckboxItem>
-        {options.map((option) => (
-          <DropdownMenuCheckboxItem
-            key={option.value}
-            checked={selectedValues.includes(option.value)}
-            onCheckedChange={(checked) => handleSelect(option.value, checked)}
-            className="text-white hover:bg-theme-blue/20 focus:bg-theme-blue/20"
-          >
-            {option.label}
-          </DropdownMenuCheckboxItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

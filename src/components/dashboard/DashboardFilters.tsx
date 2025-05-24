@@ -41,61 +41,63 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <Card className="bg-theme-dark-card border-gray-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-white text-sm font-medium">Select Clinics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <MultiSelectDropdown
-            options={clinicOptions}
-            selectedValues={filters.clinicIds}
-            onSelectionChange={handleClinicSelectionChange}
-            placeholder="Select clinics..."
-            className="w-full"
-          />
-        </CardContent>
-      </Card>
+    <div className="w-full mb-6 px-2 sm:px-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 max-w-7xl mx-auto">
+        <Card className="bg-theme-dark-card border-gray-800 w-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-white text-sm font-medium">Select Clinics</CardTitle>
+          </CardHeader>
+          <CardContent className="pb-6">
+            <MultiSelectDropdown
+              options={clinicOptions}
+              selectedValues={filters.clinicIds}
+              onSelectionChange={handleClinicSelectionChange}
+              placeholder="Select clinics..."
+              className="w-full"
+            />
+          </CardContent>
+        </Card>
 
-      <Card className="bg-theme-dark-card border-gray-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-white text-sm font-medium">Month</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={filters.month} onValueChange={(value) => onFiltersChange({ ...filters, month: value })}>
-            <SelectTrigger className="bg-theme-dark-lighter border-gray-700 text-white">
-              <SelectValue placeholder="Select month" />
-            </SelectTrigger>
-            <SelectContent className="bg-theme-dark-lighter border-gray-700">
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value} className="text-white hover:bg-theme-blue/20">
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+        <Card className="bg-theme-dark-card border-gray-800 w-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-white text-sm font-medium">Month</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={filters.month} onValueChange={(value) => onFiltersChange({ ...filters, month: value })}>
+              <SelectTrigger className="bg-theme-dark-lighter border-gray-700 text-white">
+                <SelectValue placeholder="Select month" />
+              </SelectTrigger>
+              <SelectContent className="bg-theme-dark-lighter border-gray-700 z-50">
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value} className="text-white hover:bg-theme-blue/20">
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
 
-      <Card className="bg-theme-dark-card border-gray-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-white text-sm font-medium">Year</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={filters.year} onValueChange={(value) => onFiltersChange({ ...filters, year: value })}>
-            <SelectTrigger className="bg-theme-dark-lighter border-gray-700 text-white">
-              <SelectValue placeholder="Select year" />
-            </SelectTrigger>
-            <SelectContent className="bg-theme-dark-lighter border-gray-700">
-              {years.map((year) => (
-                <SelectItem key={year} value={year.toString()} className="text-white hover:bg-theme-blue/20">
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+        <Card className="bg-theme-dark-card border-gray-800 w-full">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-white text-sm font-medium">Year</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={filters.year} onValueChange={(value) => onFiltersChange({ ...filters, year: value })}>
+              <SelectTrigger className="bg-theme-dark-lighter border-gray-700 text-white">
+                <SelectValue placeholder="Select year" />
+              </SelectTrigger>
+              <SelectContent className="bg-theme-dark-lighter border-gray-700 z-50">
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()} className="text-white hover:bg-theme-blue/20">
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
