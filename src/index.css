@@ -103,4 +103,14 @@
   .card-glow {
     @apply relative after:absolute after:inset-0 after:rounded-xl after:bg-gradient-to-r after:from-theme-blue/20 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500;
   }
+
+  /* Remove any transform animations on hover that could move text */
+  * {
+    transform: none !important;
+  }
+  
+  /* Allow only safe hover effects */
+  .hover-safe {
+    @apply transition-colors duration-200;
+  }
 }
