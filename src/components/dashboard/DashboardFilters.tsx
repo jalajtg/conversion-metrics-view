@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { Clinic } from '@/types/dashboard';
 import type { DashboardFilters } from '@/types/dashboard';
 
@@ -32,18 +31,13 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
-  const handleClinicToggle = (clinicId: string, checked: boolean) => {
-    const newClinicIds = checked
-      ? [...filters.clinicIds, clinicId]
-      : filters.clinicIds.filter(id => id !== clinicId);
-    
-    onFiltersChange({ ...filters, clinicIds: newClinicIds });
-  };
+  const clinicOptions = clinics.map(clinic => ({
+    value: clinic.id,
+    label: clinic.name
+  }));
 
-  const handleSelectAll = () => {
-    const allSelected = filters.clinicIds.length === clinics.length;
-    const newClinicIds = allSelected ? [] : clinics.map(clinic => clinic.id);
-    onFiltersChange({ ...filters, clinicIds: newClinicIds });
+  const handleClinicSelectionChange = (selectedIds: string[]) => {
+    onFiltersChange({ ...filters, clinicIds: selectedIds });
   };
 
   return (
@@ -52,31 +46,14 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
         <CardHeader className="pb-3">
           <CardTitle className="text-white text-sm font-medium">Select Clinics</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="select-all"
-              checked={filters.clinicIds.length === clinics.length && clinics.length > 0}
-              onCheckedChange={handleSelectAll}
-            />
-            <Label htmlFor="select-all" className="text-sm text-gray-300">
-              Select All
-            </Label>
-          </div>
-          <div className="max-h-32 overflow-y-auto space-y-2">
-            {clinics.map((clinic) => (
-              <div key={clinic.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={clinic.id}
-                  checked={filters.clinicIds.includes(clinic.id)}
-                  onCheckedChange={(checked) => handleClinicToggle(clinic.id, checked as boolean)}
-                />
-                <Label htmlFor={clinic.id} className="text-sm text-gray-300">
-                  {clinic.name}
-                </Label>
-              </div>
-            ))}
-          </div>
+        <CardContent>
+          <MultiSelectDropdown
+            options={clinicOptions}
+            selectedValues={filters.clinicIds}
+            onSelectionChange={handleClinicSelectionChange}
+            placeholder="Select clinics..."
+            className="w-full"
+          />
         </CardContent>
       </Card>
 
