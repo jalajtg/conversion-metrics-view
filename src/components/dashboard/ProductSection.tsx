@@ -1,108 +1,126 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
-import { ProductMetrics } from '@/types/dashboard';
-import { Users, MessageSquare, DollarSign, Calendar, BookOpen, TrendingUp } from 'lucide-react';
+import { Calculator, Users, MessageSquare, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import type { ProductMetrics } from '@/types/dashboard';
 
 interface ProductSectionProps {
-  metrics: ProductMetrics;
+  metrics: ProductMetrics | null;
+  unifiedData?: any;
 }
 
-export function ProductSection({ metrics }: ProductSectionProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
+export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
+  // If we have unified data, process it to create metrics
+  if (unifiedData && !metrics) {
+    const { products, leads, sales, costs, conversations, appointments } = unifiedData;
+    
+    if (!products || products.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="space-y-6">
+        {products.map((product: any) => {
+          const productLeads = leads?.filter((lead: any) => lead.product_id === product.id) || [];
+          const productSales = sales?.filter((sale: any) => sale.product_id === product.id) || [];
+          const productCosts = costs?.filter((cost: any) => cost.product_id === product.id) || [];
+          const productConversations = conversations?.filter((conv: any) => 
+            productLeads.some((lead: any) => lead.id === conv.lead_id)
+          ) || [];
+          const productAppointments = appointments?.filter((apt: any) => 
+            productLeads.some((lead: any) => lead.id === apt.lead_id)
+          ) || [];
+
+          const totalSales = productSales.reduce((sum: number, sale: any) => sum + (sale.amount || 0), 0);
+          const totalCosts = productCosts.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0);
+          const verbalAppointments = productAppointments.filter((apt: any) => apt.type === 'verbal').length;
+          const bookings = productAppointments.filter((apt: any) => apt.type === 'booking').length;
+
+          const productMetrics: ProductMetrics = {
+            product,
+            leadCount: productLeads.length,
+            conversationCount: productConversations.length,
+            paidAmount: totalSales,
+            verbalAppointments,
+            bookings,
+            costPerBooking: bookings > 0 ? totalCosts / bookings : 0,
+            costPerLead: productLeads.length > 0 ? totalCosts / productLeads.length : 0,
+          };
+
+          return <SingleProductSection key={product.id} metrics={productMetrics} />;
+        })}
+      </div>
+    );
+  }
+
+  // Fallback to original behavior if metrics are provided
+  if (metrics) {
+    return <SingleProductSection metrics={metrics} />;
+  }
+
+  return null;
+}
+
+function SingleProductSection({ metrics }: { metrics: ProductMetrics }) {
+  const { product } = metrics;
 
   return (
-    <div 
-      className={`mb-8 rounded-xl p-6 transition-all duration-300 ${
-        isHovered 
-          ? 'bg-theme-dark-lighter border border-theme-blue/20 shadow-lg shadow-theme-blue/5' 
-          : 'bg-theme-dark-card border border-gray-800'
-      }`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-        <div>
-          <h2 className={`text-2xl font-bold transition-colors ${
-            isHovered ? 'text-theme-blue-light' : 'text-white'
-          }`}>{metrics.product.name}</h2>
-          <p className={`transition-colors duration-300 ${
-            isHovered ? 'text-gray-300' : 'text-gray-400'
-          }`}>
-            {metrics.product.description}
-          </p>
+    <Card className="bg-gradient-to-br from-theme-dark-card to-theme-dark-lighter border border-gray-700/50 shadow-2xl">
+      <CardHeader className="border-b border-gray-700/50">
+        <CardTitle className="text-white flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-theme-blue/10">
+            <Calculator className="h-5 w-5 text-theme-blue" />
+          </div>
+          {product.name}
+          <span className="ml-auto text-sm font-normal text-gray-400">
+            ${product.price}
+          </span>
+        </CardTitle>
+        {product.description && (
+          <p className="text-gray-400 text-sm">{product.description}</p>
+        )}
+      </CardHeader>
+      <CardContent className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <MetricCard
+            title="Total Leads"
+            value={metrics.leadCount}
+            icon={Users}
+            color="blue"
+          />
+          <MetricCard
+            title="Conversations"
+            value={metrics.conversationCount}
+            icon={MessageSquare}
+            color="green"
+          />
+          <MetricCard
+            title="Paid Amount"
+            value={`$${metrics.paidAmount.toFixed(2)}`}
+            icon={DollarSign}
+            color="yellow"
+          />
+          <MetricCard
+            title="Verbal Appointments"
+            value={metrics.verbalAppointments}
+            icon={Calendar}
+            color="purple"
+          />
+          <MetricCard
+            title="Bookings"
+            value={metrics.bookings}
+            icon={CheckCircle}
+            color="orange"
+          />
+          <MetricCard
+            title="Cost per Lead"
+            value={`$${metrics.costPerLead.toFixed(2)}`}
+            icon={Calculator}
+            color="red"
+          />
         </div>
-        <div className={`mt-2 md:mt-0 px-3 py-1 rounded-full text-xs font-medium ${
-          isHovered ? 'bg-theme-blue/20 text-theme-blue-light' : 'bg-theme-dark bg-opacity-50 text-gray-400'
-        }`}>
-          Product Performance
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard 
-          title="Leads" 
-          value={metrics.leadCount} 
-          icon={<Users size={18} />}
-          trend={{ value: 12, isPositive: true }}
-          isHovered={isHovered}
-        />
-        
-        <MetricCard 
-          title="Conversations" 
-          value={metrics.conversationCount} 
-          icon={<MessageSquare size={18} />}
-          trend={{ value: 5, isPositive: true }}
-          isHovered={isHovered}
-        />
-        
-        <MetricCard 
-          title="Paid Amount" 
-          value={formatCurrency(metrics.paidAmount)} 
-          icon={<DollarSign size={18} />}
-          trend={{ value: 8, isPositive: true }}
-          isHovered={isHovered}
-        />
-        
-        <MetricCard 
-          title="Verbal Appointments" 
-          value={metrics.verbalAppointments} 
-          icon={<Calendar size={18} />}
-          trend={{ value: 3, isPositive: false }}
-          isHovered={isHovered}
-        />
-        
-        <MetricCard 
-          title="Bookings" 
-          value={metrics.bookings} 
-          icon={<BookOpen size={18} />}
-          trend={{ value: 15, isPositive: true }}
-          isHovered={isHovered}
-        />
-        
-        <MetricCard 
-          title="Cost per Booking" 
-          value={formatCurrency(metrics.costPerBooking)} 
-          icon={<TrendingUp size={18} />}
-          trend={{ value: 2, isPositive: false }}
-          isHovered={isHovered}
-        />
-        
-        <MetricCard 
-          title="Cost per Lead" 
-          value={formatCurrency(metrics.costPerLead)} 
-          icon={<TrendingUp size={18} />}
-          trend={{ value: 4, isPositive: true }}
-          isHovered={isHovered}
-        />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

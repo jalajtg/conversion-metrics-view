@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useDashboard } from '@/hooks/useDashboard';
+import { useDashboardData } from '@/hooks/useDashboardData';
 import { useClinics } from '@/hooks/useClinics';
 import { ProductSection } from './ProductSection';
 import { DashboardFilters } from './DashboardFilters';
@@ -20,7 +21,7 @@ export function Dashboard() {
   const [dummyDataCreated, setDummyDataCreated] = useState(false);
 
   const { data: clinics, isLoading: clinicsLoading, error: clinicsError, refetch: refetchClinics } = useClinics();
-  const { data: productMetrics, isLoading: dashboardLoading, error: dashboardError } = useDashboard(filters);
+  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useDashboardData(filters);
 
   // Create dummy data if no clinics exist
   useEffect(() => {
@@ -104,7 +105,7 @@ export function Dashboard() {
             <>
               {/* Main Dashboard Section */}
               <div className="space-y-6">
-                {productMetrics?.length === 0 ? (
+                {!dashboardData?.products || dashboardData.products.length === 0 ? (
                   <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                       <BarChart className="h-8 w-8 text-theme-blue" />
@@ -113,17 +114,16 @@ export function Dashboard() {
                     <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
                   </div>
                 ) : (
-                  productMetrics?.map((metrics) => (
-                    <ProductSection key={metrics.product.id} metrics={metrics} />
-                  ))
+                  // Pass the unified data to ProductSection for processing
+                  <ProductSection key="unified-products" metrics={null} unifiedData={dashboardData} />
                 )}
               </div>
 
               {/* Bookings Section */}
-              <BookingsSection filters={filters} />
+              <BookingsSection filters={filters} unifiedData={dashboardData} />
 
               {/* FAQ Section */}
-              <FAQSection filters={filters} />
+              <FAQSection filters={filters} unifiedData={dashboardData} />
             </>
           )}
         </div>

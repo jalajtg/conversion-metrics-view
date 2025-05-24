@@ -2,16 +2,17 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, Mail, Phone, User, Clock, MapPin } from 'lucide-react';
-import { useBookings } from '@/hooks/useBookings';
+import { Calendar, Mail, Phone, User, Clock } from 'lucide-react';
 import type { DashboardFilters } from '@/types/dashboard';
 
 interface BookingsSectionProps {
   filters: DashboardFilters;
+  unifiedData?: any;
 }
 
-export function BookingsSection({ filters }: BookingsSectionProps) {
-  const { data: bookings, isLoading } = useBookings(filters);
+export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) {
+  const bookings = unifiedData?.bookings || [];
+  const isLoading = !unifiedData;
 
   if (isLoading) {
     return (
@@ -94,7 +95,7 @@ export function BookingsSection({ filters }: BookingsSectionProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bookings.map((booking, index) => (
+                  {bookings.map((booking: any, index: number) => (
                     <TableRow 
                       key={booking.id} 
                       className="border-gray-700/50 transition-colors duration-200"

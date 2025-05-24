@@ -2,15 +2,16 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HelpCircle, MessageCircle, TrendingUp } from 'lucide-react';
-import { useFAQs } from '@/hooks/useFAQs';
 import type { DashboardFilters } from '@/types/dashboard';
 
 interface FAQSectionProps {
   filters: DashboardFilters;
+  unifiedData?: any;
 }
 
-export function FAQSection({ filters }: FAQSectionProps) {
-  const { data: faqs, isLoading } = useFAQs(filters);
+export function FAQSection({ filters, unifiedData }: FAQSectionProps) {
+  const faqs = unifiedData?.faqs || [];
+  const isLoading = !unifiedData;
 
   if (isLoading) {
     return (
@@ -69,7 +70,7 @@ export function FAQSection({ filters }: FAQSectionProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {faqs.map((faq, index) => (
+              {faqs.map((faq: any, index: number) => (
                 <div 
                   key={faq.id} 
                   className="group relative p-5 rounded-xl border border-gray-700/50 transition-all duration-300 hover:border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/10"
