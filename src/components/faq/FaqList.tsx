@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { useFAQs } from '@/hooks/useFAQs';
+import { useFAQsPaginated } from '@/hooks/useFAQs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
@@ -51,7 +52,7 @@ export function FaqList() {
     handleSearch,
     handleSort,
     handleChangePageSize,
-  } = useFAQs();
+  } = useFAQsPaginated();
   
   const [searchInput, setSearchInput] = useState('');
   
