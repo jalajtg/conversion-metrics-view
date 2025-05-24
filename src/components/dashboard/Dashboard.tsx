@@ -7,6 +7,7 @@ import { DashboardFilters } from './DashboardFilters';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, BarChart } from 'lucide-react';
 import type { DashboardFilters as DashboardFiltersType } from '@/types/dashboard';
+import { createDummyDataForUser } from '@/services/dummyDataService';
 
 export function Dashboard() {
   const currentDate = new Date();
@@ -15,9 +16,25 @@ export function Dashboard() {
     month: (currentDate.getMonth() + 1).toString(),
     year: currentDate.getFullYear().toString()
   });
+  const [dummyDataCreated, setDummyDataCreated] = useState(false);
 
-  const { data: clinics, isLoading: clinicsLoading, error: clinicsError } = useClinics();
+  const { data: clinics, isLoading: clinicsLoading, error: clinicsError, refetch: refetchClinics } = useClinics();
   const { data: productMetrics, isLoading: dashboardLoading, error: dashboardError } = useDashboard(filters);
+
+  // Create dummy data if no clinics exist
+  useEffect(() => {
+    const createDummyData = async () => {
+      if (!clinicsLoading && clinics && clinics.length === 0 && !dummyDataCreated) {
+        console.log('No clinics found, creating dummy data...');
+        setDummyDataCreated(true);
+        await createDummyDataForUser();
+        // Refetch clinics after creating dummy data
+        refetchClinics();
+      }
+    };
+
+    createDummyData();
+  }, [clinics, clinicsLoading, dummyDataCreated, refetchClinics]);
 
   // Auto-select all clinics when they're loaded
   useEffect(() => {
