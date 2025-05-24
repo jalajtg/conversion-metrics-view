@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { useFaqs } from '@/hooks/useFaqs';
+import { useFAQs } from '@/hooks/useFAQs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { 
@@ -52,7 +51,7 @@ export function FaqList() {
     handleSearch,
     handleSort,
     handleChangePageSize,
-  } = useFaqs();
+  } = useFAQs();
   
   const [searchInput, setSearchInput] = useState('');
   
