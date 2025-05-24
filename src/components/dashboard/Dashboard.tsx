@@ -6,7 +6,7 @@ import { ProductSection } from './ProductSection';
 import { DashboardFilters } from './DashboardFilters';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, BarChart } from 'lucide-react';
-import { DashboardFilters as DashboardFiltersType } from '@/types/dashboard';
+import type { DashboardFilters as DashboardFiltersType } from '@/types/dashboard';
 
 export function Dashboard() {
   const currentDate = new Date();
