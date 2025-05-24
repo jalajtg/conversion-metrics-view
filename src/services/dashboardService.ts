@@ -7,11 +7,23 @@ import {
   Appointment, 
   Sale, 
   Cost,
-  ProductMetrics
+  ProductMetrics,
+  DashboardFilters
 } from "@/types/dashboard";
 
-export const fetchProducts = async (): Promise<Product[]> => {
-  const { data, error } = await supabase.from("products").select("*");
+const getDateRange = (month: string, year: string) => {
+  const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+  const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59);
+  return { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
+};
+
+export const fetchProducts = async (clinicIds: string[]): Promise<Product[]> => {
+  if (clinicIds.length === 0) return [];
+  
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .in("clinic_id", clinicIds);
   
   if (error) {
     console.error("Error fetching products:", error);
@@ -21,11 +33,15 @@ export const fetchProducts = async (): Promise<Product[]> => {
   return data || [];
 };
 
-export const fetchLeadsByProduct = async (productId: string): Promise<Lead[]> => {
+export const fetchLeadsByProduct = async (productId: string, filters: DashboardFilters): Promise<Lead[]> => {
+  const { startDate, endDate } = getDateRange(filters.month, filters.year);
+  
   const { data, error } = await supabase
     .from("leads")
     .select("*")
-    .eq("product_id", productId);
+    .eq("product_id", productId)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate);
   
   if (error) {
     console.error(`Error fetching leads for product ${productId}:`, error);
@@ -35,13 +51,17 @@ export const fetchLeadsByProduct = async (productId: string): Promise<Lead[]> =>
   return data || [];
 };
 
-export const fetchConversationsByLeads = async (leadIds: string[]): Promise<Conversation[]> => {
+export const fetchConversationsByLeads = async (leadIds: string[], filters: DashboardFilters): Promise<Conversation[]> => {
   if (leadIds.length === 0) return [];
+  
+  const { startDate, endDate } = getDateRange(filters.month, filters.year);
   
   const { data, error } = await supabase
     .from("conversations")
     .select("*")
-    .in("lead_id", leadIds);
+    .in("lead_id", leadIds)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate);
   
   if (error) {
     console.error("Error fetching conversations:", error);
@@ -51,13 +71,17 @@ export const fetchConversationsByLeads = async (leadIds: string[]): Promise<Conv
   return data || [];
 };
 
-export const fetchAppointmentsByLeads = async (leadIds: string[]): Promise<Appointment[]> => {
+export const fetchAppointmentsByLeads = async (leadIds: string[], filters: DashboardFilters): Promise<Appointment[]> => {
   if (leadIds.length === 0) return [];
+  
+  const { startDate, endDate } = getDateRange(filters.month, filters.year);
   
   const { data, error } = await supabase
     .from("appointments")
     .select("*")
-    .in("lead_id", leadIds);
+    .in("lead_id", leadIds)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate);
   
   if (error) {
     console.error("Error fetching appointments:", error);
@@ -67,11 +91,15 @@ export const fetchAppointmentsByLeads = async (leadIds: string[]): Promise<Appoi
   return data || [];
 };
 
-export const fetchSalesByProduct = async (productId: string): Promise<Sale[]> => {
+export const fetchSalesByProduct = async (productId: string, filters: DashboardFilters): Promise<Sale[]> => {
+  const { startDate, endDate } = getDateRange(filters.month, filters.year);
+  
   const { data, error } = await supabase
     .from("sales")
     .select("*")
-    .eq("product_id", productId);
+    .eq("product_id", productId)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate);
   
   if (error) {
     console.error(`Error fetching sales for product ${productId}:`, error);
@@ -81,11 +109,15 @@ export const fetchSalesByProduct = async (productId: string): Promise<Sale[]> =>
   return data || [];
 };
 
-export const fetchCostsByProduct = async (productId: string): Promise<Cost[]> => {
+export const fetchCostsByProduct = async (productId: string, filters: DashboardFilters): Promise<Cost[]> => {
+  const { startDate, endDate } = getDateRange(filters.month, filters.year);
+  
   const { data, error } = await supabase
     .from("costs")
     .select("*")
-    .eq("product_id", productId);
+    .eq("product_id", productId)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate);
   
   if (error) {
     console.error(`Error fetching costs for product ${productId}:`, error);
@@ -95,16 +127,16 @@ export const fetchCostsByProduct = async (productId: string): Promise<Cost[]> =>
   return data || [];
 };
 
-export const calculateProductMetrics = async (product: Product): Promise<ProductMetrics> => {
+export const calculateProductMetrics = async (product: Product, filters: DashboardFilters): Promise<ProductMetrics> => {
   // Get all leads for this product
-  const leads = await fetchLeadsByProduct(product.id);
+  const leads = await fetchLeadsByProduct(product.id, filters);
   const leadIds = leads.map(lead => lead.id);
   
   // Get related data
-  const conversations = await fetchConversationsByLeads(leadIds);
-  const appointments = await fetchAppointmentsByLeads(leadIds);
-  const sales = await fetchSalesByProduct(product.id);
-  const costs = await fetchCostsByProduct(product.id);
+  const conversations = await fetchConversationsByLeads(leadIds, filters);
+  const appointments = await fetchAppointmentsByLeads(leadIds, filters);
+  const sales = await fetchSalesByProduct(product.id, filters);
+  const costs = await fetchCostsByProduct(product.id, filters);
   
   // Calculate metrics
   const leadCount = leads.length;
@@ -130,8 +162,8 @@ export const calculateProductMetrics = async (product: Product): Promise<Product
   };
 };
 
-export const fetchAllProductMetrics = async (): Promise<ProductMetrics[]> => {
-  const products = await fetchProducts();
-  const metricsPromises = products.map(product => calculateProductMetrics(product));
+export const fetchAllProductMetrics = async (filters: DashboardFilters): Promise<ProductMetrics[]> => {
+  const products = await fetchProducts(filters.clinicIds);
+  const metricsPromises = products.map(product => calculateProductMetrics(product, filters));
   return Promise.all(metricsPromises);
 };

@@ -1,9 +1,21 @@
 
+export interface Clinic {
+  id: string;
+  owner_id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string | null;
   price: number;
+  clinic_id: string;
 }
 
 export interface Lead {
@@ -13,12 +25,14 @@ export interface Lead {
   email: string | null;
   phone: string | null;
   status: string;
+  clinic_id: string;
 }
 
 export interface Conversation {
   id: string;
   lead_id: string;
   notes: string | null;
+  clinic_id: string;
 }
 
 export interface Appointment {
@@ -27,6 +41,7 @@ export interface Appointment {
   type: string;
   status: string;
   scheduled_at: string;
+  clinic_id: string;
 }
 
 export interface Sale {
@@ -34,6 +49,7 @@ export interface Sale {
   lead_id: string;
   product_id: string;
   amount: number;
+  clinic_id: string;
 }
 
 export interface Cost {
@@ -41,6 +57,7 @@ export interface Cost {
   product_id: string;
   amount: number;
   description: string | null;
+  clinic_id: string;
 }
 
 export interface ProductMetrics {
@@ -52,4 +69,10 @@ export interface ProductMetrics {
   bookings: number;
   costPerBooking: number;
   costPerLead: number;
+}
+
+export interface DashboardFilters {
+  clinicIds: string[];
+  month: string;
+  year: string;
 }

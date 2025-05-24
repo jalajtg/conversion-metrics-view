@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       appointments: {
         Row: {
+          clinic_id: string | null
           created_at: string
           id: string
           lead_id: string
@@ -19,6 +20,7 @@ export type Database = {
           type: string
         }
         Insert: {
+          clinic_id?: string | null
           created_at?: string
           id?: string
           lead_id: string
@@ -27,6 +29,7 @@ export type Database = {
           type: string
         }
         Update: {
+          clinic_id?: string | null
           created_at?: string
           id?: string
           lead_id?: string
@@ -36,6 +39,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "appointments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "appointments_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
@@ -44,26 +54,69 @@ export type Database = {
           },
         ]
       }
+      clinics: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          owner_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
+          clinic_id: string | null
           created_at: string
           id: string
           lead_id: string
           notes: string | null
         }
         Insert: {
+          clinic_id?: string | null
           created_at?: string
           id?: string
           lead_id: string
           notes?: string | null
         }
         Update: {
+          clinic_id?: string | null
           created_at?: string
           id?: string
           lead_id?: string
           notes?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "conversations_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "conversations_lead_id_fkey"
             columns: ["lead_id"]
@@ -76,6 +129,7 @@ export type Database = {
       costs: {
         Row: {
           amount: number
+          clinic_id: string | null
           created_at: string
           description: string | null
           id: string
@@ -83,6 +137,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          clinic_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -90,12 +145,20 @@ export type Database = {
         }
         Update: {
           amount?: number
+          clinic_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
           product_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "costs_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "costs_product_id_fkey"
             columns: ["product_id"]
@@ -108,6 +171,7 @@ export type Database = {
       leads: {
         Row: {
           client_name: string
+          clinic_id: string | null
           created_at: string
           email: string | null
           id: string
@@ -117,6 +181,7 @@ export type Database = {
         }
         Insert: {
           client_name: string
+          clinic_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -126,6 +191,7 @@ export type Database = {
         }
         Update: {
           client_name?: string
+          clinic_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -134,6 +200,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_product_id_fkey"
             columns: ["product_id"]
@@ -145,6 +218,7 @@ export type Database = {
       }
       products: {
         Row: {
+          clinic_id: string | null
           created_at: string
           description: string | null
           id: string
@@ -152,6 +226,7 @@ export type Database = {
           price: number
         }
         Insert: {
+          clinic_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -159,13 +234,22 @@ export type Database = {
           price: number
         }
         Update: {
+          clinic_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
           name?: string
           price?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -191,6 +275,7 @@ export type Database = {
       sales: {
         Row: {
           amount: number
+          clinic_id: string | null
           created_at: string
           id: string
           lead_id: string
@@ -198,6 +283,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          clinic_id?: string | null
           created_at?: string
           id?: string
           lead_id: string
@@ -205,12 +291,20 @@ export type Database = {
         }
         Update: {
           amount?: number
+          clinic_id?: string | null
           created_at?: string
           id?: string
           lead_id?: string
           product_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sales_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sales_lead_id_fkey"
             columns: ["lead_id"]
@@ -232,7 +326,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_owns_clinic: {
+        Args: { clinic_uuid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
