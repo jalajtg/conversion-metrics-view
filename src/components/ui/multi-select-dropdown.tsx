@@ -82,7 +82,9 @@ export function MultiSelectDropdown({
           className="w-[var(--radix-dropdown-menu-trigger-width)] bg-theme-dark-lighter border-gray-700 max-h-64 overflow-y-auto"
           side="bottom"
           align="start"
-          sideOffset={8}
+          sideOffset={4}
+          alignOffset={0}
+          avoidCollisions={true}
         >
           <DropdownMenuCheckboxItem
             checked={selectedValues.length === options.length && options.length > 0}
