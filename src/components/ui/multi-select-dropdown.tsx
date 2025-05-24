@@ -60,7 +60,7 @@ export function MultiSelectDropdown({
 
   return (
     <div className={cn("w-full", className)}>
-      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
@@ -80,6 +80,9 @@ export function MultiSelectDropdown({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="w-[var(--radix-dropdown-menu-trigger-width)] bg-theme-dark-lighter border-gray-700 max-h-64 overflow-y-auto"
+          side="bottom"
+          align="start"
+          sideOffset={4}
         >
           <DropdownMenuCheckboxItem
             checked={selectedValues.length === options.length && options.length > 0}
