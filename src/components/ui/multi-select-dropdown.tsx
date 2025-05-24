@@ -84,7 +84,6 @@ export function MultiSelectDropdown({
           side="bottom"
           sideOffset={4}
           alignOffset={0}
-          forceMount={false}
         >
           <DropdownMenuCheckboxItem
             checked={selectedValues.length === options.length && options.length > 0}
