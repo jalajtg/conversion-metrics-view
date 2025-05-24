@@ -54,6 +54,44 @@ export type Database = {
           },
         ]
       }
+      bookings: {
+        Row: {
+          booking_time: string
+          clinic_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          booking_time: string
+          clinic_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          booking_time?: string
+          clinic_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinics: {
         Row: {
           address: string | null
@@ -164,6 +202,38 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      frequently_asked_questions: {
+        Row: {
+          asked_count: number
+          clinic_id: string | null
+          created_at: string
+          id: string
+          question: string
+        }
+        Insert: {
+          asked_count?: number
+          clinic_id?: string | null
+          created_at?: string
+          id?: string
+          question: string
+        }
+        Update: {
+          asked_count?: number
+          clinic_id?: string | null
+          created_at?: string
+          id?: string
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "frequently_asked_questions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
             referencedColumns: ["id"]
           },
         ]

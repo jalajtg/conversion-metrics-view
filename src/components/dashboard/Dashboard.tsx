@@ -1,9 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useClinics } from '@/hooks/useClinics';
 import { ProductSection } from './ProductSection';
 import { DashboardFilters } from './DashboardFilters';
+import { BookingsSection } from './BookingsSection';
+import { FAQSection } from './FAQSection';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, BarChart } from 'lucide-react';
 import type { DashboardFilters as DashboardFiltersType } from '@/types/dashboard';
@@ -90,7 +91,7 @@ export function Dashboard() {
           />
         )}
         
-        <div className="px-2 sm:px-0">
+        <div className="px-2 sm:px-0 space-y-12">
           {filters.clinicIds.length === 0 ? (
             <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
@@ -99,20 +100,31 @@ export function Dashboard() {
               <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No clinics selected</h3>
               <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Select one or more clinics to view your dashboard metrics.</p>
             </div>
-          ) : productMetrics?.length === 0 ? (
-            <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
-                <BarChart className="h-8 w-8 text-theme-blue" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No data available</h3>
-              <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
-            </div>
           ) : (
-            <div className="space-y-6">
-              {productMetrics?.map((metrics) => (
-                <ProductSection key={metrics.product.id} metrics={metrics} />
-              ))}
-            </div>
+            <>
+              {/* Main Dashboard Section */}
+              <div className="space-y-6">
+                {productMetrics?.length === 0 ? (
+                  <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
+                      <BarChart className="h-8 w-8 text-theme-blue" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No data available</h3>
+                    <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
+                  </div>
+                ) : (
+                  productMetrics?.map((metrics) => (
+                    <ProductSection key={metrics.product.id} metrics={metrics} />
+                  ))
+                )}
+              </div>
+
+              {/* Bookings Section */}
+              <BookingsSection filters={filters} />
+
+              {/* FAQ Section */}
+              <FAQSection filters={filters} />
+            </>
           )}
         </div>
       </div>
