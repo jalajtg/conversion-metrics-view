@@ -103,7 +103,7 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
       </div>
     );
   }
-
+  console.log("Bookings", bookings)
   return (
     <div id="bookings-section" className="space-y-6">
       <div className="flex items-center gap-3">
