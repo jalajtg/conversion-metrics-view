@@ -47,7 +47,7 @@ export function TotalMetricsSection({
         <p className="text-sm text-gray-400 relative z-10">Combined metrics across all selected products</p>
       </CardHeader>
       
-      <CardContent className="p-6 relative z-10">
+      <CardContent className="p-6 relative z-10 bg-slate-800">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <MetricCard title="Total Leads" value={totalLeads} icon={<Users className="h-4 w-4" />} isHovered={true} />
           <MetricCard title="Engaged Conversations" value={totalEngagedConversations} icon={<MessageSquare className="h-4 w-4" />} isHovered={true} />
