@@ -1,16 +1,20 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
 import { Users, MessageSquare, DollarSign, CheckCircle, Calculator, BarChart3 } from 'lucide-react';
+
 interface TotalMetricsSectionProps {
   unifiedData?: any;
 }
+
 export function TotalMetricsSection({
   unifiedData
 }: TotalMetricsSectionProps) {
   if (!unifiedData || !unifiedData.products || unifiedData.products.length === 0) {
     return null;
   }
+
   const {
     products,
     leads,
@@ -30,28 +34,65 @@ export function TotalMetricsSection({
   const totalCosts = costs?.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0) || 0;
   const totalCostPerBooking = totalBookings > 0 ? totalCosts / totalBookings : 0;
   const totalCostPerLead = totalLeads > 0 ? totalCosts / totalLeads : 0;
-  return <Card className="bg-gradient-to-br from-[#3a82f5]/10 to-theme-dark-card border border-[#3a82f5]/20 shadow-xl bg-zinc-950">
-      <CardHeader className="border-b border-[#3a82f5]/10 bg-zinc-900">
+
+  return (
+    <Card className="bg-gradient-to-br from-theme-blue/20 via-theme-blue/10 to-theme-blue/5 border border-theme-blue/30 shadow-xl relative overflow-hidden">
+      {/* Blue glow effect background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-theme-blue/10 via-transparent to-theme-blue/5 animate-pulse-glow"></div>
+      
+      <CardHeader className="border-b border-theme-blue/20 relative z-10">
         <CardTitle className="text-black flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#3a82f5]/20">
-            <BarChart3 className="h-5 w-5 text-[#3a82f5]" />
+          <div className="p-2 rounded-lg bg-theme-blue/30 shadow-lg">
+            <BarChart3 className="h-5 w-5 text-theme-blue" />
           </div>
-          <span className="font-semibold text-zinc-50">Total Metrics Overview</span>
-          <span className="ml-auto text-sm font-normal text-zinc-50">
+          <span className="font-semibold text-white">Total Metrics Overview</span>
+          <span className="ml-auto text-sm font-normal text-gray-300">
             {products.length} Product{products.length !== 1 ? 's' : ''}
           </span>
         </CardTitle>
-        <p className="text-sm text-zinc-50">Combined metrics across all selected products</p>
+        <p className="text-sm text-gray-300 relative z-10">Combined metrics across all selected products</p>
       </CardHeader>
-      <CardContent className="p-6 bg-zinc-900">
+      
+      <CardContent className="p-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <MetricCard title="Total Leads" value={totalLeads} icon={<Users className="h-4 w-4" />} />
-          <MetricCard title="Engaged Conversations" value={totalEngagedConversations} icon={<MessageSquare className="h-4 w-4" />} />
-          <MetricCard title="Paid Amount" value={`$${totalPaidAmount.toFixed(2)}`} icon={<DollarSign className="h-4 w-4" />} />
-          <MetricCard title="Bookings" value={totalBookings} icon={<CheckCircle className="h-4 w-4" />} />
-          <MetricCard title="Cost per Booking" value={`$${totalCostPerBooking.toFixed(2)}`} icon={<Calculator className="h-4 w-4" />} />
-          <MetricCard title="Cost per Lead" value={`$${totalCostPerLead.toFixed(2)}`} icon={<Calculator className="h-4 w-4" />} />
+          <MetricCard 
+            title="Total Leads" 
+            value={totalLeads} 
+            icon={<Users className="h-4 w-4" />} 
+            isHovered={true}
+          />
+          <MetricCard 
+            title="Engaged Conversations" 
+            value={totalEngagedConversations} 
+            icon={<MessageSquare className="h-4 w-4" />}
+            isHovered={true}
+          />
+          <MetricCard 
+            title="Paid Amount" 
+            value={`$${totalPaidAmount.toFixed(2)}`} 
+            icon={<DollarSign className="h-4 w-4" />}
+            isHovered={true}
+          />
+          <MetricCard 
+            title="Bookings" 
+            value={totalBookings} 
+            icon={<CheckCircle className="h-4 w-4" />}
+            isHovered={true}
+          />
+          <MetricCard 
+            title="Cost per Booking" 
+            value={`$${totalCostPerBooking.toFixed(2)}`} 
+            icon={<Calculator className="h-4 w-4" />}
+            isHovered={true}
+          />
+          <MetricCard 
+            title="Cost per Lead" 
+            value={`$${totalCostPerLead.toFixed(2)}`} 
+            icon={<Calculator className="h-4 w-4" />}
+            isHovered={true}
+          />
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 }
