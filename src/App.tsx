@@ -13,6 +13,7 @@ import { Layout } from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import FAQPage from "./pages/FAQ";
+import { ProductReplicationPage } from "./pages/ProductReplication";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/faq" element={<FAQPage />} />
+                <Route path="/products" element={<ProductReplicationPage />} />
               </Route>
             </Route>
             
