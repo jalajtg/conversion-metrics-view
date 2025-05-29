@@ -405,6 +405,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      replicate_products_to_all_clinics: {
+        Args: { source_clinic_id: string }
+        Returns: {
+          target_clinic_id: string
+          clinic_name: string
+          products_replicated: number
+        }[]
+      }
+      replicate_products_to_clinic: {
+        Args: { source_clinic_id: string; target_clinic_id: string }
+        Returns: number
+      }
       user_owns_clinic: {
         Args: { clinic_uuid: string }
         Returns: boolean
