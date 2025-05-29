@@ -31,11 +31,11 @@ export function TotalMetricsSection({ unifiedData }: TotalMetricsSectionProps) {
   const totalCostPerLead = totalLeads > 0 ? totalCosts / totalLeads : 0;
 
   return (
-    <Card className="bg-gradient-to-br from-blue-500/10 to-theme-dark-card border border-blue-500/20 shadow-xl">
-      <CardHeader className="border-b border-blue-500/10">
+    <Card className="bg-gradient-to-br from-[#3a82f5]/10 to-theme-dark-card border border-[#3a82f5]/20 shadow-xl">
+      <CardHeader className="border-b border-[#3a82f5]/10">
         <CardTitle className="text-white flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-blue-500/20">
-            <BarChart3 className="h-5 w-5 text-blue-500" />
+          <div className="p-2 rounded-lg bg-[#3a82f5]/20">
+            <BarChart3 className="h-5 w-5 text-[#3a82f5]" />
           </div>
           Total Metrics Overview
           <span className="ml-auto text-sm font-normal text-gray-400">
