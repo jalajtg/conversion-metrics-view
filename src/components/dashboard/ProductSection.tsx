@@ -13,7 +13,7 @@ interface ProductSectionProps {
 export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
   // If we have unified data, process it to create metrics
   if (unifiedData && !metrics) {
-    const { products, leads, sales, costs, conversations, appointments } = unifiedData;
+    const { products, leads, sales, costs, conversations } = unifiedData;
     
     if (!products || products.length === 0) {
       return null;
@@ -25,17 +25,22 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
           const productLeads = leads?.filter((lead: any) => lead.product_id === product.id) || [];
           const productSales = sales?.filter((sale: any) => sale.product_id === product.id) || [];
           const productCosts = costs?.filter((cost: any) => cost.product_id === product.id) || [];
+          
+          // Filter conversations to only include leads that have engaged: true
+          const engagedLeads = productLeads.filter((lead: any) => lead.engaged === true);
+          const engagedLeadIds = engagedLeads.map((lead: any) => lead.id);
           const productConversations = conversations?.filter((conv: any) => 
-            productLeads.some((lead: any) => lead.id === conv.lead_id)
+            engagedLeadIds.includes(conv.lead_id)
           ) || [];
-          const productAppointments = appointments?.filter((apt: any) => 
-            productLeads.some((lead: any) => lead.id === apt.lead_id)
-          ) || [];
+          
+          // Count bookings from leads where booked: true instead of using appointments table
+          const bookings = productLeads.filter((lead: any) => lead.booked === true).length;
 
           const totalSales = productSales.reduce((sum: number, sale: any) => sum + (sale.amount || 0), 0);
           const totalCosts = productCosts.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0);
-          const verbalAppointments = productAppointments.filter((apt: any) => apt.type === 'verbal').length;
-          const bookings = productAppointments.filter((apt: any) => apt.type === 'booking').length;
+          
+          // Remove verbalAppointments since we're not using the appointments table anymore
+          const verbalAppointments = 0;
 
           const productMetrics: ProductMetrics = {
             product,
@@ -89,7 +94,7 @@ function SingleProductSection({ metrics }: { metrics: ProductMetrics }) {
             icon={<Users className="h-4 w-4" />}
           />
           <MetricCard
-            title="Conversations"
+            title="Engaged Conversations"
             value={metrics.conversationCount}
             icon={<MessageSquare className="h-4 w-4" />}
           />
@@ -99,14 +104,14 @@ function SingleProductSection({ metrics }: { metrics: ProductMetrics }) {
             icon={<DollarSign className="h-4 w-4" />}
           />
           <MetricCard
-            title="Verbal Appointments"
-            value={metrics.verbalAppointments}
-            icon={<Calendar className="h-4 w-4" />}
-          />
-          <MetricCard
             title="Bookings"
             value={metrics.bookings}
             icon={<CheckCircle className="h-4 w-4" />}
+          />
+          <MetricCard
+            title="Cost per Booking"
+            value={`$${metrics.costPerBooking.toFixed(2)}`}
+            icon={<Calculator className="h-4 w-4" />}
           />
           <MetricCard
             title="Cost per Lead"
