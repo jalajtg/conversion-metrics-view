@@ -15,8 +15,7 @@ export function Dashboard() {
   const currentDate = new Date();
   const [filters, setFilters] = useState<DashboardFiltersType>({
     clinicIds: [],
-    month: (currentDate.getMonth() + 1).toString(),
-    year: currentDate.getFullYear().toString()
+    month: (currentDate.getMonth() + 1).toString()
   });
   const [dummyDataCreated, setDummyDataCreated] = useState(false);
 

@@ -11,9 +11,10 @@ import {
   DashboardFilters
 } from "@/types/dashboard";
 
-const getDateRange = (month: string, year: string) => {
-  const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-  const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59);
+const getDateRange = (month: string) => {
+  const currentYear = new Date().getFullYear();
+  const startDate = new Date(currentYear, parseInt(month) - 1, 1);
+  const endDate = new Date(currentYear, parseInt(month), 0, 23, 59, 59);
   return { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
 };
 
@@ -34,7 +35,9 @@ export const fetchProducts = async (clinicIds: string[]): Promise<Product[]> => 
 };
 
 export const fetchLeadsByProduct = async (productId: string, filters: DashboardFilters): Promise<Lead[]> => {
-  const { startDate, endDate } = getDateRange(filters.month, filters.year);
+  if (!filters.month) return [];
+  
+  const { startDate, endDate } = getDateRange(filters.month);
   
   const { data, error } = await supabase
     .from("leads")
@@ -52,9 +55,9 @@ export const fetchLeadsByProduct = async (productId: string, filters: DashboardF
 };
 
 export const fetchConversationsByLeads = async (leadIds: string[], filters: DashboardFilters): Promise<Conversation[]> => {
-  if (leadIds.length === 0) return [];
+  if (leadIds.length === 0 || !filters.month) return [];
   
-  const { startDate, endDate } = getDateRange(filters.month, filters.year);
+  const { startDate, endDate } = getDateRange(filters.month);
   
   const { data, error } = await supabase
     .from("conversations")
@@ -72,9 +75,9 @@ export const fetchConversationsByLeads = async (leadIds: string[], filters: Dash
 };
 
 export const fetchAppointmentsByLeads = async (leadIds: string[], filters: DashboardFilters): Promise<Appointment[]> => {
-  if (leadIds.length === 0) return [];
+  if (leadIds.length === 0 || !filters.month) return [];
   
-  const { startDate, endDate } = getDateRange(filters.month, filters.year);
+  const { startDate, endDate } = getDateRange(filters.month);
   
   const { data, error } = await supabase
     .from("appointments")
@@ -92,7 +95,9 @@ export const fetchAppointmentsByLeads = async (leadIds: string[], filters: Dashb
 };
 
 export const fetchSalesByProduct = async (productId: string, filters: DashboardFilters): Promise<Sale[]> => {
-  const { startDate, endDate } = getDateRange(filters.month, filters.year);
+  if (!filters.month) return [];
+  
+  const { startDate, endDate } = getDateRange(filters.month);
   
   const { data, error } = await supabase
     .from("sales")
@@ -110,7 +115,9 @@ export const fetchSalesByProduct = async (productId: string, filters: DashboardF
 };
 
 export const fetchCostsByProduct = async (productId: string, filters: DashboardFilters): Promise<Cost[]> => {
-  const { startDate, endDate } = getDateRange(filters.month, filters.year);
+  if (!filters.month) return [];
+  
+  const { startDate, endDate } = getDateRange(filters.month);
   
   const { data, error } = await supabase
     .from("costs")
