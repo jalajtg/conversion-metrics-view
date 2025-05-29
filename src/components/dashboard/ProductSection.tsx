@@ -32,8 +32,8 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
           // Count bookings from leads where booked: true
           const bookings = productLeads.filter((lead: any) => lead.booked === true).length;
 
-          // Calculate paid amount as bookings * product price
-          const paidAmount = bookings * product.price;
+          // Paid amount is simply the product price
+          const paidAmount = product.price;
           
           const totalCosts = productCosts.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0);
           

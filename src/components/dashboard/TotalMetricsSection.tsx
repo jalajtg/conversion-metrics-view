@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
@@ -31,12 +30,9 @@ export function TotalMetricsSection({
   // Count bookings from leads where booked: true
   const totalBookings = leads?.filter((lead: any) => lead.booked === true).length || 0;
 
-  // Calculate total paid amount by summing (bookings per product * product price)
+  // Calculate total paid amount as sum of all product prices
   const totalPaidAmount = products.reduce((total: number, product: any) => {
-    const productBookings = leads?.filter((lead: any) => 
-      lead.product_id === product.id && lead.booked === true
-    ).length || 0;
-    return total + (productBookings * product.price);
+    return total + product.price;
   }, 0);
 
   const totalCosts = costs?.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0) || 0;
