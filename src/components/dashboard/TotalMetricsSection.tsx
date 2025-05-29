@@ -36,21 +36,21 @@ export function TotalMetricsSection({
   const totalCostPerLead = totalLeads > 0 ? totalCosts / totalLeads : 0;
 
   return (
-    <Card className="bg-gradient-to-br from-theme-blue/20 via-theme-blue/10 to-theme-blue/5 border border-theme-blue/30 shadow-xl relative overflow-hidden">
-      {/* Blue glow effect background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-theme-blue/10 via-transparent to-theme-blue/5 animate-pulse-glow"></div>
+    <Card className="bg-theme-dark-card border border-theme-blue/20 shadow-xl relative overflow-hidden">
+      {/* Subtle blue glow effect background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-theme-blue/5 via-transparent to-theme-blue/10 opacity-60"></div>
       
       <CardHeader className="border-b border-theme-blue/20 relative z-10">
-        <CardTitle className="text-black flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-theme-blue/30 shadow-lg">
+        <CardTitle className="text-white flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-theme-blue/20 shadow-lg">
             <BarChart3 className="h-5 w-5 text-theme-blue" />
           </div>
-          <span className="font-semibold text-white">Total Metrics Overview</span>
-          <span className="ml-auto text-sm font-normal text-gray-300">
+          <span className="font-semibold">Total Metrics Overview</span>
+          <span className="ml-auto text-sm font-normal text-gray-400">
             {products.length} Product{products.length !== 1 ? 's' : ''}
           </span>
         </CardTitle>
-        <p className="text-sm text-gray-300 relative z-10">Combined metrics across all selected products</p>
+        <p className="text-sm text-gray-400 relative z-10">Combined metrics across all selected products</p>
       </CardHeader>
       
       <CardContent className="p-6 relative z-10">
