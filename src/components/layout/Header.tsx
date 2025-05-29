@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogOut, Settings, User, ChevronDown } from 'lucide-react';
+import { LogOut, User, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function Header() {
@@ -36,27 +36,41 @@ export function Header() {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="bg-theme-dark-card border-gray-700 hover:bg-theme-dark hover:border-theme-blue">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-theme-dark-card border-gray-700 hover:bg-theme-dark hover:border-theme-blue text-white"
+                >
                   <div className="flex items-center gap-2">
                     <div className="h-6 w-6 rounded-full bg-theme-blue/20 flex items-center justify-center">
                       <User className="h-4 w-4 text-theme-blue" />
                     </div>
-                    <span className="hidden sm:inline text-white">{profile?.name || user.email}</span>
+                    <span className="hidden sm:inline">{profile?.name || user.email}</span>
                     <ChevronDown className="h-4 w-4 text-gray-400" />
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-theme-dark-lighter border border-gray-700 z-50">
-                <DropdownMenuLabel className="text-white">
+              <DropdownMenuContent 
+                align="end" 
+                className="w-56 bg-theme-dark-lighter border-gray-700 text-white z-50"
+                sideOffset={5}
+              >
+                <DropdownMenuLabel className="text-white font-medium">
                   {profile?.name || user.email}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-gray-700" />
-                <DropdownMenuItem onClick={() => navigate('/dashboard')} className="text-white hover:bg-theme-dark-card hover:text-theme-blue cursor-pointer">
+                <DropdownMenuItem 
+                  onClick={() => navigate('/dashboard')} 
+                  className="text-white hover:bg-theme-dark-card hover:text-theme-blue cursor-pointer focus:bg-theme-dark-card focus:text-theme-blue"
+                >
                   <User className="mr-2 h-4 w-4" />
-                  <span>Dashboard</span>
+                  <span>Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-700" />
-                <DropdownMenuItem onClick={() => signOut()} className="text-white hover:bg-theme-dark-card hover:text-red-400 cursor-pointer">
+                <DropdownMenuItem 
+                  onClick={() => signOut()} 
+                  className="text-white hover:bg-theme-dark-card hover:text-red-400 cursor-pointer focus:bg-theme-dark-card focus:text-red-400"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
