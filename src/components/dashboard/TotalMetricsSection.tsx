@@ -31,17 +31,17 @@ export function TotalMetricsSection({
   const totalCostPerBooking = totalBookings > 0 ? totalCosts / totalBookings : 0;
   const totalCostPerLead = totalLeads > 0 ? totalCosts / totalLeads : 0;
   return <Card className="bg-gradient-to-br from-[#3a82f5]/10 to-theme-dark-card border border-[#3a82f5]/20 shadow-xl">
-      <CardHeader className="border-b border-[#3a82f5]/10">
+      <CardHeader className="border-b border-[#3a82f5]/10 bg-zinc-900">
         <CardTitle className="text-black flex items-center gap-3">
           <div className="p-2 rounded-lg bg-[#3a82f5]/20">
             <BarChart3 className="h-5 w-5 text-[#3a82f5]" />
           </div>
-          <span className="text-black font-semibold">Total Metrics Overview</span>
-          <span className="ml-auto text-sm font-normal text-gray-600">
+          <span className="font-semibold text-zinc-50">Total Metrics Overview</span>
+          <span className="ml-auto text-sm font-normal text-zinc-50">
             {products.length} Product{products.length !== 1 ? 's' : ''}
           </span>
         </CardTitle>
-        <p className="text-gray-600 text-sm">Combined metrics across all selected products</p>
+        <p className="text-sm text-zinc-50">Combined metrics across all selected products</p>
       </CardHeader>
       <CardContent className="p-6 bg-zinc-900">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
