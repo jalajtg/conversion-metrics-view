@@ -70,7 +70,7 @@ export const replicateProductsToAllClinics = async (sourceClinicId: string): Pro
     const { data: targetClinics, error: clinicsError } = await supabase
       .from('clinics')
       .select('id, name')
-      .neq('id', sourceClinicId);
+      // .neq('id', sourceClinicId);
 
     if (clinicsError) {
       console.error('Error fetching target clinics:', clinicsError);
