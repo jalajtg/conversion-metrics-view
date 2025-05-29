@@ -30,7 +30,7 @@ export function TotalMetricsSection({
   const totalCosts = costs?.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0) || 0;
   const totalCostPerBooking = totalBookings > 0 ? totalCosts / totalBookings : 0;
   const totalCostPerLead = totalLeads > 0 ? totalCosts / totalLeads : 0;
-  return <Card className="bg-gradient-to-br from-[#3a82f5]/10 to-theme-dark-card border border-[#3a82f5]/20 shadow-xl">
+  return <Card className="bg-gradient-to-br from-[#3a82f5]/10 to-theme-dark-card border border-[#3a82f5]/20 shadow-xl bg-zinc-950">
       <CardHeader className="border-b border-[#3a82f5]/10 bg-zinc-900">
         <CardTitle className="text-black flex items-center gap-3">
           <div className="p-2 rounded-lg bg-[#3a82f5]/20">
