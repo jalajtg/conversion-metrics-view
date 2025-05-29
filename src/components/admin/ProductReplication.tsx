@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, Copy, CheckCircle, RefreshCw } from 'lucide-react';
+import { Loader2, Copy, CheckCircle, RefreshCw, AlertCircle } from 'lucide-react';
 import { 
   getClinicProductCounts, 
   replicateProductsToAllClinics,
@@ -21,6 +21,7 @@ interface ReplicationResult {
   target_clinic_id: string;
   clinic_name: string;
   products_replicated: number;
+  success: boolean;
 }
 
 export function ProductReplication() {
@@ -71,6 +72,16 @@ export function ProductReplication() {
       return;
     }
 
+    const sourceClinic = clinics.find(c => c.id === selectedSourceClinic);
+    if (!sourceClinic || sourceClinic.product_count === 0) {
+      toast({
+        title: "No products to replicate",
+        description: "The selected clinic has no products to replicate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setReplicationResults([]);
     
@@ -80,12 +91,22 @@ export function ProductReplication() {
       console.log('Replication results received:', results);
       setReplicationResults(results);
       
-      const totalReplicated = results.reduce((sum, result) => sum + result.products_replicated, 0);
+      const successfulReplications = results.filter(r => r.success);
+      const totalReplicated = successfulReplications.reduce((sum, result) => sum + result.products_replicated, 0);
+      const failedReplications = results.filter(r => !r.success);
       
-      toast({
-        title: "Products replicated successfully",
-        description: `Replicated ${totalReplicated} products to ${results.length} clinics.`,
-      });
+      if (failedReplications.length > 0) {
+        toast({
+          title: "Partial replication completed",
+          description: `Replicated ${totalReplicated} products to ${successfulReplications.length} clinics. ${failedReplications.length} failed.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Products replicated successfully",
+          description: `Replicated ${totalReplicated} products to ${results.length} clinics.`,
+        });
+      }
 
       // Refresh clinic data to show updated counts
       await fetchClinicData();
@@ -93,7 +114,7 @@ export function ProductReplication() {
       console.error('Replication to all failed:', error);
       toast({
         title: "Replication failed",
-        description: "Failed to replicate products. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to replicate products. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -120,16 +141,35 @@ export function ProductReplication() {
       return;
     }
 
+    const sourceClinic = clinics.find(c => c.id === selectedSourceClinic);
+    if (!sourceClinic || sourceClinic.product_count === 0) {
+      toast({
+        title: "No products to replicate",
+        description: "The selected source clinic has no products to replicate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       console.log('Starting replication to specific clinic...');
       const replicatedCount = await replicateProductsToSpecificClinic(selectedSourceClinic, selectedTargetClinic);
       console.log('Replicated count:', replicatedCount);
       
-      toast({
-        title: "Products replicated successfully",
-        description: `Replicated ${replicatedCount} products to the selected clinic.`,
-      });
+      const targetClinic = clinics.find(c => c.id === selectedTargetClinic);
+      
+      if (replicatedCount > 0) {
+        toast({
+          title: "Products replicated successfully",
+          description: `Replicated ${replicatedCount} products to ${targetClinic?.name || 'the selected clinic'}.`,
+        });
+      } else {
+        toast({
+          title: "No new products replicated",
+          description: `All products already exist in ${targetClinic?.name || 'the selected clinic'}.`,
+        });
+      }
 
       // Refresh clinic data to show updated counts
       await fetchClinicData();
@@ -137,7 +177,7 @@ export function ProductReplication() {
       console.error('Replication to specific clinic failed:', error);
       toast({
         title: "Replication failed",
-        description: "Failed to replicate products. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to replicate products. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -263,10 +303,27 @@ export function ProductReplication() {
               </h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {replicationResults.map((result) => (
-                  <div key={result.target_clinic_id} className="flex justify-between items-center p-2 bg-green-50 rounded text-sm">
-                    <span className="truncate flex-1 mr-2">{result.clinic_name}</span>
-                    <span className="font-medium text-green-700 whitespace-nowrap">
-                      {result.products_replicated} replicated
+                  <div 
+                    key={result.target_clinic_id} 
+                    className={`flex justify-between items-center p-2 rounded text-sm ${
+                      result.success ? 'bg-green-50' : 'bg-red-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate flex-1 mr-2">
+                      {result.success ? (
+                        <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />
+                      ) : (
+                        <AlertCircle className="h-3 w-3 text-red-600 flex-shrink-0" />
+                      )}
+                      <span className="truncate">{result.clinic_name}</span>
+                    </div>
+                    <span className={`font-medium whitespace-nowrap ${
+                      result.success ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {result.success 
+                        ? `${result.products_replicated} replicated` 
+                        : 'Failed'
+                      }
                     </span>
                   </div>
                 ))}
