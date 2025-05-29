@@ -51,7 +51,7 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
-                align="end" 
+                align="right" 
                 className="w-56 bg-theme-dark-lighter border-gray-700 text-white z-50"
                 sideOffset={5}
               >
