@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useClinics } from '@/hooks/useClinics';
 import { ProductSection } from './ProductSection';
+import { TotalMetricsSection } from './TotalMetricsSection';
 import { DashboardFilters } from './DashboardFilters';
 import { BookingsSection } from './BookingsSection';
 import { FAQSection } from './FAQSection';
@@ -103,6 +103,11 @@ export function Dashboard() {
             </div>
           ) : (
             <>
+              {/* Total Metrics Overview Section */}
+              {dashboardData?.products && dashboardData.products.length > 0 && (
+                <TotalMetricsSection unifiedData={dashboardData} />
+              )}
+
               {/* Main Dashboard Section */}
               <div className="space-y-6">
                 {!dashboardData?.products || dashboardData.products.length === 0 ? (
@@ -114,7 +119,6 @@ export function Dashboard() {
                     <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
                   </div>
                 ) : (
-                  // Pass the unified data to ProductSection for processing
                   <ProductSection key="unified-products" metrics={null} unifiedData={dashboardData} />
                 )}
               </div>
