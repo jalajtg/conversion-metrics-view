@@ -84,37 +84,44 @@ function SingleProductSection({ metrics }: { metrics: ProductMetrics }) {
         )}
       </CardHeader>
       <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <MetricCard
-            title="Total Leads"
-            value={metrics.leadCount}
-            icon={<Users className="h-4 w-4" />}
-          />
-          <MetricCard
-            title="Engaged Conversations"
-            value={metrics.conversationCount}
-            icon={<MessageSquare className="h-4 w-4" />}
-          />
-          <MetricCard
-            title="Paid Amount"
-            value={`$${metrics.paidAmount.toFixed(2)}`}
-            icon={<DollarSign className="h-4 w-4" />}
-          />
-          <MetricCard
-            title="Bookings"
-            value={metrics.bookings}
-            icon={<CheckCircle className="h-4 w-4" />}
-          />
-          <MetricCard
-            title="Cost per Booking"
-            value={`$${metrics.costPerBooking.toFixed(2)}`}
-            icon={<Calculator className="h-4 w-4" />}
-          />
-          <MetricCard
-            title="Cost per Lead"
-            value={`$${metrics.costPerLead.toFixed(2)}`}
-            icon={<Calculator className="h-4 w-4" />}
-          />
+        <div className="space-y-4">
+          {/* First row: Total Leads, Engaged Conversations, Bookings */}
+          <div className="grid grid-cols-3 gap-4">
+            <MetricCard
+              title="Total Leads"
+              value={metrics.leadCount}
+              icon={<Users className="h-4 w-4" />}
+            />
+            <MetricCard
+              title="Engaged Conversations"
+              value={metrics.conversationCount}
+              icon={<MessageSquare className="h-4 w-4" />}
+            />
+            <MetricCard
+              title="Bookings"
+              value={metrics.bookings}
+              icon={<CheckCircle className="h-4 w-4" />}
+            />
+          </div>
+          
+          {/* Second row: Paid Amount, Cost per Booking, Cost per Lead */}
+          <div className="grid grid-cols-3 gap-4">
+            <MetricCard
+              title="Paid Amount"
+              value={`$${metrics.paidAmount.toFixed(2)}`}
+              icon={<DollarSign className="h-4 w-4" />}
+            />
+            <MetricCard
+              title="Cost per Booking"
+              value={`$${metrics.costPerBooking.toFixed(2)}`}
+              icon={<Calculator className="h-4 w-4" />}
+            />
+            <MetricCard
+              title="Cost per Lead"
+              value={`$${metrics.costPerLead.toFixed(2)}`}
+              icon={<Calculator className="h-4 w-4" />}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

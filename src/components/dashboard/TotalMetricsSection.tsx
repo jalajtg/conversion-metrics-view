@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
@@ -57,13 +58,20 @@ export function TotalMetricsSection({
       </CardHeader>
       
       <CardContent className="p-6 relative z-10 bg-slate-800">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <MetricCard title="Total Leads" value={totalLeads} icon={<Users className="h-4 w-4" />} isHovered={true} />
-          <MetricCard title="Engaged Conversations" value={totalEngagedConversations} icon={<MessageSquare className="h-4 w-4" />} isHovered={true} />
-          <MetricCard title="Paid Amount" value={`$${totalPaidAmount.toFixed(2)}`} icon={<DollarSign className="h-4 w-4" />} isHovered={true} />
-          <MetricCard title="Bookings" value={totalBookings} icon={<CheckCircle className="h-4 w-4" />} isHovered={true} />
-          <MetricCard title="Cost per Booking" value={`$${totalCostPerBooking.toFixed(2)}`} icon={<Calculator className="h-4 w-4" />} isHovered={true} />
-          <MetricCard title="Cost per Lead" value={`$${totalCostPerLead.toFixed(2)}`} icon={<Calculator className="h-4 w-4" />} isHovered={true} />
+        <div className="space-y-4">
+          {/* First row: Total Leads, Engaged Conversations, Bookings */}
+          <div className="grid grid-cols-3 gap-4">
+            <MetricCard title="Total Leads" value={totalLeads} icon={<Users className="h-4 w-4" />} isHovered={true} />
+            <MetricCard title="Engaged Conversations" value={totalEngagedConversations} icon={<MessageSquare className="h-4 w-4" />} isHovered={true} />
+            <MetricCard title="Bookings" value={totalBookings} icon={<CheckCircle className="h-4 w-4" />} isHovered={true} />
+          </div>
+          
+          {/* Second row: Paid Amount, Cost per Booking, Cost per Lead */}
+          <div className="grid grid-cols-3 gap-4">
+            <MetricCard title="Paid Amount" value={`$${totalPaidAmount.toFixed(2)}`} icon={<DollarSign className="h-4 w-4" />} isHovered={true} />
+            <MetricCard title="Cost per Booking" value={`$${totalCostPerBooking.toFixed(2)}`} icon={<Calculator className="h-4 w-4" />} isHovered={true} />
+            <MetricCard title="Cost per Lead" value={`$${totalCostPerLead.toFixed(2)}`} icon={<Calculator className="h-4 w-4" />} isHovered={true} />
+          </div>
         </div>
       </CardContent>
     </Card>;
