@@ -33,16 +33,16 @@ export function TotalMetricsSection({ unifiedData }: TotalMetricsSectionProps) {
   return (
     <Card className="bg-gradient-to-br from-[#3a82f5]/10 to-theme-dark-card border border-[#3a82f5]/20 shadow-xl">
       <CardHeader className="border-b border-[#3a82f5]/10">
-        <CardTitle className="text-white flex items-center gap-3">
+        <CardTitle className="text-black flex items-center gap-3">
           <div className="p-2 rounded-lg bg-[#3a82f5]/20">
             <BarChart3 className="h-5 w-5 text-[#3a82f5]" />
           </div>
-          <span className="text-white font-semibold">Total Metrics Overview</span>
-          <span className="ml-auto text-sm font-normal text-gray-300">
+          <span className="text-black font-semibold">Total Metrics Overview</span>
+          <span className="ml-auto text-sm font-normal text-gray-600">
             {products.length} Product{products.length !== 1 ? 's' : ''}
           </span>
         </CardTitle>
-        <p className="text-gray-300 text-sm">Combined metrics across all selected products</p>
+        <p className="text-gray-600 text-sm">Combined metrics across all selected products</p>
       </CardHeader>
       <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
