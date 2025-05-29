@@ -20,7 +20,7 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
     }
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {products.map((product: any) => {
           const productLeads = leads?.filter((lead: any) => lead.product_id === product.id) || [];
           const productSales = sales?.filter((sale: any) => sale.product_id === product.id) || [];
@@ -69,57 +69,59 @@ function SingleProductSection({ metrics }: { metrics: ProductMetrics }) {
 
   return (
     <Card className="bg-gradient-to-br from-theme-dark-card to-theme-dark-lighter border border-gray-700/50 shadow-2xl">
-      <CardHeader className="border-b border-gray-700/50">
-        <CardTitle className="text-white flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-theme-blue/10">
-            <Calculator className="h-5 w-5 text-theme-blue" />
+      <CardHeader className="border-b border-gray-700/50 p-4 sm:p-6">
+        <CardTitle className="text-white flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 rounded-lg bg-theme-blue/10">
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-theme-blue" />
+            </div>
+            <span className="text-sm sm:text-base font-medium truncate">{product.name}</span>
           </div>
-          {product.name}
-          <span className="ml-auto text-sm font-normal text-gray-400">
+          <span className="text-xs sm:text-sm font-normal text-gray-400 sm:ml-auto">
             ${product.price}
           </span>
         </CardTitle>
         {product.description && (
-          <p className="text-gray-400 text-sm">{product.description}</p>
+          <p className="text-gray-400 text-xs sm:text-sm mt-1 line-clamp-2">{product.description}</p>
         )}
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent className="p-4 sm:p-6">
+        <div className="space-y-3 sm:space-y-4">
           {/* First row: Total Leads, Engaged Conversations, Bookings */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
             <MetricCard
               title="Total Leads"
               value={metrics.leadCount}
-              icon={<Users className="h-4 w-4" />}
+              icon={<Users className="h-3 w-3 sm:h-4 sm:w-4" />}
             />
             <MetricCard
               title="Engaged Conversations"
               value={metrics.conversationCount}
-              icon={<MessageSquare className="h-4 w-4" />}
+              icon={<MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />}
             />
             <MetricCard
               title="Bookings"
               value={metrics.bookings}
-              icon={<CheckCircle className="h-4 w-4" />}
+              icon={<CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />}
             />
           </div>
           
           {/* Second row: Paid Amount, Cost per Booking, Cost per Lead */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
             <MetricCard
               title="Paid Amount"
               value={`$${metrics.paidAmount.toFixed(2)}`}
-              icon={<DollarSign className="h-4 w-4" />}
+              icon={<DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />}
             />
             <MetricCard
               title="Cost per Booking"
               value={`$${metrics.costPerBooking.toFixed(2)}`}
-              icon={<Calculator className="h-4 w-4" />}
+              icon={<Calculator className="h-3 w-3 sm:h-4 sm:w-4" />}
             />
             <MetricCard
               title="Cost per Lead"
               value={`$${metrics.costPerLead.toFixed(2)}`}
-              icon={<Calculator className="h-4 w-4" />}
+              icon={<Calculator className="h-3 w-3 sm:h-4 sm:w-4" />}
             />
           </div>
         </div>
