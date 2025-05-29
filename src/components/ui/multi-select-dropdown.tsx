@@ -58,7 +58,9 @@ export function MultiSelectDropdown({
     }
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     onSelectionChange([]);
   };
 
@@ -103,11 +105,8 @@ export function MultiSelectDropdown({
               </div>
               {selectedValues.length > 0 && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClearAll();
-                  }}
-                  className="text-xs text-gray-400 hover:text-white"
+                  onClick={handleClearAll}
+                  className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded"
                 >
                   Clear
                 </button>

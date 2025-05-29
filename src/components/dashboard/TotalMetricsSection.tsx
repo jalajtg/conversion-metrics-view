@@ -37,12 +37,12 @@ export function TotalMetricsSection({ unifiedData }: TotalMetricsSectionProps) {
           <div className="p-2 rounded-lg bg-[#3a82f5]/20">
             <BarChart3 className="h-5 w-5 text-[#3a82f5]" />
           </div>
-          Total Metrics Overview
-          <span className="ml-auto text-sm font-normal text-gray-400">
+          <span className="text-white font-semibold">Total Metrics Overview</span>
+          <span className="ml-auto text-sm font-normal text-gray-300">
             {products.length} Product{products.length !== 1 ? 's' : ''}
           </span>
         </CardTitle>
-        <p className="text-gray-400 text-sm">Combined metrics across all selected products</p>
+        <p className="text-gray-300 text-sm">Combined metrics across all selected products</p>
       </CardHeader>
       <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
