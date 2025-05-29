@@ -46,17 +46,17 @@ export function Header() {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-theme-dark-card border border-gray-800">
+              <DropdownMenuContent align="end" className="w-56 bg-theme-dark-lighter border border-gray-700 z-50">
                 <DropdownMenuLabel className="text-white">
                   {profile?.name || user.email}
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-gray-800" />
-                <DropdownMenuItem onClick={() => navigate('/dashboard')} className="text-white hover:bg-theme-dark hover:text-theme-blue cursor-pointer">
+                <DropdownMenuSeparator className="bg-gray-700" />
+                <DropdownMenuItem onClick={() => navigate('/dashboard')} className="text-white hover:bg-theme-dark-card hover:text-theme-blue cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   <span>Dashboard</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-gray-800" />
-                <DropdownMenuItem onClick={() => signOut()} className="text-white hover:bg-theme-dark hover:text-red-400 cursor-pointer">
+                <DropdownMenuSeparator className="bg-gray-700" />
+                <DropdownMenuItem onClick={() => signOut()} className="text-white hover:bg-theme-dark-card hover:text-red-400 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
@@ -13,7 +12,7 @@ interface ProductSectionProps {
 export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
   // If we have unified data, process it to create metrics
   if (unifiedData && !metrics) {
-    const { products, leads, sales, costs, conversations } = unifiedData;
+    const { products, leads, sales, costs } = unifiedData;
     
     if (!products || products.length === 0) {
       return null;
@@ -26,26 +25,21 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
           const productSales = sales?.filter((sale: any) => sale.product_id === product.id) || [];
           const productCosts = costs?.filter((cost: any) => cost.product_id === product.id) || [];
           
-          // Filter conversations to only include leads that have engaged: true
-          const engagedLeads = productLeads.filter((lead: any) => lead.engaged === true);
-          const engagedLeadIds = engagedLeads.map((lead: any) => lead.id);
-          const productConversations = conversations?.filter((conv: any) => 
-            engagedLeadIds.includes(conv.lead_id)
-          ) || [];
+          // Count engaged conversations directly from leads where engaged: true
+          const engagedConversationsCount = productLeads.filter((lead: any) => lead.engaged === true).length;
           
-          // Count bookings from leads where booked: true instead of using appointments table
+          // Count bookings from leads where booked: true
           const bookings = productLeads.filter((lead: any) => lead.booked === true).length;
 
           const totalSales = productSales.reduce((sum: number, sale: any) => sum + (sale.amount || 0), 0);
           const totalCosts = productCosts.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0);
           
-          // Remove verbalAppointments since we're not using the appointments table anymore
           const verbalAppointments = 0;
 
           const productMetrics: ProductMetrics = {
             product,
             leadCount: productLeads.length,
-            conversationCount: productConversations.length,
+            conversationCount: engagedConversationsCount,
             paidAmount: totalSales,
             verbalAppointments,
             bookings,
