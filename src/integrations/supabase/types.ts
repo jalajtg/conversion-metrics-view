@@ -63,6 +63,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          product_id: string[] | null
         }
         Insert: {
           booking_time: string
@@ -72,6 +73,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          product_id?: string[] | null
         }
         Update: {
           booking_time?: string
@@ -81,6 +83,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          product_id?: string[] | null
         }
         Relationships: [
           {
@@ -240,34 +243,40 @@ export type Database = {
       }
       leads: {
         Row: {
+          booked: boolean | null
           client_name: string
           clinic_id: string | null
           created_at: string
           email: string | null
+          engaged: boolean | null
           id: string
+          lead: boolean | null
           phone: string | null
           product_id: string
-          status: string
         }
         Insert: {
+          booked?: boolean | null
           client_name: string
           clinic_id?: string | null
           created_at?: string
           email?: string | null
+          engaged?: boolean | null
           id?: string
+          lead?: boolean | null
           phone?: string | null
           product_id: string
-          status?: string
         }
         Update: {
+          booked?: boolean | null
           client_name?: string
           clinic_id?: string | null
           created_at?: string
           email?: string | null
+          engaged?: boolean | null
           id?: string
+          lead?: boolean | null
           phone?: string | null
           product_id?: string
-          status?: string
         }
         Relationships: [
           {

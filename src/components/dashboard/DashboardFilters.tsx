@@ -37,6 +37,11 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
     onFiltersChange({ ...filters, clinicIds: selectedIds });
   };
 
+  const getSelectedMonthLabel = () => {
+    const selectedMonth = months.find(month => month.value === filters.month);
+    return selectedMonth ? selectedMonth.label : '';
+  };
+
   return (
     <div className="w-full mb-6 px-2 sm:px-0">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 max-w-7xl mx-auto">
@@ -63,8 +68,9 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
             <Select value={filters.month} onValueChange={(value) => onFiltersChange({ ...filters, month: value })}>
               <SelectTrigger className="bg-theme-dark-lighter border-gray-700 text-white">
                 <SelectValue placeholder="Select month" />
+                {getSelectedMonthLabel() && <span className="text-white">{getSelectedMonthLabel()}</span>}
               </SelectTrigger>
-              <SelectContent className="bg-theme-dark-lighter border-gray-700 z-50">
+              <SelectContent className="bg-theme-dark-lighter border-gray-700">
                 {months.map((month) => (
                   <SelectItem key={month.value} value={month.value} className="text-white hover:bg-theme-blue/20">
                     {month.label}

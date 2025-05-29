@@ -3,12 +3,6 @@ import * as React from "react";
 import { Check, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
 interface MultiSelectOption {
@@ -31,7 +25,21 @@ export function MultiSelectDropdown({
   placeholder = "Select items...",
   className,
 }: MultiSelectDropdownProps) {
-  const [open, setOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSelect = (value: string, checked: boolean) => {
     if (checked) {
@@ -59,66 +67,70 @@ export function MultiSelectDropdown({
   );
 
   return (
-    <div className={cn("w-full", className)}>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            className="w-full justify-between bg-theme-dark-lighter border-gray-700 text-white hover:bg-theme-dark-lighter/80 min-h-[40px]"
-          >
-            <span className="text-left truncate">
-              {selectedValues.length === 0 ? (
-                <span className="text-gray-400">{placeholder}</span>
-              ) : (
-                <span className="text-white">
-                  {selectedValues.length} clinic{selectedValues.length !== 1 ? 's' : ''} selected
-                </span>
-              )}
+    <div className={cn("w-full relative", className)} ref={dropdownRef}>
+      <Button
+        ref={triggerRef}
+        variant="outline"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full justify-between bg-theme-dark-lighter border-gray-700 text-white hover:bg-theme-dark-lighter/80 min-h-[40px]"
+      >
+        <span className="text-left truncate">
+          {selectedValues.length === 0 ? (
+            <span className="text-gray-400">{placeholder}</span>
+          ) : (
+            <span className="text-white">
+              {selectedValues.length} clinic{selectedValues.length !== 1 ? 's' : ''} selected
             </span>
-            <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="w-[var(--radix-dropdown-menu-trigger-width)] bg-theme-dark-lighter border-gray-700 max-h-64 overflow-y-auto"
-          side="bottom"
-          align="start"
-          sideOffset={4}
-          alignOffset={0}
-          avoidCollisions={true}
-        >
-          <DropdownMenuCheckboxItem
-            checked={selectedValues.length === options.length && options.length > 0}
-            onCheckedChange={handleSelectAll}
-            className="text-white hover:bg-theme-blue/20 focus:bg-theme-blue/20"
-          >
-            <div className="flex items-center justify-between w-full">
-              <span>Select All</span>
+          )}
+        </span>
+        <ChevronDown className={cn("h-4 w-4 opacity-50 shrink-0 ml-2 transition-transform", isOpen && "rotate-180")} />
+      </Button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-theme-dark-lighter border border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto z-50">
+          <div className="p-1">
+            <div
+              className="flex items-center justify-between px-3 py-2 text-white hover:bg-theme-blue/20 rounded cursor-pointer"
+              onClick={handleSelectAll}
+            >
+              <div className="flex items-center">
+                <div className="w-4 h-4 border border-gray-400 rounded flex items-center justify-center mr-2">
+                  {selectedValues.length === options.length && options.length > 0 && (
+                    <Check className="h-3 w-3 text-theme-blue" />
+                  )}
+                </div>
+                <span>Select All</span>
+              </div>
               {selectedValues.length > 0 && (
                 <button
                   onClick={(e) => {
-                    e.preventDefault();
                     e.stopPropagation();
                     handleClearAll();
                   }}
-                  className="text-xs text-gray-400 hover:text-white ml-2"
+                  className="text-xs text-gray-400 hover:text-white"
                 >
                   Clear
                 </button>
               )}
             </div>
-          </DropdownMenuCheckboxItem>
-          {options.map((option) => (
-            <DropdownMenuCheckboxItem
-              key={option.value}
-              checked={selectedValues.includes(option.value)}
-              onCheckedChange={(checked) => handleSelect(option.value, checked)}
-              className="text-white hover:bg-theme-blue/20 focus:bg-theme-blue/20"
-            >
-              {option.label}
-            </DropdownMenuCheckboxItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+            
+            {options.map((option) => (
+              <div
+                key={option.value}
+                className="flex items-center px-3 py-2 text-white hover:bg-theme-blue/20 rounded cursor-pointer"
+                onClick={() => handleSelect(option.value, !selectedValues.includes(option.value))}
+              >
+                <div className="w-4 h-4 border border-gray-400 rounded flex items-center justify-center mr-2">
+                  {selectedValues.includes(option.value) && (
+                    <Check className="h-3 w-3 text-theme-blue" />
+                  )}
+                </div>
+                <span>{option.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       {/* Selected chips displayed below the input */}
       {selectedValues.length > 0 && (
