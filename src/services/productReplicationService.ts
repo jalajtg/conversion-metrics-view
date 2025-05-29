@@ -69,7 +69,7 @@ export const replicateProductsToAllClinics = async (sourceClinicId: string): Pro
     // Get all clinics except the source clinic
     const { data: targetClinics, error: clinicsError } = await supabase
       .from('clinics')
-      .select('id, name')
+      .select('*')
       // .neq('id', sourceClinicId);
 
     if (clinicsError) {
