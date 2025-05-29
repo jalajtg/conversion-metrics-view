@@ -24,8 +24,11 @@ export interface Lead {
   client_name: string;
   email: string | null;
   phone: string | null;
-  status: string;
+  booked: boolean | null;
+  engaged: boolean | null;
+  lead: boolean | null;
   clinic_id: string;
+  created_at: string;
 }
 
 export interface Conversation {
