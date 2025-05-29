@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
@@ -31,7 +32,9 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
           // Count bookings from leads where booked: true
           const bookings = productLeads.filter((lead: any) => lead.booked === true).length;
 
-          const totalSales = productSales.reduce((sum: number, sale: any) => sum + (sale.amount || 0), 0);
+          // Calculate paid amount as bookings * product price
+          const paidAmount = bookings * product.price;
+          
           const totalCosts = productCosts.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0);
           
           const verbalAppointments = 0;
@@ -40,11 +43,11 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
             product,
             leadCount: productLeads.length,
             conversationCount: engagedConversationsCount,
-            paidAmount: totalSales,
+            paidAmount,
             verbalAppointments,
             bookings,
-            costPerBooking: bookings > 0 ? totalCosts / bookings : 0,
-            costPerLead: productLeads.length > 0 ? totalCosts / productLeads.length : 0,
+            costPerBooking: bookings > 0 ? paidAmount / bookings : 0,
+            costPerLead: productLeads.length > 0 ? paidAmount / productLeads.length : 0,
           };
 
           return <SingleProductSection key={product.id} metrics={productMetrics} />;
