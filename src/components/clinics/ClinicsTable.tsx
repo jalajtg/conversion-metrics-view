@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { fetchUserClinics } from '@/services/clinicService';
+import { useClinics } from '@/hooks/useClinics';
 import {
   Table,
   TableBody,
@@ -14,10 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from 'lucide-react';
 
 export function ClinicsTable() {
-  const { data: clinics, isLoading, error } = useQuery({
-    queryKey: ["all-clinics"],
-    queryFn: fetchUserClinics,
-  });
+  const { data: clinics, isLoading, error } = useClinics();
 
   if (isLoading) {
     return (
@@ -38,7 +34,7 @@ export function ClinicsTable() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>All Clinics</CardTitle>
+        <CardTitle>My Clinics</CardTitle>
       </CardHeader>
       <CardContent>
         {clinics && clinics.length > 0 ? (
@@ -68,7 +64,7 @@ export function ClinicsTable() {
           </Table>
         ) : (
           <div className="text-center text-gray-500 p-8">
-            No clinics found in the database.
+            You haven't created any clinics yet.
           </div>
         )}
       </CardContent>

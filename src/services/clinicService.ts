@@ -3,20 +3,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { Clinic } from "@/types/dashboard";
 
 export const fetchUserClinics = async (): Promise<Clinic[]> => {
-  console.log("Fetching all clinics from database...");
+  console.log("Fetching user's clinics from database...");
   
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    console.log("No authenticated user found");
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("clinics")
     .select("*")
+    .eq("owner_id", user.id)
     .order("name");
   
   if (error) {
-    console.error("Error fetching clinics:", error);
+    console.error("Error fetching user clinics:", error);
     return [];
   }
   
-  console.log("Clinic data from database:", data);
-  console.log("Total clinics found:", data?.length || 0);
+  console.log("User clinic data from database:", data);
+  console.log("Total user clinics found:", data?.length || 0);
   
   return data || [];
 };
