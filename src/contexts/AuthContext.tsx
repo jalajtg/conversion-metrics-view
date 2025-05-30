@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
+        console.log('Auth state change:', event, newSession?.user?.email);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
@@ -53,12 +53,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             description: "You have successfully signed in",
           });
           
-          // Check user role and redirect accordingly
+          // Check user role and redirect accordingly with a delay
           setTimeout(async () => {
             try {
+              console.log('Checking user role for:', newSession.user.email);
+              
+              // Special handling for super admin email
+              if (newSession.user.email === 'admin@toratech.ai') {
+                console.log('Super admin detected, redirecting to /super-admin');
+                navigate('/super-admin');
+                return;
+              }
+              
+              // For other users, check their role
               const { data: roleData } = await supabase.rpc('get_user_role', {
                 _user_id: newSession.user.id
               });
+              
+              console.log('User role data:', roleData);
               
               if (roleData === 'super_admin') {
                 navigate('/super-admin');
@@ -67,9 +79,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             } catch (error) {
               console.error('Error checking user role:', error);
-              navigate('/dashboard');
+              // Default redirect
+              if (newSession.user.email === 'admin@toratech.ai') {
+                navigate('/super-admin');
+              } else {
+                navigate('/dashboard');
+              }
             }
-          }, 100);
+          }, 500); // Increased delay to ensure role is properly set
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Signed out",
