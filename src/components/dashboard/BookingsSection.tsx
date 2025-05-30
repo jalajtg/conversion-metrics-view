@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -33,25 +34,6 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
         .select('*')
         .order('booking_time', { ascending: false });
 
-      // Filter by clinic IDs if specified
-      // if (filters.clinicIds.length > 0) {
-      //   query = query.in('clinic_id', filters.clinicIds);
-      // }
-
-      // Filter by month and year if specified
-      // if (filters.month && filters.year) {
-      //   const year = parseInt(filters.year);
-      //   const month = parseInt(filters.month);
-      //   const startDate = new Date(year, month - 1, 1);
-      //   const endDate = new Date(year, month, 0, 23, 59, 59);
-
-      //   console.log('Date range:', { startDate: startDate.toISOString(), endDate: endDate.toISOString() });
-
-      //   query = query
-      //     .gte('booking_time', startDate.toISOString())
-      //     .lte('booking_time', endDate.toISOString());
-      // }
-
       const { data, error } = await query;
 
       if (error) {
@@ -62,7 +44,7 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
       console.log('Fetched bookings:', data);
       return data || [];
     },
-    enabled: true, // Always enabled to show bookings
+    enabled: true,
   });
 
   if (isLoading) {
@@ -104,39 +86,41 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
   }
   console.log("Bookings", bookings)
   return (
-    <div id="bookings-section" className="space-y-6">
-      <div className="flex items-center gap-3">
+    <div id="bookings-section" className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
         <div className="p-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20">
-          <Calendar className="h-8 w-8 text-blue-400" />
+          <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
         </div>
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+        <div className="flex-1">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
             All Bookings
           </h2>
-          <p className="text-gray-400">Complete list of appointment bookings from your clinics</p>
+          <p className="text-gray-400 text-xs sm:text-sm">Complete list of appointment bookings from your clinics</p>
         </div>
       </div>
       
       <Card className="bg-gradient-to-br from-theme-dark-card to-theme-dark-lighter border border-gray-700/50 shadow-2xl">
-        <CardHeader className="border-b border-gray-700/50">
-          <CardTitle className="text-white flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-500/10">
-              <Calendar className="h-5 w-5 text-blue-400" />
+        <CardHeader className="border-b border-gray-700/50 p-4 sm:p-6">
+          <CardTitle className="text-white flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/10">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
+              </div>
+              <span className="text-sm sm:text-base">Appointment Schedule</span>
             </div>
-            <span className="text-base sm:text-lg">Appointment Schedule</span>
-            <span className="ml-auto text-xs sm:text-sm font-normal text-gray-400">
+            <span className="text-xs sm:text-sm font-normal text-gray-400 sm:ml-auto">
               {bookings?.length || 0} total bookings
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {!bookings || bookings.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 mb-4">
-                <Calendar className="h-8 w-8 text-blue-400" />
+            <div className="text-center py-8 sm:py-12">
+              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 mb-4">
+                <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
               </div>
-              <h3 className="text-lg font-medium text-white mb-2">No bookings found</h3>
-              <p className="text-gray-400">
+              <h3 className="text-base sm:text-lg font-medium text-white mb-2">No bookings found</h3>
+              <p className="text-gray-400 text-sm">
                 {filters.clinicIds.length === 0 
                   ? "Please select at least one clinic to view bookings"
                   : "No appointment bookings found for the selected criteria"
@@ -154,16 +138,24 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                         <span className="text-xs sm:text-sm">Patient Details</span>
                       </div>
                     </TableHead>
-                    <TableHead className="text-gray-300 font-semibold px-2 sm:px-4">
+                    {/* Desktop: Two separate columns */}
+                    <TableHead className="hidden sm:table-cell text-gray-300 font-semibold px-2 sm:px-4">
                       <div className="flex items-center gap-1 sm:gap-2">
                         <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="text-xs sm:text-sm">Appointment Time</span>
                       </div>
                     </TableHead>
-                    <TableHead className="text-gray-300 font-semibold px-2 sm:px-4">
+                    <TableHead className="hidden sm:table-cell text-gray-300 font-semibold px-2 sm:px-4">
                       <div className="flex items-center gap-1 sm:gap-2">
                         <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="text-xs sm:text-sm">Created</span>
+                      </div>
+                    </TableHead>
+                    {/* Mobile: Combined column */}
+                    <TableHead className="sm:hidden text-gray-300 font-semibold px-2">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span className="text-xs">Booking Details</span>
                       </div>
                     </TableHead>
                   </TableRow>
@@ -199,7 +191,8 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="px-2 sm:px-4 py-2 sm:py-4">
+                      {/* Desktop: Separate appointment time column */}
+                      <TableCell className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-4">
                         <div className="flex items-center gap-1 sm:gap-2">
                           <div className="p-0.5 sm:p-1 rounded bg-blue-500/10">
                             <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-400" />
@@ -221,7 +214,8 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="px-2 sm:px-4 py-2 sm:py-4">
+                      {/* Desktop: Separate created column */}
+                      <TableCell className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-4">
                         <div className="flex items-center gap-1 sm:gap-2">
                           <div className="p-0.5 sm:p-1 rounded bg-green-500/10">
                             <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-400" />
@@ -239,6 +233,45 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                                 hour: '2-digit',
                                 minute: '2-digit'
                               })}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      {/* Mobile: Combined booking details column */}
+                      <TableCell className="sm:hidden px-2 py-2">
+                        <div className="space-y-2">
+                          {/* Appointment Time */}
+                          <div className="flex items-center gap-1">
+                            <div className="p-0.5 rounded bg-blue-500/10">
+                              <Calendar className="h-2.5 w-2.5 text-blue-400" />
+                            </div>
+                            <div>
+                              <div className="text-white font-medium text-xs">
+                                {new Date(booking.booking_time).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {new Date(booking.booking_time).toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Created */}
+                          <div className="flex items-center gap-1">
+                            <div className="p-0.5 rounded bg-green-500/10">
+                              <Clock className="h-2.5 w-2.5 text-green-400" />
+                            </div>
+                            <div>
+                              <div className="text-gray-300 text-xs">
+                                Created {new Date(booking.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
+                              </div>
                             </div>
                           </div>
                         </div>
