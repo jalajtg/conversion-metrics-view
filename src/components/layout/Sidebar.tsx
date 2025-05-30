@@ -33,7 +33,25 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-gray-400">Pages</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {isSuperAdmin ? (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive('/dashboard')} className="hover:bg-theme-dark-card hover:text-theme-blue">
+                  <Link to="/dashboard" className={isActive('/dashboard') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
+                    <LayoutDashboard />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive('/faq')} className="hover:bg-theme-dark-card hover:text-theme-blue">
+                  <Link to="/faq" className={isActive('/faq') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
+                    <HelpCircle />
+                    <span>FAQ</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {isSuperAdmin && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={isActive('/super-admin')} className="hover:bg-theme-dark-card hover:text-theme-blue">
                     <Link to="/super-admin" className={isActive('/super-admin') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
@@ -42,26 +60,6 @@ export function AppSidebar() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ) : (
-                <>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/dashboard')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                      <Link to="/dashboard" className={isActive('/dashboard') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
-                        <LayoutDashboard />
-                        <span>Dashboard</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/faq')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                      <Link to="/faq" className={isActive('/faq') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
-                        <HelpCircle />
-                        <span>FAQ</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </>
               )}
             </SidebarMenu>
           </SidebarGroupContent>

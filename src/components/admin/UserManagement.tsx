@@ -78,7 +78,7 @@ export function UserManagement() {
   });
 
   const updateUserMutation = useMutation({
-    mutationFn: async (userData: { id: string; role: string }) => {
+    mutationFn: async (userData: { id: string; role: 'user' | 'admin' | 'super_admin' }) => {
       const { error } = await supabase
         .from('user_roles')
         .upsert({
