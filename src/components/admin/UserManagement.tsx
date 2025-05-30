@@ -1,17 +1,14 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, Plus, User } from 'lucide-react';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, User } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { UserManagementTable } from './UserManagementTable';
+import { UserFormDialog } from './UserFormDialog';
 
 interface UserProfile {
   id: string;
@@ -21,15 +18,22 @@ interface UserProfile {
   status: 'active' | 'inactive';
 }
 
+interface UserFormData {
+  name: string;
+  email: string;
+  role: 'user' | 'admin' | 'super_admin';
+  status: 'active' | 'inactive';
+}
+
 export function UserManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<UserFormData>({
     name: '',
     email: '',
-    role: 'user' as 'user' | 'admin' | 'super_admin',
-    status: 'active' as 'active' | 'inactive'
+    role: 'user',
+    status: 'active'
   });
 
   const queryClient = useQueryClient();
@@ -156,29 +160,13 @@ export function UserManagement() {
     }
   };
 
-  const getRoleBadge = (role: string) => {
-    const variants = {
-      'super_admin': 'bg-red-500/10 text-red-400 border-red-500/20',
-      'admin': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-      'user': 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-    };
-    
-    return (
-      <Badge className={variants[role as keyof typeof variants] || variants.user}>
-        {role.replace('_', ' ').toUpperCase()}
-      </Badge>
-    );
-  };
-
-  const getStatusBadge = (status: string) => {
-    return (
-      <Badge className={status === 'active' 
-        ? 'bg-green-500/10 text-green-400 border-green-500/20'
-        : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-      }>
-        {status.toUpperCase()}
-      </Badge>
-    );
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      role: 'user',
+      status: 'active'
+    });
   };
 
   if (isLoading) {
@@ -198,162 +186,46 @@ export function UserManagement() {
         </CardTitle>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-theme-blue hover:bg-theme-blue/80">
+            <Button 
+              className="bg-theme-blue hover:bg-theme-blue/80"
+              onClick={resetForm}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add User
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-theme-dark-card border-gray-800">
-            <DialogHeader>
-              <DialogTitle className="text-white">Add New User</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name" className="text-gray-400">Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="bg-theme-dark border-gray-700 text-white"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email" className="text-gray-400">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="bg-theme-dark border-gray-700 text-white"
-                />
-              </div>
-              <div>
-                <Label htmlFor="role" className="text-gray-400">Role</Label>
-                <Select value={formData.role} onValueChange={(value: any) => setFormData({ ...formData, role: value })}>
-                  <SelectTrigger className="bg-theme-dark border-gray-700 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">User</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleSave} className="w-full bg-theme-blue hover:bg-theme-blue/80">
-                Add User
-              </Button>
-            </div>
-          </DialogContent>
         </Dialog>
       </CardHeader>
       
       <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-gray-700">
-                <TableHead className="text-gray-400">Name</TableHead>
-                <TableHead className="text-gray-400">Email</TableHead>
-                <TableHead className="text-gray-400">Role</TableHead>
-                <TableHead className="text-gray-400">Status</TableHead>
-                <TableHead className="text-gray-400">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id} className="border-gray-800">
-                  <TableCell className="text-white font-medium">
-                    {user.name || 'No name'}
-                  </TableCell>
-                  <TableCell className="text-gray-300">{user.email}</TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
-                  <TableCell>{getStatusBadge(user.status)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(user)}
-                        className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <UserManagementTable 
+          users={users}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </CardContent>
 
+      {/* Add Dialog */}
+      <UserFormDialog
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        title="Add New User"
+        formData={formData}
+        onFormDataChange={setFormData}
+        onSave={handleSave}
+        isEditMode={false}
+      />
+
       {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="bg-theme-dark-card border-gray-800">
-          <DialogHeader>
-            <DialogTitle className="text-white">Edit User</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-name" className="text-gray-400">Name</Label>
-              <Input
-                id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-theme-dark border-gray-700 text-white"
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-email" className="text-gray-400">Email</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-theme-dark border-gray-700 text-white"
-                disabled
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-role" className="text-gray-400">Role</Label>
-              <Select value={formData.role} onValueChange={(value: any) => setFormData({ ...formData, role: value })}>
-                <SelectTrigger className="bg-theme-dark border-gray-700 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="edit-status" className="text-gray-400">Status</Label>
-              <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
-                <SelectTrigger className="bg-theme-dark border-gray-700 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={handleSave} className="w-full bg-theme-blue hover:bg-theme-blue/80">
-              Save Changes
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UserFormDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        title="Edit User"
+        formData={formData}
+        onFormDataChange={setFormData}
+        onSave={handleSave}
+        isEditMode={true}
+      />
     </Card>
   );
 }
