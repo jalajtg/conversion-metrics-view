@@ -64,6 +64,7 @@ export function MultiSelectDropdown({
     e.stopPropagation();
     e.preventDefault();
     onSelectionChange([]);
+    console.log("Clear All clicked - selection cleared");
   };
 
   const selectedOptions = options.filter((option) =>
@@ -106,12 +107,14 @@ export function MultiSelectDropdown({
                 <span>Select All</span>
               </div>
               {selectedValues.length > 0 && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleClearAll}
-                  className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded bg-red-500/20 hover:bg-red-500/30 transition-colors"
+                  className="text-xs text-gray-400 hover:text-white px-2 py-1 h-auto bg-red-500/20 hover:bg-red-500/30 transition-colors"
                 >
                   Clear All
-                </button>
+                </Button>
               )}
             </div>
             
