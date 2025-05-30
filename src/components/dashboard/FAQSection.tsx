@@ -35,13 +35,14 @@ export function FAQSection({ filters, unifiedData }: FAQSectionProps) {
 
   return (
     <div id="faq-section" className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <div className="p-2 rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20">
           <HelpCircle className="h-6 w-6 sm:h-8 sm:w-8 text-orange-400" />
         </div>
         <div className="flex-1">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
-            Most Frequently Asked Questions
+            <span className="sm:hidden">FAQ's</span>
+            <span className="hidden sm:inline">Most Frequently Asked Questions</span>
           </h2>
           <p className="text-gray-400 text-xs sm:text-sm">Top questions from your patients and visitors</p>
         </div>
