@@ -82,7 +82,9 @@ export function Dashboard() {
         <div className="grid grid-cols-4 gap-4 mb-6 items-center">
           {/* Title Section - Takes 1/4 of the width */}
           <div className="col-span-1">
-            <h1 className="text-2xl sm:text-3xl font-bold gradient-text whitespace-nowrap">Sales Dashboard</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
+              Sales<br />Dashboard
+            </h1>
           </div>
           
           {/* Filters Section - Takes 3/4 of the width */}
