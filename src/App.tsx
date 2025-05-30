@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import FAQPage from "./pages/FAQ";
 import ClinicsPage from "./pages/Clinics";
+import ProductsPage from "./pages/Products";
 import { ProductReplicationPage } from "./pages/ProductReplication";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/clinics" element={<ClinicsPage />} />
+            <Route path="/products" element={<ProductsPage />} />
             
             {/* Redirect root to dashboard or auth */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -38,7 +40,7 @@ const App = () => (
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/faq" element={<FAQPage />} />
-                <Route path="/products" element={<ProductReplicationPage />} />
+                <Route path="/product-replication" element={<ProductReplicationPage />} />
               </Route>
               {/* Super Admin route without layout */}
               <Route path="/super-admin" element={<SuperAdmin />} />
