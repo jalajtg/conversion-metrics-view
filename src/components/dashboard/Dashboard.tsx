@@ -53,15 +53,15 @@ export function Dashboard() {
   }, [clinics, clinicsLoading, dummyDataCreated, refetchClinics]);
 
   // Auto-select all clinics when they're loaded
-  useEffect(() => {
-    if (clinics && clinics.length > 0 && filters.clinicIds.length === 0) {
-      console.log("Auto-selecting clinic IDs:", clinics.map(clinic => clinic.id));
-      setFilters(prev => ({
-        ...prev,
-        clinicIds: clinics.map(clinic => clinic.id)
-      }));
-    }
-  }, [clinics, filters.clinicIds.length]);
+  // useEffect(() => {
+  //   if (clinics && clinics.length > 0 && filters.clinicIds.length === 0) {
+  //     console.log("Auto-selecting clinic IDs:", clinics.map(clinic => clinic.id));
+  //     setFilters(prev => ({
+  //       ...prev,
+  //       clinicIds: clinics.map(clinic => clinic.id)
+  //     }));
+  //   }
+  // }, [clinics, filters.clinicIds.length]);
 
   useEffect(() => {
     if (clinicsError) {
