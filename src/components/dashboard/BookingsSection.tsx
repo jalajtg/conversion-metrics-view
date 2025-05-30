@@ -158,7 +158,13 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                     <TableHead className="text-gray-300 font-semibold">
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4" />
-                        Contact
+                        Email
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-gray-300 font-semibold">
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Phone
                       </div>
                     </TableHead>
                     <TableHead className="text-gray-300 font-semibold">
@@ -189,30 +195,28 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
                             {booking.name.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <div className="font-medium text-white">{booking.name}</div>
-                            <div className="text-sm text-gray-400">Patient ID: {booking.id.slice(0, 8)}</div>
-                          </div>
+                          <div className="font-medium text-white">{booking.name}</div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-1">
-                          {booking.email && (
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <Mail className="h-3 w-3 text-blue-400" />
-                              <span className="text-sm">{booking.email}</span>
-                            </div>
-                          )}
-                          {booking.phone && (
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <Phone className="h-3 w-3 text-green-400" />
-                              <span className="text-sm">{booking.phone}</span>
-                            </div>
-                          )}
-                          {!booking.email && !booking.phone && (
-                            <span className="text-gray-500 text-sm">No contact info</span>
-                          )}
-                        </div>
+                        {booking.email ? (
+                          <div className="flex items-center gap-2 text-gray-300">
+                            <Mail className="h-3 w-3 text-blue-400" />
+                            <span className="text-sm">{booking.email}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 text-sm">No email</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {booking.phone ? (
+                          <div className="flex items-center gap-2 text-gray-300">
+                            <Phone className="h-3 w-3 text-green-400" />
+                            <span className="text-sm">{booking.phone}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 text-sm">No phone</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
