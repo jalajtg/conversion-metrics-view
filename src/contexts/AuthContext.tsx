@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 
 type Profile = {
@@ -29,6 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [hasShownSignInToast, setHasShownSignInToast] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -47,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(null);
         }
         
-        // Handle specific auth events
+        // Handle specific auth events - only redirect on actual sign-in from auth page
         if (event === 'SIGNED_IN' && !hasShownSignInToast) {
           setHasShownSignInToast(true);
           toast({
@@ -55,42 +56,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             description: "You have successfully signed in",
           });
           
-          // Check user role and redirect accordingly with a delay
-          setTimeout(async () => {
-            try {
-              console.log('Checking user role for:', newSession.user.email);
-              
-              // Special handling for super admin emails
-              const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
-              if (superAdminEmails.includes(newSession.user.email || '')) {
-                console.log('Super admin detected, redirecting to /super-admin');
-                navigate('/super-admin');
-                return;
+          // Only redirect if we're currently on the auth page or root
+          const shouldRedirect = location.pathname === '/auth' || location.pathname === '/';
+          
+          if (shouldRedirect) {
+            // Check user role and redirect accordingly with a delay
+            setTimeout(async () => {
+              try {
+                console.log('Checking user role for redirect:', newSession.user.email);
+                
+                // Special handling for super admin emails
+                const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
+                if (superAdminEmails.includes(newSession.user.email || '')) {
+                  console.log('Super admin detected, redirecting to /super-admin');
+                  navigate('/super-admin');
+                  return;
+                }
+                
+                // For other users, check their role
+                const { data: roleData } = await supabase.rpc('get_user_role', {
+                  _user_id: newSession.user.id
+                });
+                
+                console.log('User role data:', roleData);
+                
+                if (roleData === 'super_admin') {
+                  navigate('/super-admin');
+                } else {
+                  navigate('/dashboard');
+                }
+              } catch (error) {
+                console.error('Error checking user role:', error);
+                // Default redirect based on email
+                const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
+                if (superAdminEmails.includes(newSession.user.email || '')) {
+                  navigate('/super-admin');
+                } else {
+                  navigate('/dashboard');
+                }
               }
-              
-              // For other users, check their role
-              const { data: roleData } = await supabase.rpc('get_user_role', {
-                _user_id: newSession.user.id
-              });
-              
-              console.log('User role data:', roleData);
-              
-              if (roleData === 'super_admin') {
-                navigate('/super-admin');
-              } else {
-                navigate('/dashboard');
-              }
-            } catch (error) {
-              console.error('Error checking user role:', error);
-              // Default redirect based on email
-              const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
-              if (superAdminEmails.includes(newSession.user.email || '')) {
-                navigate('/super-admin');
-              } else {
-                navigate('/dashboard');
-              }
-            }
-          }, 500);
+            }, 500);
+          }
         } else if (event === 'SIGNED_OUT') {
           setHasShownSignInToast(false); // Reset flag on sign out
           toast({
@@ -116,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, hasShownSignInToast]);
+  }, [navigate, hasShownSignInToast, location.pathname]);
 
   const fetchProfile = async (userId: string) => {
     try {
