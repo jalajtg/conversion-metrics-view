@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -87,7 +86,7 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
   console.log("Bookings", bookings)
   return (
     <div id="bookings-section" className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <div className="p-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20">
           <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
         </div>
