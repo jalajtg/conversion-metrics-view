@@ -89,7 +89,7 @@ export function AddClinicDialog() {
           Add Clinic
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-theme-dark-card border-gray-700 text-white">
+      <DialogContent className="bg-theme-dark-card border-gray-700 text-white max-w-md mx-auto">
         <DialogHeader>
           <DialogTitle className="text-white">Add New Clinic</DialogTitle>
         </DialogHeader>
@@ -133,6 +133,7 @@ export function AddClinicDialog() {
                       type="email"
                       placeholder="Enter clinic email"
                       className="bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
+                      readOnly
                     />
                   </FormControl>
                   <FormMessage />
