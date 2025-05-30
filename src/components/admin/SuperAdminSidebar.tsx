@@ -51,12 +51,12 @@ export function SuperAdminSidebar() {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/super-admin/users')} className="hover:bg-theme-dark-card hover:text-theme-blue">
+                {/* <SidebarMenuButton asChild isActive={isActive('/super-admin/users')} className="hover:bg-theme-dark-card hover:text-theme-blue">
                   <Link to="/super-admin/users" className={isActive('/super-admin/users') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
                     <Users />
                     <span>Users</span>
                   </Link>
-                </SidebarMenuButton>
+                </SidebarMenuButton> */}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
