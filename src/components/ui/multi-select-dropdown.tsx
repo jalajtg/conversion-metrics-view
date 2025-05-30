@@ -93,11 +93,11 @@ export function MultiSelectDropdown({
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-theme-dark-lighter border border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto z-50">
           <div className="p-1">
-            <div
-              className="flex items-center justify-between px-3 py-2 text-white hover:bg-theme-blue/20 rounded cursor-pointer"
-              onClick={handleSelectAll}
-            >
-              <div className="flex items-center">
+            <div className="flex items-center justify-between px-3 py-2 text-white hover:bg-theme-blue/20 rounded">
+              <div 
+                className="flex items-center cursor-pointer flex-1"
+                onClick={handleSelectAll}
+              >
                 <div className="w-4 h-4 border border-gray-400 rounded flex items-center justify-center mr-2">
                   {selectedValues.length === options.length && options.length > 0 && (
                     <Check className="h-3 w-3 text-theme-blue" />
@@ -108,9 +108,9 @@ export function MultiSelectDropdown({
               {selectedValues.length > 0 && (
                 <button
                   onClick={handleClearAll}
-                  className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded"
+                  className="text-xs text-gray-400 hover:text-white px-2 py-1 rounded bg-red-500/20 hover:bg-red-500/30 transition-colors"
                 >
-                  Clear
+                  Clear All
                 </button>
               )}
             </div>

@@ -56,3 +56,38 @@ export const createClinic = async (clinic: Omit<Clinic, 'id' | 'owner_id' | 'cre
   
   return data;
 };
+
+export const updateClinic = async (id: string, clinic: Partial<Clinic>): Promise<Clinic | null> => {
+  const { data, error } = await supabase
+    .from("clinics")
+    .update({
+      name: clinic.name,
+      email: clinic.email,
+      phone: clinic.phone,
+      address: clinic.address
+    })
+    .eq("id", id)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error("Error updating clinic:", error);
+    return null;
+  }
+  
+  return data;
+};
+
+export const deleteClinic = async (id: string): Promise<boolean> => {
+  const { error } = await supabase
+    .from("clinics")
+    .delete()
+    .eq("id", id);
+  
+  if (error) {
+    console.error("Error deleting clinic:", error);
+    return false;
+  }
+  
+  return true;
+};

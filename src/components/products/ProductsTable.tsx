@@ -134,8 +134,8 @@ export function ProductsTable() {
                 {filteredProducts.map((product) => (
                   <TableRow key={product.id} className="border-gray-700 hover:bg-theme-dark-lighter transition-colors">
                     <TableCell className="font-medium text-white">{product.name}</TableCell>
-                    <TableCell className="text-gray-300">{product.description || 'N/A'}</TableCell>
-                    <TableCell className="text-gray-300">${product.price}</TableCell>
+                    <TableCell className="text-gray-300 max-w-xs truncate">{product.description || 'N/A'}</TableCell>
+                    <TableCell className="text-gray-300">${Number(product.price).toFixed(2)}</TableCell>
                     <TableCell className="text-gray-300">
                       {clinics?.find(c => c.id === product.clinic_id)?.name || 'Unknown Clinic'}
                     </TableCell>
