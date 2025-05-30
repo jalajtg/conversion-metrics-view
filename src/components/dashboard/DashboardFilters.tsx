@@ -45,29 +45,32 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
       <CardHeader className="pb-3">
         <CardTitle className="text-white text-sm font-medium">Filters</CardTitle>
       </CardHeader>
-      <CardContent className="pb-4 space-y-4">
-        <div>
-          <label className="text-xs text-gray-400 mb-2 block">Clinics</label>
-          <MultiSelectDropdown
-            options={clinicOptions}
-            selectedValues={filters.clinicIds}
-            onSelectionChange={handleClinicSelectionChange}
-            placeholder="Select clinics..."
-            className="w-full"
-            showChips={false}
-          />
-        </div>
-        
-        <div>
-          <label className="text-xs text-gray-400 mb-2 block">Months</label>
-          <MultiSelectDropdown
-            options={months}
-            selectedValues={filters.months || []}
-            onSelectionChange={handleMonthSelectionChange}
-            placeholder="Select months..."
-            className="w-full"
-            showChips={false}
-          />
+      <CardContent className="pb-4">
+        {/* Horizontal layout for filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs text-gray-400 mb-2 block">Clinics</label>
+            <MultiSelectDropdown
+              options={clinicOptions}
+              selectedValues={filters.clinicIds}
+              onSelectionChange={handleClinicSelectionChange}
+              placeholder="Select clinics..."
+              className="w-full"
+              showChips={false}
+            />
+          </div>
+          
+          <div>
+            <label className="text-xs text-gray-400 mb-2 block">Months</label>
+            <MultiSelectDropdown
+              options={months}
+              selectedValues={filters.months || []}
+              onSelectionChange={handleMonthSelectionChange}
+              placeholder="Select months..."
+              className="w-full"
+              showChips={false}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

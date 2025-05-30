@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2, BarChart } from 'lucide-react';
 import type { DashboardFilters as DashboardFiltersType } from '@/types/dashboard';
 import { createDummyDataForUser } from '@/services/dummyDataService';
+
 export function Dashboard() {
   const currentDate = new Date();
   const [filters, setFilters] = useState<DashboardFiltersType>({
@@ -77,16 +78,15 @@ export function Dashboard() {
   }
   return <div className="min-h-screen w-full bg-theme-dark">
       <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
-        {/* Compact Header with Title and Filters */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          {/* Title Section */}
-          <div className="flex-shrink-0">
-            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Sales Dashboard</h1>
-            
+        {/* Grid Header with Title and Filters */}
+        <div className="grid grid-cols-4 gap-4 mb-6 items-center">
+          {/* Title Section - Takes 1/4 of the width */}
+          <div className="col-span-1">
+            <h1 className="text-2xl sm:text-3xl font-bold gradient-text whitespace-nowrap">Sales Dashboard</h1>
           </div>
           
-          {/* Filters Section */}
-          {clinics && <div className="flex-shrink-0 lg:max-w-md xl:max-w-lg">
+          {/* Filters Section - Takes 3/4 of the width */}
+          {clinics && <div className="col-span-3">
               <DashboardFilters clinics={clinics} filters={filters} onFiltersChange={setFilters} />
             </div>}
         </div>
