@@ -161,7 +161,7 @@ export function AddProductDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-300">Clinic</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
                         <SelectValue placeholder="Select a clinic" />
