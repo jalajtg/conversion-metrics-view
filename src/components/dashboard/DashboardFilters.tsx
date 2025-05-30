@@ -46,8 +46,8 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
         <CardTitle className="text-white text-sm font-medium">Filters</CardTitle>
       </CardHeader>
       <CardContent className="pb-4">
-        {/* Mobile-first responsive layout - stack on mobile, side-by-side on larger screens */}
-        <div className="flex flex-col space-y-4 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
+        {/* Stack on mobile, side-by-side on larger screens */}
+        <div className="flex flex-col space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
           <div className="w-full">
             <label className="text-xs text-gray-400 mb-2 block">Clinics</label>
             <MultiSelectDropdown
