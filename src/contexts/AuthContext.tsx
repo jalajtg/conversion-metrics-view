@@ -27,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasShownSignInToast, setHasShownSignInToast] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,7 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         
         // Handle specific auth events
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && !hasShownSignInToast) {
+          setHasShownSignInToast(true);
           toast({
             title: "Signed in",
             description: "You have successfully signed in",
@@ -86,8 +88,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 navigate('/dashboard');
               }
             }
-          }, 500); // Increased delay to ensure role is properly set
+          }, 500);
         } else if (event === 'SIGNED_OUT') {
+          setHasShownSignInToast(false); // Reset flag on sign out
           toast({
             title: "Signed out",
             description: "You have been signed out",
@@ -111,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, hasShownSignInToast]);
 
   const fetchProfile = async (userId: string) => {
     try {

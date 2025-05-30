@@ -78,19 +78,21 @@ export function Dashboard() {
   }
   return <div className="min-h-screen w-full bg-theme-dark">
       <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
-        {/* Grid Header with Title and Filters */}
-        <div className="grid grid-cols-4 gap-4 mb-6 items-center">
-          {/* Title Section - Takes 1/4 of the width */}
-          <div className="col-span-1">
-            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
-              Sales<br />Dashboard
+        {/* Mobile-First Responsive Header */}
+        <div className="mb-6">
+          {/* Title Section - Full width on mobile, left aligned on desktop */}
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold gradient-text text-center sm:text-left">
+              Sales Dashboard
             </h1>
           </div>
           
-          {/* Filters Section - Takes 3/4 of the width */}
-          {clinics && <div className="col-span-3">
+          {/* Filters Section - Full width on mobile, responsive on desktop */}
+          {clinics && (
+            <div className="w-full">
               <DashboardFilters clinics={clinics} filters={filters} onFiltersChange={setFilters} />
-            </div>}
+            </div>
+          )}
         </div>
         
         <div className="px-2 sm:px-0 space-y-8">

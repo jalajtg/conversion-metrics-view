@@ -46,9 +46,9 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
         <CardTitle className="text-white text-sm font-medium">Filters</CardTitle>
       </CardHeader>
       <CardContent className="pb-4">
-        {/* Horizontal layout for filters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+        {/* Mobile-first responsive layout - stack on mobile, side-by-side on larger screens */}
+        <div className="flex flex-col space-y-4 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
+          <div className="w-full">
             <label className="text-xs text-gray-400 mb-2 block">Clinics</label>
             <MultiSelectDropdown
               options={clinicOptions}
@@ -60,7 +60,7 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
             />
           </div>
           
-          <div>
+          <div className="w-full">
             <label className="text-xs text-gray-400 mb-2 block">Months</label>
             <MultiSelectDropdown
               options={months}
