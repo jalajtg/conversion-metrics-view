@@ -15,7 +15,7 @@ import { Loader2 } from 'lucide-react';
 
 export function ClinicsTable() {
   const { data: clinics, isLoading, error } = useQuery({
-    queryKey: ["user-clinics"],
+    queryKey: ["all-clinics"],
     queryFn: fetchUserClinics,
   });
 
@@ -38,7 +38,7 @@ export function ClinicsTable() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>My Clinics</CardTitle>
+        <CardTitle>All Clinics</CardTitle>
       </CardHeader>
       <CardContent>
         {clinics && clinics.length > 0 ? (
@@ -68,7 +68,7 @@ export function ClinicsTable() {
           </Table>
         ) : (
           <div className="text-center text-gray-500 p-8">
-            You haven't created any clinics yet.
+            No clinics found in the database.
           </div>
         )}
       </CardContent>

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Clinic } from "@/types/dashboard";
 
 export const fetchUserClinics = async (): Promise<Clinic[]> => {
-  console.log("Fetching user's own clinics from database...");
+  console.log("Fetching all clinics from database...");
   
   const { data, error } = await supabase
     .from("clinics")
