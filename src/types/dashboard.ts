@@ -1,7 +1,12 @@
-
 export interface Clinic {
   id: string;
   name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  owner_id?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 export interface Product {
