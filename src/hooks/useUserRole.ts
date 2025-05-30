@@ -19,8 +19,12 @@ export function useUserRole() {
       }
 
       try {
+        console.log('Fetching role for user:', user.email);
+        
         // First check if user has super_admin email
         if (user.email === 'admin@toratech.ai') {
+          console.log('Super admin email detected');
+          
           // Check if role exists in database
           const { data: existingRole, error: roleError } = await supabase
             .from('user_roles')
@@ -36,12 +40,14 @@ export function useUserRole() {
               .insert({ user_id: user.id, role: 'super_admin' });
             
             if (!insertError) {
+              console.log('Successfully created super_admin role');
               setRole('super_admin');
             } else {
               console.error('Error creating super_admin role:', insertError);
               setRole('user');
             }
           } else if (existingRole) {
+            console.log('Existing role found:', existingRole.role);
             // Role exists, use it (but ensure it's super_admin for this email)
             if (existingRole.role !== 'super_admin') {
               // Update to super_admin
@@ -51,6 +57,7 @@ export function useUserRole() {
                 .eq('user_id', user.id);
               
               if (!updateError) {
+                console.log('Updated role to super_admin');
                 setRole('super_admin');
               } else {
                 console.error('Error updating to super_admin role:', updateError);
@@ -83,6 +90,7 @@ export function useUserRole() {
             }
             setRole('user');
           } else {
+            console.log('User role from RPC:', data);
             setRole(data as UserRole);
           }
         }
@@ -97,5 +105,7 @@ export function useUserRole() {
     fetchUserRole();
   }, [user]);
 
+  console.log('useUserRole - current role:', role, 'isSuperAdmin:', role === 'super_admin');
+  
   return { role, isLoading, isSuperAdmin: role === 'super_admin' };
 }

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, Package, BookOpen, MessageSquare, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
 import { useSuperAdminMetrics } from '@/hooks/useSuperAdminMetrics';
 import { SuperAdminFilters } from './SuperAdminFilters';
+import { UserManagement } from './UserManagement';
 import type { SuperAdminFilters as SuperAdminFiltersType } from '@/types/admin';
 
 export function SuperAdminDashboard() {
@@ -89,15 +90,23 @@ export function SuperAdminDashboard() {
     <div className="min-h-screen w-full bg-theme-dark">
       <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
         {/* Header */}
-        <div className="grid grid-cols-4 gap-4 mb-6 items-center">
-          <div className="col-span-1">
-            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
-              Super Admin<br />Dashboard
-            </h1>
-          </div>
-          <div className="col-span-3">
-            <SuperAdminFilters filters={filters} onFiltersChange={setFilters} />
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Super Admin Panel
+          </h1>
+          <p className="text-gray-400">
+            Manage users, monitor metrics, and oversee system operations
+          </p>
+        </div>
+
+        {/* User Management Section */}
+        <div className="mb-8">
+          <UserManagement />
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6">
+          <SuperAdminFilters filters={filters} onFiltersChange={setFilters} />
         </div>
 
         {/* Metrics Grid */}

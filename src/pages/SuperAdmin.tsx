@@ -8,6 +8,8 @@ import { Loader2 } from 'lucide-react';
 export default function SuperAdmin() {
   const { isSuperAdmin, isLoading } = useUserRole();
 
+  console.log('SuperAdmin page - isSuperAdmin:', isSuperAdmin, 'isLoading:', isLoading);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-theme-dark">
@@ -17,8 +19,10 @@ export default function SuperAdmin() {
   }
 
   if (!isSuperAdmin) {
+    console.log('User is not super admin, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
+  console.log('Rendering SuperAdminDashboard');
   return <SuperAdminDashboard />;
 }
