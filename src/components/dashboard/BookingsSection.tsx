@@ -93,7 +93,7 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
         </div>
         <div className="flex-1">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            All Bookings
+            Bookings
           </h2>
           <p className="text-gray-400 text-xs sm:text-sm">Complete list of appointment bookings from your clinics</p>
         </div>
