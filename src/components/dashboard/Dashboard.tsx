@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useClinics } from '@/hooks/useClinics';
@@ -11,7 +10,6 @@ import { toast } from '@/hooks/use-toast';
 import { Loader2, BarChart } from 'lucide-react';
 import type { DashboardFilters as DashboardFiltersType } from '@/types/dashboard';
 import { createDummyDataForUser } from '@/services/dummyDataService';
-
 export function Dashboard() {
   const currentDate = new Date();
   const [filters, setFilters] = useState<DashboardFiltersType>({
@@ -19,9 +17,17 @@ export function Dashboard() {
     month: (currentDate.getMonth() + 1).toString()
   });
   const [dummyDataCreated, setDummyDataCreated] = useState(false);
-
-  const { data: clinics, isLoading: clinicsLoading, error: clinicsError, refetch: refetchClinics } = useClinics();
-  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useDashboardData(filters);
+  const {
+    data: clinics,
+    isLoading: clinicsLoading,
+    error: clinicsError,
+    refetch: refetchClinics
+  } = useClinics();
+  const {
+    data: dashboardData,
+    isLoading: dashboardLoading,
+    error: dashboardError
+  } = useDashboardData(filters);
 
   // Create dummy data if no clinics exist
   useEffect(() => {
@@ -34,7 +40,6 @@ export function Dashboard() {
         refetchClinics();
       }
     };
-
     createDummyData();
   }, [clinics, clinicsLoading, dummyDataCreated, refetchClinics]);
 
@@ -47,87 +52,65 @@ export function Dashboard() {
       }));
     }
   }, [clinics, filters.clinicIds.length]);
-
   useEffect(() => {
     if (clinicsError) {
       toast({
         title: "Error loading clinics",
         description: "There was a problem loading your clinics. Please try again later.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
     if (dashboardError) {
       toast({
         title: "Error loading dashboard",
         description: "There was a problem loading your dashboard data. Please try again later.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   }, [clinicsError, dashboardError]);
-
   const isLoading = clinicsLoading || dashboardLoading;
-
   if (isLoading) {
-    return (
-      <div className="flex flex-col justify-center items-center min-h-[400px] px-4">
+    return <div className="flex flex-col justify-center items-center min-h-[400px] px-4">
         <Loader2 className="h-12 w-12 text-theme-blue animate-spin" />
         <p className="mt-4 text-gray-400 text-center">Loading your dashboard data...</p>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen w-full bg-theme-dark">
+  return <div className="min-h-screen w-full bg-theme-dark">
       <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
         {/* Compact Header with Title and Filters */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           {/* Title Section */}
           <div className="flex-shrink-0">
             <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Sales Dashboard</h1>
-            <p className="text-gray-400 text-sm sm:text-base">Track your sales metrics across all clinics and products</p>
+            
           </div>
           
           {/* Filters Section */}
-          {clinics && (
-            <div className="flex-shrink-0 lg:max-w-md xl:max-w-lg">
-              <DashboardFilters
-                clinics={clinics}
-                filters={filters}
-                onFiltersChange={setFilters}
-              />
-            </div>
-          )}
+          {clinics && <div className="flex-shrink-0 lg:max-w-md xl:max-w-lg">
+              <DashboardFilters clinics={clinics} filters={filters} onFiltersChange={setFilters} />
+            </div>}
         </div>
         
         <div className="px-2 sm:px-0 space-y-8">
-          {filters.clinicIds.length === 0 ? (
-            <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+          {filters.clinicIds.length === 0 ? <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                 <BarChart className="h-8 w-8 text-theme-blue" />
               </div>
               <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No clinics selected</h3>
               <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Select one or more clinics to view your dashboard metrics.</p>
-            </div>
-          ) : (
-            <>
+            </div> : <>
               {/* Total Metrics Overview Section */}
-              {dashboardData?.products && dashboardData.products.length > 0 && (
-                <TotalMetricsSection unifiedData={dashboardData} />
-              )}
+              {dashboardData?.products && dashboardData.products.length > 0 && <TotalMetricsSection unifiedData={dashboardData} />}
 
               {/* Main Dashboard Section */}
               <div className="space-y-6">
-                {!dashboardData?.products || dashboardData.products.length === 0 ? (
-                  <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+                {!dashboardData?.products || dashboardData.products.length === 0 ? <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                       <BarChart className="h-8 w-8 text-theme-blue" />
                     </div>
                     <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No data available</h3>
                     <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
-                  </div>
-                ) : (
-                  <ProductSection key="unified-products" metrics={null} unifiedData={dashboardData} />
-                )}
+                  </div> : <ProductSection key="unified-products" metrics={null} unifiedData={dashboardData} />}
               </div>
 
               {/* Bookings Section */}
@@ -135,10 +118,8 @@ export function Dashboard() {
 
               {/* FAQ Section */}
               <FAQSection filters={filters} unifiedData={dashboardData} />
-            </>
-          )}
+            </>}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
