@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { SuperAdminDashboard } from '@/components/admin/SuperAdminDashboard';
+import { SuperAdminLayout } from '@/components/admin/SuperAdminLayout';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { Loader2, Shield, AlertTriangle } from 'lucide-react';
@@ -56,5 +57,9 @@ export default function SuperAdmin() {
   }
 
   console.log('Rendering SuperAdminDashboard');
-  return <SuperAdminDashboard />;
+  return (
+    <SuperAdminLayout>
+      <SuperAdminDashboard />
+    </SuperAdminLayout>
+  );
 }

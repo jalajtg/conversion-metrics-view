@@ -86,7 +86,7 @@ export function AddProductDialog() {
           Add Product
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-theme-dark-card border-gray-700 text-white max-w-md mx-auto fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <DialogContent className="bg-theme-dark-card border-gray-700 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white">Add New Product</DialogTitle>
         </DialogHeader>

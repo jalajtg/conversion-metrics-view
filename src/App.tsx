@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PrivateRoute } from "./components/auth/PrivateRoute";
 import { Layout } from "./components/layout/Layout";
+import { SuperAdminLayout } from "./components/admin/SuperAdminLayout";
 import SuperAdmin from "./pages/SuperAdmin";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -29,8 +30,6 @@ const App = () => (
           <Routes>
             {/* Public routes */}
             <Route path="/auth" element={<Auth />} />
-            <Route path="/clinics" element={<ClinicsPage />} />
-            <Route path="/products" element={<ProductsPage />} />
             
             {/* Redirect root to dashboard or auth */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -42,8 +41,15 @@ const App = () => (
                 <Route path="/faq" element={<FAQPage />} />
                 <Route path="/product-replication" element={<ProductReplicationPage />} />
               </Route>
-              {/* Super Admin route without layout */}
+              
+              {/* Super Admin routes with their own layout */}
               <Route path="/super-admin" element={<SuperAdmin />} />
+              <Route element={<SuperAdminLayout><ClinicsPage /></SuperAdminLayout>}>
+                <Route path="/super-admin/clinics" element={<div />} />
+              </Route>
+              <Route element={<SuperAdminLayout><ProductsPage /></SuperAdminLayout>}>
+                <Route path="/super-admin/products" element={<div />} />
+              </Route>
             </Route>
             
             {/* 404 page */}
