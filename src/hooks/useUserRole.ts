@@ -21,78 +21,38 @@ export function useUserRole() {
       try {
         console.log('Fetching role for user:', user.email);
         
-        // First check if user has super_admin email
+        // Check if user has super_admin email - hardcoded check
         if (user.email === 'admin@toratech.ai') {
-          console.log('Super admin email detected');
-          
-          // Check if role exists in database
-          const { data: existingRole, error: roleError } = await supabase
+          console.log('Super admin email detected, setting role to super_admin');
+          setRole('super_admin');
+          setIsLoading(false);
+          return;
+        }
+
+        // For other users, get their role from database
+        const { data, error } = await supabase.rpc('get_user_role', {
+          _user_id: user.id
+        });
+
+        if (error) {
+          console.error('Error fetching user role:', error);
+          // Check if user has any role at all
+          const { data: userRole } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', user.id)
             .single();
-
-          if (roleError && roleError.code === 'PGRST116') {
-            // No role found, create super_admin role
-            console.log('Creating super_admin role for admin@toratech.ai');
-            const { error: insertError } = await supabase
+          
+          if (!userRole) {
+            // Create default user role
+            await supabase
               .from('user_roles')
-              .insert({ user_id: user.id, role: 'super_admin' });
-            
-            if (!insertError) {
-              console.log('Successfully created super_admin role');
-              setRole('super_admin');
-            } else {
-              console.error('Error creating super_admin role:', insertError);
-              setRole('user');
-            }
-          } else if (existingRole) {
-            console.log('Existing role found:', existingRole.role);
-            // Role exists, use it (but ensure it's super_admin for this email)
-            if (existingRole.role !== 'super_admin') {
-              // Update to super_admin
-              const { error: updateError } = await supabase
-                .from('user_roles')
-                .update({ role: 'super_admin' })
-                .eq('user_id', user.id);
-              
-              if (!updateError) {
-                console.log('Updated role to super_admin');
-                setRole('super_admin');
-              } else {
-                console.error('Error updating to super_admin role:', updateError);
-                setRole(existingRole.role as UserRole);
-              }
-            } else {
-              setRole('super_admin');
-            }
+              .insert({ user_id: user.id, role: 'user' });
           }
+          setRole('user');
         } else {
-          // For other users, get their role from database
-          const { data, error } = await supabase.rpc('get_user_role', {
-            _user_id: user.id
-          });
-
-          if (error) {
-            console.error('Error fetching user role:', error);
-            // Check if user has any role at all
-            const { data: userRole } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', user.id)
-              .single();
-            
-            if (!userRole) {
-              // Create default user role
-              await supabase
-                .from('user_roles')
-                .insert({ user_id: user.id, role: 'user' });
-            }
-            setRole('user');
-          } else {
-            console.log('User role from RPC:', data);
-            setRole(data as UserRole);
-          }
+          console.log('User role from RPC:', data);
+          setRole(data as UserRole);
         }
       } catch (error) {
         console.error('Error fetching user role:', error);
