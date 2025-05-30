@@ -71,7 +71,7 @@ export function MultiSelectDropdown({
   const selectedOptions = options.filter((option) =>
     selectedValues.includes(option.value)
   );
-
+  console.log("Jalaj", selectedValues)
   return (
     <div className={cn("w-full relative", className)} ref={dropdownRef}>
       <Button
