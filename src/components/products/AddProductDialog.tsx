@@ -86,27 +86,27 @@ export function AddProductDialog() {
           Add Product
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-theme-dark-card border-gray-700 text-white max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-white">Add New Product</DialogTitle>
+      <DialogContent className="bg-theme-dark-card border-theme-dark-lighter text-white max-w-lg mx-auto">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-xl font-semibold text-white">Add New Product</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
               rules={{ required: "Product name is required" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Product Name</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-200">Product Name</FormLabel>
                   <FormControl>
                     <Input 
                       {...field} 
                       placeholder="Enter product name"
-                      className="bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
+                      className="bg-theme-dark-lighter border-theme-dark-lighter text-white placeholder:text-gray-400 focus:border-theme-blue focus:ring-theme-blue"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-400" />
                 </FormItem>
               )}
             />
@@ -116,15 +116,16 @@ export function AddProductDialog() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Description</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-200">Description</FormLabel>
                   <FormControl>
                     <Textarea 
                       {...field} 
                       placeholder="Enter product description"
-                      className="bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
+                      rows={3}
+                      className="bg-theme-dark-lighter border-theme-dark-lighter text-white placeholder:text-gray-400 focus:border-theme-blue focus:ring-theme-blue resize-none"
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-400" />
                 </FormItem>
               )}
             />
@@ -138,18 +139,18 @@ export function AddProductDialog() {
               }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Price ($)</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-200">Price ($)</FormLabel>
                   <FormControl>
                     <Input 
                       {...field} 
                       type="number"
                       step="0.01"
-                      placeholder="Enter price"
-                      className="bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
+                      placeholder="0.00"
+                      className="bg-theme-dark-lighter border-theme-dark-lighter text-white placeholder:text-gray-400 focus:border-theme-blue focus:ring-theme-blue"
                       onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-400" />
                 </FormItem>
               )}
             />
@@ -160,39 +161,43 @@ export function AddProductDialog() {
               rules={{ required: "Please select a clinic" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-300">Clinic</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-200">Clinic</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
+                      <SelectTrigger className="bg-theme-dark-lighter border-theme-dark-lighter text-white focus:border-theme-blue focus:ring-theme-blue">
                         <SelectValue placeholder="Select a clinic" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-theme-dark-card border-gray-600">
+                    <SelectContent className="bg-theme-dark-card border-theme-dark-lighter">
                       {clinics?.map((clinic) => (
-                        <SelectItem key={clinic.id} value={clinic.id} className="text-white hover:bg-theme-dark-lighter">
+                        <SelectItem 
+                          key={clinic.id} 
+                          value={clinic.id} 
+                          className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter"
+                        >
                           {clinic.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
+                  <FormMessage className="text-red-400" />
                 </FormItem>
               )}
             />
             
-            <div className="flex justify-end space-x-2 pt-4">
+            <div className="flex justify-end space-x-3 pt-6 border-t border-theme-dark-lighter">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={() => setOpen(false)}
-                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                className="border-theme-dark-lighter text-gray-300 hover:bg-theme-dark-lighter hover:text-white"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
                 disabled={createProductMutation.isPending}
-                className="bg-theme-blue hover:bg-theme-blue/90 text-white"
+                className="bg-theme-blue hover:bg-theme-blue/90 text-white disabled:opacity-50"
               >
                 {createProductMutation.isPending ? "Creating..." : "Create Product"}
               </Button>
