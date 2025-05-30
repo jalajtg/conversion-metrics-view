@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Clinic } from "@/types/dashboard";
 
 export const fetchUserClinics = async (): Promise<Clinic[]> => {
+  console.log("Fetching clinics from database...");
+  
   const { data, error } = await supabase
     .from("clinics")
     .select("*")
@@ -12,6 +14,9 @@ export const fetchUserClinics = async (): Promise<Clinic[]> => {
     console.error("Error fetching clinics:", error);
     return [];
   }
+  
+  console.log("Raw clinic data from database:", data);
+  console.log("Number of clinics found:", data?.length || 0);
   
   return data || [];
 };

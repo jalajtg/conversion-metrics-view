@@ -30,6 +30,14 @@ export function Dashboard() {
     error: dashboardError
   } = useDashboardData(filters);
 
+  // Debug clinic data
+  useEffect(() => {
+    if (clinics) {
+      console.log("Dashboard received clinics:", clinics);
+      console.log("Clinic names:", clinics.map(c => c.name));
+    }
+  }, [clinics]);
+
   // Create dummy data if no clinics exist
   useEffect(() => {
     const createDummyData = async () => {
@@ -47,12 +55,14 @@ export function Dashboard() {
   // Auto-select all clinics when they're loaded
   useEffect(() => {
     if (clinics && clinics.length > 0 && filters.clinicIds.length === 0) {
+      console.log("Auto-selecting clinic IDs:", clinics.map(clinic => clinic.id));
       setFilters(prev => ({
         ...prev,
         clinicIds: clinics.map(clinic => clinic.id)
       }));
     }
   }, [clinics, filters.clinicIds.length]);
+
   useEffect(() => {
     if (clinicsError) {
       toast({
@@ -69,6 +79,7 @@ export function Dashboard() {
       });
     }
   }, [clinicsError, dashboardError]);
+
   const isLoading = clinicsLoading || dashboardLoading;
   if (isLoading) {
     return <div className="flex flex-col justify-center items-center min-h-[400px] px-4">
@@ -76,6 +87,7 @@ export function Dashboard() {
         <p className="mt-4 text-gray-400 text-center">Loading your dashboard data...</p>
       </div>;
   }
+
   return <div className="min-h-screen w-full bg-theme-dark">
       <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
         {/* Responsive Header - Stack on mobile, side-by-side on desktop */}

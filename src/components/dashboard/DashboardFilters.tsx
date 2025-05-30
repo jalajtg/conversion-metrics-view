@@ -32,6 +32,9 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
     label: clinic.name
   }));
 
+  console.log("DashboardFilters - received clinics:", clinics);
+  console.log("DashboardFilters - clinic options created:", clinicOptions);
+
   const handleClinicSelectionChange = (selectedIds: string[]) => {
     onFiltersChange({ ...filters, clinicIds: selectedIds });
   };
