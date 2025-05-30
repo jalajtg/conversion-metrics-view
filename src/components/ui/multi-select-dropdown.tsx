@@ -63,8 +63,9 @@ export function MultiSelectDropdown({
   const handleClearAll = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    console.log("Clear All clicked - current selectedValues:", selectedValues);
     onSelectionChange([]);
-    console.log("Clear All clicked - selection cleared");
+    console.log("Clear All clicked - selection cleared, calling onSelectionChange with empty array");
   };
 
   const selectedOptions = options.filter((option) =>
@@ -111,7 +112,8 @@ export function MultiSelectDropdown({
                   variant="ghost"
                   size="sm"
                   onClick={handleClearAll}
-                  className="text-xs text-gray-400 hover:text-white px-2 py-1 h-auto bg-red-500/20 hover:bg-red-500/30 transition-colors"
+                  className="text-xs text-gray-400 hover:text-white px-2 py-1 h-auto bg-red-500/20 hover:bg-red-500/30 transition-colors ml-2"
+                  type="button"
                 >
                   Clear All
                 </Button>
