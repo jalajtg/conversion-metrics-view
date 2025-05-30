@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,13 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PrivateRoute } from "./components/auth/PrivateRoute";
 import { Layout } from "./components/layout/Layout";
-
-// Pages
-import Dashboard from "./pages/Dashboard";
-import Auth from "./pages/Auth";
-import FAQPage from "./pages/FAQ";
-import { ProductReplicationPage } from "./pages/ProductReplication";
-import NotFound from "./pages/NotFound";
+import SuperAdmin from "./pages/SuperAdmin";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +32,8 @@ const App = () => (
                 <Route path="/faq" element={<FAQPage />} />
                 <Route path="/products" element={<ProductReplicationPage />} />
               </Route>
+              {/* Super Admin route without layout */}
+              <Route path="/super-admin" element={<SuperAdmin />} />
             </Route>
             
             {/* 404 page */}

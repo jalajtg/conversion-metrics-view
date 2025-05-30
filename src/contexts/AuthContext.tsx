@@ -52,6 +52,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             title: "Signed in",
             description: "You have successfully signed in",
           });
+          
+          // Check user role and redirect accordingly
+          setTimeout(async () => {
+            try {
+              const { data: roleData } = await supabase.rpc('get_user_role', {
+                _user_id: newSession.user.id
+              });
+              
+              if (roleData === 'super_admin') {
+                navigate('/super-admin');
+              } else {
+                navigate('/dashboard');
+              }
+            } catch (error) {
+              console.error('Error checking user role:', error);
+              navigate('/dashboard');
+            }
+          }, 100);
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Signed out",
@@ -101,7 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate('/dashboard');
+      // Navigation will be handled by the auth state change listener
     } catch (error: any) {
       toast({
         variant: "destructive",
