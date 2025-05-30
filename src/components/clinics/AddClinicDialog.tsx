@@ -46,7 +46,7 @@ export function AddClinicDialog() {
 
   const createClinicMutation = useMutation({
     mutationFn: (data: ClinicFormData) => {
-      // Add the user's email automatically like owner_id
+      // Add the user's email automatically behind the scenes
       return createClinic({
         ...data,
         email: user?.email || '',
