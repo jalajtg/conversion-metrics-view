@@ -16,6 +16,7 @@ interface MultiSelectDropdownProps {
   onSelectionChange: (values: string[]) => void;
   placeholder?: string;
   className?: string;
+  showChips?: boolean;
 }
 
 export function MultiSelectDropdown({
@@ -24,6 +25,7 @@ export function MultiSelectDropdown({
   onSelectionChange,
   placeholder = "Select items...",
   className,
+  showChips = true,
 }: MultiSelectDropdownProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -81,7 +83,7 @@ export function MultiSelectDropdown({
             <span className="text-gray-400">{placeholder}</span>
           ) : (
             <span className="text-white">
-              {selectedValues.length} clinic{selectedValues.length !== 1 ? 's' : ''} selected
+              {selectedValues.length} selected
             </span>
           )}
         </span>
@@ -131,8 +133,8 @@ export function MultiSelectDropdown({
         </div>
       )}
       
-      {/* Selected chips displayed below the input */}
-      {selectedValues.length > 0 && (
+      {/* Selected chips displayed below the input - only show if showChips is true */}
+      {showChips && selectedValues.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {selectedOptions.map((option) => (
             <Badge

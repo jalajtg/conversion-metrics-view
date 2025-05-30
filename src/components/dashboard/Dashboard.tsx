@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useClinics } from '@/hooks/useClinics';
@@ -77,21 +78,28 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen w-full bg-theme-dark">
-      <div className="container mx-auto py-4 sm:py-8 px-4 max-w-7xl">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2 gradient-text">Sales Dashboard</h1>
-          <p className="text-gray-400 text-sm sm:text-base">Track your sales metrics across all clinics and products</p>
+      <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
+        {/* Compact Header with Title and Filters */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          {/* Title Section */}
+          <div className="flex-shrink-0">
+            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">Sales Dashboard</h1>
+            <p className="text-gray-400 text-sm sm:text-base">Track your sales metrics across all clinics and products</p>
+          </div>
+          
+          {/* Filters Section */}
+          {clinics && (
+            <div className="flex-shrink-0 lg:max-w-md xl:max-w-lg">
+              <DashboardFilters
+                clinics={clinics}
+                filters={filters}
+                onFiltersChange={setFilters}
+              />
+            </div>
+          )}
         </div>
         
-        {clinics && (
-          <DashboardFilters
-            clinics={clinics}
-            filters={filters}
-            onFiltersChange={setFilters}
-          />
-        )}
-        
-        <div className="px-2 sm:px-0 space-y-12">
+        <div className="px-2 sm:px-0 space-y-8">
           {filters.clinicIds.length === 0 ? (
             <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
