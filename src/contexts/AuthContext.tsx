@@ -60,8 +60,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
               console.log('Checking user role for:', newSession.user.email);
               
-              // Special handling for super admin email
-              if (newSession.user.email === 'admin@toratech.ai') {
+              // Special handling for super admin emails
+              const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
+              if (superAdminEmails.includes(newSession.user.email || '')) {
                 console.log('Super admin detected, redirecting to /super-admin');
                 navigate('/super-admin');
                 return;
@@ -81,8 +82,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
             } catch (error) {
               console.error('Error checking user role:', error);
-              // Default redirect
-              if (newSession.user.email === 'admin@toratech.ai') {
+              // Default redirect based on email
+              const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
+              if (superAdminEmails.includes(newSession.user.email || '')) {
                 navigate('/super-admin');
               } else {
                 navigate('/dashboard');
