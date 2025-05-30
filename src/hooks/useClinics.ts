@@ -4,7 +4,7 @@ import { fetchUserClinics } from "@/services/clinicService";
 
 export const useClinics = () => {
   return useQuery({
-    queryKey: ["clinics"],
+    queryKey: ["user-clinics"],
     queryFn: fetchUserClinics,
   });
 };
