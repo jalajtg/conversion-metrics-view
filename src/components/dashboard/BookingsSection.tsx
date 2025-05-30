@@ -123,8 +123,8 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
             <div className="p-2 rounded-lg bg-blue-500/10">
               <Calendar className="h-5 w-5 text-blue-400" />
             </div>
-            Appointment Schedule
-            <span className="ml-auto text-sm font-normal text-gray-400">
+            <span className="text-base sm:text-lg">Appointment Schedule</span>
+            <span className="ml-auto text-xs sm:text-sm font-normal text-gray-400">
               {bookings?.length || 0} total bookings
             </span>
           </CardTitle>
@@ -148,22 +148,22 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
               <Table>
                 <TableHeader>
                   <TableRow className="border-gray-700/50 hover:bg-transparent">
-                    <TableHead className="text-gray-300 font-semibold">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Patient Details
+                    <TableHead className="text-gray-300 font-semibold px-2 sm:px-4">
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">Patient Details</span>
                       </div>
                     </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        Appointment Time
+                    <TableHead className="text-gray-300 font-semibold px-2 sm:px-4">
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">Appointment Time</span>
                       </div>
                     </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Created
+                    <TableHead className="text-gray-300 font-semibold px-2 sm:px-4">
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="text-xs sm:text-sm">Created</span>
                       </div>
                     </TableHead>
                   </TableRow>
@@ -177,42 +177,42 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                         background: `linear-gradient(90deg, rgba(59, 130, 246, ${0.02 + index * 0.01}) 0%, rgba(147, 51, 234, ${0.02 + index * 0.01}) 100%)`
                       }}
                     >
-                      <TableCell>
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                      <TableCell className="px-2 sm:px-4 py-2 sm:py-4">
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs sm:text-sm flex-shrink-0">
                             {booking.name.charAt(0).toUpperCase()}
                           </div>
-                          <div className="space-y-1">
-                            <div className="font-medium text-white">{booking.name}</div>
+                          <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+                            <div className="font-medium text-white text-xs sm:text-sm truncate">{booking.name}</div>
                             {booking.email && (
-                              <div className="flex items-center gap-2 text-gray-300">
-                                <Mail className="h-3 w-3 text-blue-400" />
-                                <span className="text-sm">{booking.email}</span>
+                              <div className="flex items-center gap-1 sm:gap-2 text-gray-300">
+                                <Mail className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-400 flex-shrink-0" />
+                                <span className="text-xs truncate">{booking.email}</span>
                               </div>
                             )}
                             {booking.phone && (
-                              <div className="flex items-center gap-2 text-gray-300">
-                                <Phone className="h-3 w-3 text-green-400" />
-                                <span className="text-sm">{booking.phone}</span>
+                              <div className="flex items-center gap-1 sm:gap-2 text-gray-300">
+                                <Phone className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-400 flex-shrink-0" />
+                                <span className="text-xs">{booking.phone}</span>
                               </div>
                             )}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="p-1 rounded bg-blue-500/10">
-                            <Calendar className="h-3 w-3 text-blue-400" />
+                      <TableCell className="px-2 sm:px-4 py-2 sm:py-4">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <div className="p-0.5 sm:p-1 rounded bg-blue-500/10">
+                            <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-400" />
                           </div>
                           <div>
-                            <div className="text-white font-medium">
+                            <div className="text-white font-medium text-xs sm:text-sm">
                               {new Date(booking.booking_time).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric'
                               })}
                             </div>
-                            <div className="text-sm text-gray-400">
+                            <div className="text-xs text-gray-400">
                               {new Date(booking.booking_time).toLocaleTimeString('en-US', {
                                 hour: '2-digit',
                                 minute: '2-digit'
@@ -221,20 +221,20 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="p-1 rounded bg-green-500/10">
-                            <Clock className="h-3 w-3 text-green-400" />
+                      <TableCell className="px-2 sm:px-4 py-2 sm:py-4">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <div className="p-0.5 sm:p-1 rounded bg-green-500/10">
+                            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-400" />
                           </div>
                           <div>
-                            <div className="text-white font-medium">
+                            <div className="text-white font-medium text-xs sm:text-sm">
                               {new Date(booking.created_at).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric'
                               })}
                             </div>
-                            <div className="text-sm text-gray-400">
+                            <div className="text-xs text-gray-400">
                               {new Date(booking.created_at).toLocaleTimeString('en-US', {
                                 hour: '2-digit',
                                 minute: '2-digit'
