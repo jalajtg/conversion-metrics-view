@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasShownSignInToast, setHasShownSignInToast] = useState(false);
+  const [hasProcessedInitialSession, setHasProcessedInitialSession] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,9 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(null);
         }
         
-        // Handle specific auth events - only redirect on actual sign-in from auth page
-        if (event === 'SIGNED_IN' && !hasShownSignInToast) {
-          setHasShownSignInToast(true);
+        // Only handle redirects for actual sign-in events, not for existing sessions
+        if (event === 'SIGNED_IN' && hasProcessedInitialSession) {
           toast({
             title: "Signed in",
             description: "You have successfully signed in",
@@ -98,7 +98,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }, 500);
           }
         } else if (event === 'SIGNED_OUT') {
-          setHasShownSignInToast(false); // Reset flag on sign out
           toast({
             title: "Signed out",
             description: "You have been signed out",
@@ -117,12 +116,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchProfile(existingSession.user.id);
       }
       setIsLoading(false);
+      // Mark that we've processed the initial session
+      setHasProcessedInitialSession(true);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, hasShownSignInToast, location.pathname]);
+  }, [navigate, location.pathname]);
 
   const fetchProfile = async (userId: string) => {
     try {
