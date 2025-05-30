@@ -40,7 +40,10 @@ export const createClinic = async (clinic: Omit<Clinic, 'id' | 'owner_id' | 'cre
   const { data, error } = await supabase
     .from("clinics")
     .insert({
-      ...clinic,
+      name: clinic.name,
+      email: clinic.email,
+      phone: clinic.phone,
+      address: clinic.address,
       owner_id: user.id
     })
     .select()

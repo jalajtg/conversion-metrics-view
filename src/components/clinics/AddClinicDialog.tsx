@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { createClinic } from '@/services/clinicService';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Dialog,
   DialogContent,
@@ -27,11 +28,13 @@ interface ClinicFormData {
   name: string;
   address: string;
   phone: string;
+  email: string;
 }
 
 export function AddClinicDialog() {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   
   const form = useForm<ClinicFormData>({
@@ -39,8 +42,16 @@ export function AddClinicDialog() {
       name: '',
       address: '',
       phone: '',
+      email: '',
     },
   });
+
+  // Pre-populate email when user is available
+  useEffect(() => {
+    if (user?.email) {
+      form.setValue('email', user.email);
+    }
+  }, [user, form]);
 
   const createClinicMutation = useMutation({
     mutationFn: createClinic,
@@ -51,6 +62,10 @@ export function AddClinicDialog() {
         description: "Clinic created successfully!",
       });
       form.reset();
+      // Reset email to user's email after form reset
+      if (user?.email) {
+        form.setValue('email', user.email);
+      }
       setOpen(false);
     },
     onError: () => {
@@ -91,6 +106,32 @@ export function AddClinicDialog() {
                     <Input 
                       {...field} 
                       placeholder="Enter clinic name"
+                      className="bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="email"
+              rules={{ 
+                required: "Email is required",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Invalid email address"
+                }
+              }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-gray-300">Email</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      type="email"
+                      placeholder="Enter clinic email"
                       className="bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
                     />
                   </FormControl>
