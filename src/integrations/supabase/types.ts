@@ -209,6 +209,42 @@ export type Database = {
           },
         ]
       }
+      email_queue: {
+        Row: {
+          clinic_name: string | null
+          created_at: string | null
+          email_type: string
+          id: string
+          password: string | null
+          processed: boolean | null
+          user_email: string
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          clinic_name?: string | null
+          created_at?: string | null
+          email_type: string
+          id?: string
+          password?: string | null
+          processed?: boolean | null
+          user_email: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          clinic_name?: string | null
+          created_at?: string | null
+          email_type?: string
+          id?: string
+          password?: string | null
+          processed?: boolean | null
+          user_email?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       frequently_asked_questions: {
         Row: {
           asked_count: number
@@ -334,18 +370,21 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          generated_password: string | null
           id: string
           name: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          generated_password?: string | null
           id: string
           name?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          generated_password?: string | null
           id?: string
           name?: string | null
         }
@@ -448,6 +487,15 @@ export type Database = {
       replicate_products_to_clinic: {
         Args: { source_clinic_id: string; target_clinic_id: string }
         Returns: number
+      }
+      send_user_notification_email: {
+        Args: {
+          p_user_id: string
+          p_email_type: string
+          p_clinic_name?: string
+          p_password?: string
+        }
+        Returns: undefined
       }
       user_owns_clinic: {
         Args: { clinic_uuid: string }

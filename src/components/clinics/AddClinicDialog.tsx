@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { createClinic } from '@/services/clinicService';
-import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -22,17 +23,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { UserSelector } from './UserSelector';
 
 interface ClinicFormData {
   name: string;
   address: string;
   phone: string;
+  owner_id: string;
 }
 
 export function AddClinicDialog() {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const form = useForm<ClinicFormData>({
@@ -40,35 +42,70 @@ export function AddClinicDialog() {
       name: '',
       address: '',
       phone: '',
+      owner_id: '',
     },
   });
 
   const createClinicMutation = useMutation({
-    mutationFn: (data: ClinicFormData) => {
-      return createClinic({
-        ...data,
-        email: user?.email || '',
+    mutationFn: async (data: ClinicFormData) => {
+      const { data: clinic, error } = await supabase
+        .from('clinics')
+        .insert({
+          name: data.name,
+          address: data.address,
+          phone: data.phone,
+          email: '', // Set empty email for now
+          owner_id: data.owner_id,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Send notification email to the clinic owner
+      const { error: emailError } = await supabase.rpc('send_user_notification_email', {
+        p_user_id: data.owner_id,
+        p_email_type: 'clinic_added',
+        p_clinic_name: data.name,
+        p_password: null,
       });
+
+      if (emailError) {
+        console.error('Error sending clinic notification email:', emailError);
+        // Don't throw here - clinic creation succeeded, email is secondary
+      }
+
+      return clinic;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-clinics"] });
       toast({
         title: "Success",
-        description: "Clinic created successfully!",
+        description: "Clinic created successfully! The owner will be notified via email.",
       });
       form.reset();
       setOpen(false);
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to create clinic. Please try again.",
+        description: error.message || "Failed to create clinic. Please try again.",
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (data: ClinicFormData) => {
+    if (!data.owner_id) {
+      toast({
+        title: "Error",
+        description: "Please select a clinic owner.",
+        variant: "destructive",
+      });
+      return;
+    }
     createClinicMutation.mutate(data);
   };
 
@@ -80,11 +117,10 @@ export function AddClinicDialog() {
           Add Clinic
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-theme-dark-card border-gray-700 text-white max-w-md mx-auto fixed inset-0 flex items-center justify-center p-6 rounded-md"
-        style={{ height: '400px', marginTop: "200px" }}
+      <DialogContent 
+        className="bg-theme-dark-card border-gray-700 text-white max-w-md mx-auto"
+        style={{ maxHeight: '90vh', overflowY: 'auto' }}
       >
-
-
         <div className="w-full">
           <DialogHeader>
             <DialogTitle className="text-white">Add New Clinic</DialogTitle>
@@ -109,6 +145,7 @@ export function AddClinicDialog() {
                   </FormItem>
                 )}
               />
+              
               <FormField
                 control={form.control}
                 name="address"
@@ -127,6 +164,7 @@ export function AddClinicDialog() {
                   </FormItem>
                 )}
               />
+              
               <FormField
                 control={form.control}
                 name="phone"
@@ -145,6 +183,25 @@ export function AddClinicDialog() {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="owner_id"
+                rules={{ required: "Clinic owner is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-300">Clinic Owner</FormLabel>
+                    <FormControl>
+                      <UserSelector
+                        selectedUserId={field.value}
+                        onUserSelect={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
               <div className="flex justify-end space-x-2 pt-4">
                 <Button
                   type="button"

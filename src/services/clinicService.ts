@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Clinic } from "@/types/dashboard";
 
@@ -29,14 +28,7 @@ export const fetchUserClinics = async (): Promise<Clinic[]> => {
   return data || [];
 };
 
-export const createClinic = async (clinic: Omit<Clinic, 'id' | 'owner_id' | 'created_at' | 'updated_at'>): Promise<Clinic | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    console.error("User not authenticated");
-    return null;
-  }
-
+export const createClinic = async (clinic: Omit<Clinic, 'id' | 'created_at' | 'updated_at'>): Promise<Clinic | null> => {
   const { data, error } = await supabase
     .from("clinics")
     .insert({
@@ -44,7 +36,7 @@ export const createClinic = async (clinic: Omit<Clinic, 'id' | 'owner_id' | 'cre
       email: clinic.email,
       phone: clinic.phone,
       address: clinic.address,
-      owner_id: user.id
+      owner_id: clinic.owner_id
     })
     .select()
     .single();
