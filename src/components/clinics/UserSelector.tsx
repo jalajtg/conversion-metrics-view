@@ -16,7 +16,6 @@ import { CreateUserDialog } from './CreateUserDialog';
 interface User {
   id: string;
   name: string | null;
-  email: string;
 }
 
 interface UserSelectorProps {
@@ -30,10 +29,12 @@ export function UserSelector({ selectedUserId, onUserSelect }: UserSelectorProps
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users-for-clinic'],
     queryFn: async () => {
-      // Get all users from profiles table (which syncs with auth.users)
+      console.log('Fetching users from profiles table...');
+      
+      // Get all users from profiles table
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, name, email')
+        .select('id, name')
         .order('name');
 
       if (error) {
@@ -41,22 +42,8 @@ export function UserSelector({ selectedUserId, onUserSelect }: UserSelectorProps
         return [];
       }
 
-      // Also get email from auth metadata if name is missing
-      const usersWithEmail = await Promise.all(
-        data.map(async (user) => {
-          if (!user.email) {
-            // Try to get email from auth.users if not in profiles
-            const { data: authUser } = await supabase.auth.admin.getUserById(user.id);
-            return {
-              ...user,
-              email: authUser.user?.email || 'No email',
-            };
-          }
-          return user;
-        })
-      );
-
-      return usersWithEmail as User[];
+      console.log('Users fetched:', data);
+      return data as User[];
     },
   });
 
@@ -84,7 +71,7 @@ export function UserSelector({ selectedUserId, onUserSelect }: UserSelectorProps
             >
               <div className="flex flex-col">
                 <span>{user.name || 'Unnamed User'}</span>
-                <span className="text-sm text-gray-400">{user.email}</span>
+                <span className="text-sm text-gray-400">ID: {user.id.slice(0, 8)}...</span>
               </div>
             </SelectItem>
           ))}
