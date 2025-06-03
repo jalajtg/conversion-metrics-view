@@ -88,6 +88,7 @@ export function AddClinicDialog() {
     },
     onSuccess: () => {
       console.log('Clinic creation successful');
+      queryClient.invalidateQueries({ queryKey: ["all-clinics"] });
       queryClient.invalidateQueries({ queryKey: ["user-clinics"] });
       toast({
         title: "Success",

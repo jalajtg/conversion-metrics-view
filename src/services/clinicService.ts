@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Clinic } from "@/types/dashboard";
 
@@ -24,6 +25,30 @@ export const fetchUserClinics = async (): Promise<Clinic[]> => {
   
   console.log("User clinic data from database:", data);
   console.log("Total user clinics found:", data?.length || 0);
+  
+  return data || [];
+};
+
+export const fetchAllClinics = async (): Promise<Clinic[]> => {
+  console.log("Fetching all clinics from database...");
+  
+  const { data, error } = await supabase
+    .from("clinics")
+    .select(`
+      *,
+      profiles:owner_id (
+        name
+      )
+    `)
+    .order("name");
+  
+  if (error) {
+    console.error("Error fetching all clinics:", error);
+    return [];
+  }
+  
+  console.log("All clinic data from database:", data);
+  console.log("Total clinics found:", data?.length || 0);
   
   return data || [];
 };
