@@ -52,9 +52,6 @@ export function UserSelector({ selectedUserId, onUserSelect }: UserSelectorProps
     setShowCreateDialog(false);
   };
 
-  // Find the selected user to display their name
-  const selectedUser = users.find(user => user.id === selectedUserId);
-
   if (isLoading) {
     return <div className="text-gray-400">Loading users...</div>;
   }
@@ -63,13 +60,7 @@ export function UserSelector({ selectedUserId, onUserSelect }: UserSelectorProps
     <div className="space-y-2">
       <Select value={selectedUserId} onValueChange={onUserSelect}>
         <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
-          <SelectValue>
-            {selectedUser ? (
-              <span>{selectedUser.name || 'Unnamed User'}</span>
-            ) : (
-              <span className="text-gray-400">Select a user</span>
-            )}
-          </SelectValue>
+          <SelectValue placeholder="Select a user" />
         </SelectTrigger>
         <SelectContent className="bg-theme-dark-card border-gray-700">
           {users.map((user) => (
