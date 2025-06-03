@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 import { PrivateRoute } from '@/components/auth/PrivateRoute';
 import { Layout } from '@/components/layout/Layout';
+import { SuperAdminLayout } from '@/components/admin/SuperAdminLayout';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
 import Products from '@/pages/Products';
@@ -36,15 +37,20 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route element={<PrivateRoute />}>
+              {/* Regular user routes */}
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/super-admin" element={<SuperAdmin />} />
-                <Route path="/super-admin/users" element={<Users />} />
-                <Route path="/super-admin/clinics" element={<Clinics />} />
-                <Route path="/super-admin/add-clinic" element={<AddClinic />} />
+              </Route>
+              
+              {/* Super admin routes */}
+              <Route path="/super-admin" element={<SuperAdminLayout />}>
+                <Route index element={<SuperAdmin />} />
+                <Route path="users" element={<Users />} />
+                <Route path="clinics" element={<Clinics />} />
+                <Route path="add-clinic" element={<AddClinic />} />
               </Route>
             </Route>
             <Route path="/404" element={<NotFound />} />

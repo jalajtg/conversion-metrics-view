@@ -1,10 +1,9 @@
 
 import React from 'react';
 import { SuperAdminDashboard } from '@/components/admin/SuperAdminDashboard';
-import { SuperAdminLayout } from '@/components/admin/SuperAdminLayout';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
-import { Loader2, Shield, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -17,7 +16,7 @@ export default function SuperAdmin() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-theme-dark">
+      <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-theme-blue" />
       </div>
     );
@@ -27,7 +26,7 @@ export default function SuperAdmin() {
   if (!isSuperAdmin) {
     console.log('User is not super admin, showing access denied page');
     return (
-      <div className="min-h-screen bg-theme-dark flex items-center justify-center p-4">
+      <div className="flex items-center justify-center h-full p-4">
         <Card className="bg-theme-dark-card border-gray-800 max-w-md w-full">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 p-3 bg-red-500/10 rounded-full w-fit">
@@ -57,9 +56,5 @@ export default function SuperAdmin() {
   }
 
   console.log('Rendering SuperAdminDashboard');
-  return (
-    <SuperAdminLayout>
-      <SuperAdminDashboard />
-    </SuperAdminLayout>
-  );
+  return <SuperAdminDashboard />;
 }

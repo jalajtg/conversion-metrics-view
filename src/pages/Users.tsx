@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { UserManagement } from '@/components/admin/UserManagement';
-import { SuperAdminLayout } from '@/components/admin/SuperAdminLayout';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
@@ -11,7 +10,7 @@ export default function Users() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-theme-dark">
+      <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-theme-blue" />
       </div>
     );
@@ -22,19 +21,17 @@ export default function Users() {
   }
 
   return (
-    <SuperAdminLayout>
-      <div className="w-full">
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-            User Management
-          </h1>
-          <p className="text-gray-400">
-            Manage all users in the system
-          </p>
-        </div>
-        
-        <UserManagement />
+    <div className="w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+          User Management
+        </h1>
+        <p className="text-gray-400">
+          Manage all users in the system
+        </p>
       </div>
-    </SuperAdminLayout>
+      
+      <UserManagement />
+    </div>
   );
 }

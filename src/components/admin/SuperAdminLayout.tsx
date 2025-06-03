@@ -1,14 +1,11 @@
 
 import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { SuperAdminHeader } from './SuperAdminHeader';
 import { SuperAdminSidebar } from './SuperAdminSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 
-interface SuperAdminLayoutProps {
-  children: React.ReactNode;
-}
-
-export function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
+export function SuperAdminLayout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-theme-dark">
@@ -16,7 +13,7 @@ export function SuperAdminLayout({ children }: SuperAdminLayoutProps) {
         <div className="flex flex-1">
           <SuperAdminSidebar />
           <main className="flex-1 p-4 md:p-6 overflow-auto">
-            {children}
+            <Outlet />
           </main>
         </div>
       </div>
