@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +15,12 @@ interface UserProfile {
   email: string;
   role: 'user' | 'admin' | 'super_admin';
   status: 'active' | 'inactive';
+}
+
+interface AuthUser {
+  id: string;
+  email?: string;
+  created_at: string;
 }
 
 export function UserManagement() {
@@ -53,19 +58,20 @@ export function UserManagement() {
       console.log('User roles fetched:', userRoles);
 
       // Get auth users data using the admin API
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      const { data: authUsersResponse, error: authError } = await supabase.auth.admin.listUsers();
 
       if (authError) {
         console.error('Error fetching auth users:', authError);
         throw authError;
       }
 
-      console.log('Auth users fetched:', authUsers.users?.length);
+      const authUsers: AuthUser[] = authUsersResponse.users || [];
+      console.log('Auth users fetched:', authUsers.length);
 
       // Combine all data
       const usersWithDetails: UserProfile[] = profiles.map(profile => {
         const userRole = userRoles.find(role => role.user_id === profile.id);
-        const authUser = authUsers.users?.find(user => user.id === profile.id);
+        const authUser = authUsers.find(user => user.id === profile.id);
         
         return {
           id: profile.id,
