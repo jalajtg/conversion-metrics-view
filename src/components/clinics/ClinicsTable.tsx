@@ -16,20 +16,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { 
   Loader2, 
   Trash2, 
@@ -38,7 +24,8 @@ import {
   ArrowUpDown, 
   ArrowUp, 
   ArrowDown,
-  MoreHorizontal
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { EditClinicDialog } from './EditClinicDialog';
@@ -114,68 +101,69 @@ export function ClinicsTable() {
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
-    const getVisiblePages = () => {
-      const delta = 2;
-      const range = [];
-      const rangeWithDots = [];
-
-      for (let i = Math.max(2, state.page - delta); 
-           i <= Math.min(totalPages - 1, state.page + delta); 
-           i++) {
-        range.push(i);
-      }
-
-      if (state.page - delta > 2) {
-        rangeWithDots.push(1, '...');
-      } else {
-        rangeWithDots.push(1);
-      }
-
-      rangeWithDots.push(...range);
-
-      if (state.page + delta < totalPages - 1) {
-        rangeWithDots.push('...', totalPages);
-      } else if (totalPages > 1) {
-        rangeWithDots.push(totalPages);
-      }
-
-      return rangeWithDots;
-    };
+    const startIndex = (state.page - 1) * state.pageSize + 1;
+    const endIndex = Math.min(state.page * state.pageSize, totalItems);
 
     return (
-      <Pagination className="mt-6">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious 
-              onClick={() => state.page > 1 && updateState({ page: state.page - 1 })}
-              className={state.page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-            />
-          </PaginationItem>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4 py-3 bg-theme-dark-card border border-gray-700 rounded-lg">
+        <div className="text-sm text-gray-400">
+          Showing {startIndex} to {endIndex} of {totalItems} entries
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => updateState({ page: state.page - 1 })}
+            disabled={state.page <= 1}
+            className="bg-theme-dark-lighter border-gray-600 text-white hover:bg-gray-700 disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Previous</span>
+          </Button>
           
-          {getVisiblePages().map((page, index) => (
-            <PaginationItem key={index}>
-              {page === '...' ? (
-                <span className="px-4 py-2">...</span>
-              ) : (
-                <PaginationLink
-                  onClick={() => updateState({ page: page as number })}
-                  isActive={state.page === page}
-                  className="cursor-pointer"
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (state.page <= 3) {
+                pageNum = i + 1;
+              } else if (state.page >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = state.page - 2 + i;
+              }
+              
+              return (
+                <Button
+                  key={pageNum}
+                  variant={state.page === pageNum ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => updateState({ page: pageNum })}
+                  className={state.page === pageNum 
+                    ? "bg-theme-blue text-white hover:bg-theme-blue/90" 
+                    : "bg-theme-dark-lighter border-gray-600 text-white hover:bg-gray-700"
+                  }
                 >
-                  {page}
-                </PaginationLink>
-              )}
-            </PaginationItem>
-          ))}
+                  {pageNum}
+                </Button>
+              );
+            })}
+          </div>
           
-          <PaginationItem>
-            <PaginationNext 
-              onClick={() => state.page < totalPages && updateState({ page: state.page + 1 })}
-              className={state.page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => updateState({ page: state.page + 1 })}
+            disabled={state.page >= totalPages}
+            className="bg-theme-dark-lighter border-gray-600 text-white hover:bg-gray-700 disabled:opacity-50"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     );
   };
 
@@ -198,30 +186,32 @@ export function ClinicsTable() {
   return (
     <>
       <Card className="w-full bg-theme-dark-card border-gray-700">
-        <CardHeader className="border-b border-gray-700">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="text-white">
+        <CardHeader className="border-b border-gray-700 space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <CardTitle className="text-white text-xl">
               All Clinics ({totalItems})
             </CardTitle>
-            <div className="flex items-center gap-4">
-              <div className="relative">
+            
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative flex-1 sm:flex-none">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search clinics..."
                   value={state.searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 w-64 bg-theme-dark-lighter border-gray-600 text-white placeholder-gray-400"
+                  className="pl-10 w-full sm:w-64 bg-theme-dark-lighter border-gray-600 text-white placeholder-gray-400 focus:border-theme-blue focus:ring-theme-blue"
                 />
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <span>Show:</span>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400 whitespace-nowrap">Show:</span>
                 <select
                   value={state.pageSize}
                   onChange={(e) => {
                     updateState({ pageSize: Number(e.target.value) });
                     resetToFirstPage();
                   }}
-                  className="bg-theme-dark-lighter border border-gray-600 rounded px-2 py-1 text-white"
+                  className="bg-theme-dark-lighter border border-gray-600 rounded-md px-3 py-2 text-white text-sm focus:border-theme-blue focus:ring-theme-blue"
                 >
                   <option value={10}>10</option>
                   <option value={25}>25</option>
@@ -232,101 +222,113 @@ export function ClinicsTable() {
             </div>
           </div>
         </CardHeader>
+        
         <CardContent className="p-0">
           {paginatedData && paginatedData.length > 0 ? (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-700 hover:bg-theme-dark-lighter">
-                    <TableHead className="text-gray-300 font-semibold">
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleSort('name')}
-                        className="h-auto p-0 text-gray-300 hover:text-white hover:bg-transparent"
-                      >
-                        Name {getSortIcon('name')}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleSort('profiles.name')}
-                        className="h-auto p-0 text-gray-300 hover:text-white hover:bg-transparent"
-                      >
-                        Owner {getSortIcon('profiles.name')}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleSort('email')}
-                        className="h-auto p-0 text-gray-300 hover:text-white hover:bg-transparent"
-                      >
-                        Email {getSortIcon('email')}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">Phone</TableHead>
-                    <TableHead className="text-gray-300 font-semibold">Address</TableHead>
-                    <TableHead className="text-gray-300 font-semibold">
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleSort('created_at')}
-                        className="h-auto p-0 text-gray-300 hover:text-white hover:bg-transparent"
-                      >
-                        Created {getSortIcon('created_at')}
-                      </Button>
-                    </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedData.map((clinic: any) => (
-                    <TableRow key={clinic.id} className="border-gray-700 hover:bg-theme-dark-lighter transition-colors">
-                      <TableCell className="font-medium text-white">{clinic.name}</TableCell>
-                      <TableCell className="text-gray-300">{clinic.profiles?.name || 'Unknown Owner'}</TableCell>
-                      <TableCell className="text-gray-300">{clinic.email || 'N/A'}</TableCell>
-                      <TableCell className="text-gray-300">{clinic.phone || 'N/A'}</TableCell>
-                      <TableCell className="text-gray-300">{clinic.address || 'N/A'}</TableCell>
-                      <TableCell className="text-gray-300">
-                        {new Date(clinic.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700 hover:bg-theme-dark-lighter">
+                      <TableHead className="text-gray-300 font-semibold">
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort('name')}
+                          className="h-auto p-0 text-gray-300 hover:text-white hover:bg-transparent"
+                        >
+                          Name {getSortIcon('name')}
+                        </Button>
+                      </TableHead>
+                      <TableHead className="text-gray-300 font-semibold hidden md:table-cell">
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort('profiles.name')}
+                          className="h-auto p-0 text-gray-300 hover:text-white hover:bg-transparent"
+                        >
+                          Owner {getSortIcon('profiles.name')}
+                        </Button>
+                      </TableHead>
+                      <TableHead className="text-gray-300 font-semibold hidden lg:table-cell">
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort('email')}
+                          className="h-auto p-0 text-gray-300 hover:text-white hover:bg-transparent"
+                        >
+                          Email {getSortIcon('email')}
+                        </Button>
+                      </TableHead>
+                      <TableHead className="text-gray-300 font-semibold hidden xl:table-cell">Phone</TableHead>
+                      <TableHead className="text-gray-300 font-semibold hidden xl:table-cell">Address</TableHead>
+                      <TableHead className="text-gray-300 font-semibold hidden lg:table-cell">
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort('created_at')}
+                          className="h-auto p-0 text-gray-300 hover:text-white hover:bg-transparent"
+                        >
+                          Created {getSortIcon('created_at')}
+                        </Button>
+                      </TableHead>
+                      <TableHead className="text-gray-300 font-semibold text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.map((clinic: any) => (
+                      <TableRow key={clinic.id} className="border-gray-700 hover:bg-theme-dark-lighter transition-colors">
+                        <TableCell className="font-medium text-white">
+                          <div>
+                            <div className="font-medium">{clinic.name}</div>
+                            <div className="md:hidden text-sm text-gray-400 mt-1">
+                              {clinic.profiles?.name || 'Unknown Owner'}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-gray-300 hidden md:table-cell">
+                          {clinic.profiles?.name || 'Unknown Owner'}
+                        </TableCell>
+                        <TableCell className="text-gray-300 hidden lg:table-cell">
+                          {clinic.email || 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-gray-300 hidden xl:table-cell">
+                          {clinic.phone || 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-gray-300 hidden xl:table-cell">
+                          <div className="max-w-xs truncate" title={clinic.address}>
+                            {clinic.address || 'N/A'}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-gray-300 hidden lg:table-cell">
+                          {new Date(clinic.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
-                              className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-700"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-theme-dark-card border-gray-600">
-                            <DropdownMenuItem
                               onClick={() => setEditingClinic(clinic)}
-                              className="text-gray-300 hover:text-white hover:bg-gray-700 cursor-pointer"
+                              className="bg-theme-dark-lighter border-gray-600 text-white hover:bg-gray-700 hover:border-gray-500"
                             >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
+                              <Edit className="h-4 w-4" />
+                              <span className="hidden sm:inline ml-1">Edit</span>
+                            </Button>
                             {isSuperAdmin && (
-                              <DropdownMenuItem
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => handleDelete(clinic.id)}
                                 disabled={deleteClinicMutation.isPending}
-                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
+                                className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300"
                               >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
+                                <Trash2 className="h-4 w-4" />
+                                <span className="hidden sm:inline ml-1">Delete</span>
+                              </Button>
                             )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
               {renderPagination()}
             </>
           ) : (
