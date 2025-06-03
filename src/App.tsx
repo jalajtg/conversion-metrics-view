@@ -36,85 +36,22 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route
-              path="/dashboard"
+              path="/*"
               element={
                 <PrivateRoute>
-                  <Layout>
-                    <Dashboard />
-                  </Layout>
+                  <Layout />
                 </PrivateRoute>
               }
-            />
-            <Route
-              path="/products"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <Products />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/faq"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <FAQ />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <Profile />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/super-admin"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <SuperAdmin />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/super-admin/users"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <Users />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/super-admin/clinics"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <Clinics />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/super-admin/add-clinic"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <AddClinic />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
+            >
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="products" element={<Products />} />
+              <Route path="faq" element={<FAQ />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="super-admin" element={<SuperAdmin />} />
+              <Route path="super-admin/users" element={<Users />} />
+              <Route path="super-admin/clinics" element={<Clinics />} />
+              <Route path="super-admin/add-clinic" element={<AddClinic />} />
+            </Route>
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
