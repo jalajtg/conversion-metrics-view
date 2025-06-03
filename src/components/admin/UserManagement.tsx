@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -145,9 +144,7 @@ export function UserManagement() {
   };
 
   const handleDelete = (userId: string) => {
-    if (confirm('Are you sure you want to delete this user? This action cannot be undone and will remove the user from both the profile and authentication data.')) {
-      deleteUserMutation.mutate(userId);
-    }
+    deleteUserMutation.mutate(userId);
   };
 
   const handleUserCreated = () => {
