@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,85 +18,59 @@ interface UserProfile {
   status: 'active' | 'inactive';
 }
 
-interface AuthUser {
-  id: string;
-  email?: string;
-  created_at: string;
-}
-
 export function UserManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch all users from profiles table with their auth data and roles
+  // Fetch all users via edge function
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['all-users'],
     queryFn: async () => {
-      console.log('Fetching all users from profiles table...');
+      console.log('Fetching all users via edge function...');
       
-      // Get all profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, name');
-
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        throw profilesError;
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error('No session found');
       }
 
-      console.log('Profiles fetched:', profiles);
-
-      // Get user roles for all users
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) {
-        console.error('Error fetching user roles:', rolesError);
-        throw rolesError;
-      }
-
-      console.log('User roles fetched:', userRoles);
-
-      // Get auth users data using the admin API
-      const { data: authUsersResponse, error: authError } = await supabase.auth.admin.listUsers();
-
-      if (authError) {
-        console.error('Error fetching auth users:', authError);
-        throw authError;
-      }
-
-      const authUsers: AuthUser[] = authUsersResponse.users || [];
-      console.log('Auth users fetched:', authUsers.length);
-
-      // Combine all data
-      const usersWithDetails: UserProfile[] = profiles.map(profile => {
-        const userRole = userRoles.find(role => role.user_id === profile.id);
-        const authUser = authUsers.find(user => user.id === profile.id);
-        
-        return {
-          id: profile.id,
-          name: profile.name,
-          email: authUser?.email || 'No email found',
-          role: userRole?.role || 'user',
-          status: 'active' as const
-        };
+      const { data, error } = await supabase.functions.invoke('user-management', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
+        },
+        body: new URLSearchParams({ action: 'list-users' }),
       });
 
-      console.log('Combined users data:', usersWithDetails);
-      return usersWithDetails;
+      if (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+
+      console.log('Users fetched via edge function:', data.users);
+      return data.users as UserProfile[];
     }
   });
 
   const updateUserMutation = useMutation({
     mutationFn: async (userData: { id: string; role: 'user' | 'admin' | 'super_admin' }) => {
-      console.log('Updating user role:', userData);
-      const { error } = await supabase
-        .from('user_roles')
-        .upsert({
-          user_id: userData.id,
+      console.log('Updating user role via edge function:', userData);
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error('No session found');
+      }
+
+      const { error } = await supabase.functions.invoke('user-management', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
+        },
+        body: {
+          action: 'update-user',
+          id: userData.id,
           role: userData.role
-        });
+        },
+      });
       
       if (error) throw error;
     },
@@ -118,28 +93,25 @@ export function UserManagement() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      console.log('Deleting user:', userId);
+      console.log('Deleting user via edge function:', userId);
       
-      // Delete user role first
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-      
-      if (roleError) throw roleError;
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error('No session found');
+      }
 
-      // Delete profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
+      const { error } = await supabase.functions.invoke('user-management', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
+        },
+        body: {
+          action: 'delete-user',
+          id: userId
+        },
+      });
       
-      if (profileError) throw profileError;
-
-      // Delete from auth (this will cascade delete the profile due to foreign key)
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-      
-      if (authError) throw authError;
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });

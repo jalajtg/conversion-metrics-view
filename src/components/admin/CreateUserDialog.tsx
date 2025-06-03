@@ -44,78 +44,36 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
 
   const createUserMutation = useMutation({
     mutationFn: async (data: CreateUserFormData) => {
-      console.log('Creating user with data:', data);
+      console.log('Creating user via edge function with data:', data);
       
-      // Generate a random password for the new user
-      const password = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase() + '1!';
-      console.log('Generated password for user:', password);
-      
-      // Create the user in Supabase Auth using the admin API
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: data.email,
-        password: password,
-        email_confirm: true, // Skip email confirmation for admin-created users
-        user_metadata: {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        throw new Error('No session found');
+      }
+
+      const { data: result, error } = await supabase.functions.invoke('user-management', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionData.session.access_token}`,
+        },
+        body: {
+          action: 'create-user',
           name: data.name,
+          email: data.email
         },
       });
 
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw authError;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
       }
 
-      if (!authData.user) {
-        throw new Error('Failed to create user - no user returned');
+      if (!result.success) {
+        throw new Error('Failed to create user');
       }
 
-      console.log('User created in auth:', authData.user.id);
-
-      // The handle_new_user trigger should automatically create the profile
-      // But let's make sure by upserting the profile with the correct data
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: authData.user.id,
-          name: data.name,
-        });
-
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
-        // Don't throw here - user creation succeeded, profile update is secondary
-      }
-
-      // Assign user role (default to 'user')
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .upsert({
-          user_id: authData.user.id,
-          role: 'user',
-        });
-
-      if (roleError) {
-        console.error('Error assigning user role:', roleError);
-        // Don't throw here - user creation succeeded, role assignment is secondary
-      }
-
-      console.log('Profile and role updated for user:', authData.user.id);
-
-      // Send notification email using the database function
-      const { error: emailError } = await supabase.rpc('send_user_notification_email', {
-        p_user_id: authData.user.id,
-        p_email_type: 'new_user',
-        p_clinic_name: null,
-        p_password: password,
-      });
-
-      if (emailError) {
-        console.error('Error sending notification email:', emailError);
-        // Don't throw here - user creation succeeded, email is secondary
-      } else {
-        console.log('Notification email queued for user:', authData.user.id);
-      }
-
-      return authData.user;
+      console.log('User creation successful via edge function:', result.user.id);
+      return result.user;
     },
     onSuccess: (user) => {
       console.log('User creation successful:', user.id);
