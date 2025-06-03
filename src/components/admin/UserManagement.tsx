@@ -109,9 +109,8 @@ export function UserManagement() {
     mutationFn: async (userId: string) => {
       console.log('Deleting user:', userId);
       
-      const { error } = await supabase.functions.invoke('user-management', {
-        method: 'DELETE',
-        body: { id: userId }
+      const { error } = await supabase.functions.invoke('delete_user', {
+        body: { user_id: userId }
       });
       
       if (error) throw error;
