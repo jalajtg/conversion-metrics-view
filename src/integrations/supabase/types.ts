@@ -465,6 +465,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_profile: {
+        Args: { user_id: string; user_name: string; user_role: string }
+        Returns: undefined
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -495,6 +499,10 @@ export type Database = {
           p_clinic_name?: string
           p_password?: string
         }
+        Returns: undefined
+      }
+      update_profile: {
+        Args: { user_id: string; user_name: string; user_role: string }
         Returns: undefined
       }
       user_owns_clinic: {

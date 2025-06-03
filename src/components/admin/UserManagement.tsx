@@ -22,11 +22,11 @@ export function UserManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch all users from profiles table with auth data and roles
+  // Fetch all users with email data from auth and profile/role data from database
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['profiles-users'],
+    queryKey: ['all-users'],
     queryFn: async () => {
-      console.log('Fetching all users from profiles table...');
+      console.log('Fetching all users with auth data...');
       
       // Get all profiles
       const { data: profiles, error: profilesError } = await supabase
@@ -48,19 +48,21 @@ export function UserManagement() {
         throw rolesError;
       }
 
-      // Get auth users for email data
-      const { data: authUsersResponse, error: authError } = await supabase.auth.admin.listUsers();
+      // Use the user-management edge function to get auth users with email data
+      const { data: authResponse, error: authError } = await supabase.functions.invoke('user-management', {
+        method: 'GET'
+      });
 
       if (authError) {
         console.error('Error fetching auth users:', authError);
-        // If we can't get auth data, continue with just profile data
+        throw authError;
       }
 
-      const authUsers = authUsersResponse?.users || [];
+      const authUsers = authResponse?.users || [];
 
       const usersWithDetails = profiles.map(profile => {
         const userRole = userRoles.find(role => role.user_id === profile.id);
-        const authUser = authUsers.find(user => user.id === profile.id);
+        const authUser = authUsers.find((user: any) => user.id === profile.id);
         
         return {
           id: profile.id,
@@ -71,7 +73,7 @@ export function UserManagement() {
         };
       });
 
-      console.log('Users fetched from profiles:', usersWithDetails);
+      console.log('Users fetched with auth data:', usersWithDetails);
       return usersWithDetails as UserProfile[];
     }
   });
@@ -80,15 +82,15 @@ export function UserManagement() {
     mutationFn: async (userData: { id: string; role: 'user' | 'admin' | 'super_admin' }) => {
       console.log('Updating user role:', userData);
       
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ role: userData.role })
-        .eq('user_id', userData.id);
+      const { error } = await supabase.functions.invoke('user-management', {
+        method: 'PUT',
+        body: { id: userData.id, role: userData.role }
+      });
       
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profiles-users'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
       toast({
         title: "Success",
         description: "User updated successfully",
@@ -108,32 +110,15 @@ export function UserManagement() {
     mutationFn: async (userId: string) => {
       console.log('Deleting user:', userId);
       
-      // Delete user role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      const { error } = await supabase.functions.invoke('user-management', {
+        method: 'DELETE',
+        body: { id: userId }
+      });
       
-      if (roleError) {
-        console.error('Error deleting user role:', roleError);
-      }
-
-      // Delete profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
-      
-      if (profileError) {
-        console.error('Error deleting profile:', profileError);
-        throw profileError;
-      }
-
-      // Note: We can't delete from auth.users directly via client
-      // This would need to be done via admin API or edge function
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profiles-users'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
       toast({
         title: "Success",
         description: "User deleted successfully",
@@ -160,13 +145,13 @@ export function UserManagement() {
   };
 
   const handleDelete = (userId: string) => {
-    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone and will remove the user from both the profile and authentication data.')) {
       deleteUserMutation.mutate(userId);
     }
   };
 
   const handleUserCreated = () => {
-    queryClient.invalidateQueries({ queryKey: ['profiles-users'] });
+    queryClient.invalidateQueries({ queryKey: ['all-users'] });
     setIsAddDialogOpen(false);
   };
 
