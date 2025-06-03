@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Clinic } from "@/types/dashboard";
 
@@ -29,28 +28,55 @@ export const fetchUserClinics = async (): Promise<Clinic[]> => {
   return data || [];
 };
 
-export const fetchAllClinics = async (): Promise<Clinic[]> => {
+export const fetchAllClinics = async (): Promise<any[]> => {
   console.log("Fetching all clinics from database...");
   
-  const { data, error } = await supabase
+  const { data: clinicsData, error: clinicsError } = await supabase
     .from("clinics")
-    .select(`
-      *,
-      profiles:owner_id (
-        name
-      )
-    `)
+    .select("*")
     .order("name");
   
-  if (error) {
-    console.error("Error fetching all clinics:", error);
+  if (clinicsError) {
+    console.error("Error fetching all clinics:", clinicsError);
     return [];
   }
+
+  if (!clinicsData || clinicsData.length === 0) {
+    console.log("No clinics found");
+    return [];
+  }
+
+  // Get all unique owner IDs
+  const ownerIds = [...new Set(clinicsData.map(clinic => clinic.owner_id))];
   
-  console.log("All clinic data from database:", data);
-  console.log("Total clinics found:", data?.length || 0);
+  // Fetch profiles for all owners
+  const { data: profilesData, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, name")
+    .in("id", ownerIds);
+
+  if (profilesError) {
+    console.error("Error fetching profiles:", profilesError);
+    // Return clinics without profile data if profiles fetch fails
+    return clinicsData.map(clinic => ({
+      ...clinic,
+      profiles: null
+    }));
+  }
+
+  // Create a map of profiles for easy lookup
+  const profilesMap = new Map(profilesData?.map(profile => [profile.id, profile]) || []);
+
+  // Combine clinics with their owner profiles
+  const clinicsWithProfiles = clinicsData.map(clinic => ({
+    ...clinic,
+    profiles: profilesMap.get(clinic.owner_id) || null
+  }));
   
-  return data || [];
+  console.log("All clinic data with profiles:", clinicsWithProfiles);
+  console.log("Total clinics found:", clinicsWithProfiles.length);
+  
+  return clinicsWithProfiles;
 };
 
 export const createClinic = async (clinic: Omit<Clinic, 'id' | 'created_at' | 'updated_at'>): Promise<Clinic | null> => {
