@@ -66,7 +66,6 @@ serve(async (req) => {
         throw profilesError;
       }
 
-      // Get user roles
       const { data: userRoles, error: rolesError } = await supabaseAdmin
         .from('user_roles')
         .select('user_id, role');
@@ -76,7 +75,6 @@ serve(async (req) => {
         throw rolesError;
       }
 
-      // Get auth users
       const { data: authUsersResponse, error: authError } = await supabaseAdmin.auth.admin.listUsers();
 
       if (authError) {
@@ -86,7 +84,6 @@ serve(async (req) => {
 
       const authUsers = authUsersResponse.users || [];
 
-      // Combine data
       const usersWithDetails = profiles.map(profile => {
         const userRole = userRoles.find(role => role.user_id === profile.id);
         const authUser = authUsers.find(user => user.id === profile.id);
@@ -106,8 +103,22 @@ serve(async (req) => {
       );
     }
 
+    // For methods that require body parsing, safely parse JSON
+    let requestBody = {};
+    if (method === 'POST' || method === 'PUT' || method === 'DELETE') {
+      try {
+        const bodyText = await req.text();
+        if (bodyText && bodyText.trim() !== '') {
+          requestBody = JSON.parse(bodyText);
+        }
+      } catch (parseError) {
+        console.error('Error parsing request body:', parseError);
+        throw new Error('Invalid JSON in request body');
+      }
+    }
+
     if (method === 'POST') {
-      const { name, email } = await req.json();
+      const { name, email } = requestBody as { name: string; email: string };
       console.log('Creating user:', { name, email });
 
       // Generate random password
@@ -130,7 +141,6 @@ serve(async (req) => {
 
       console.log('User created in auth:', authData.user.id);
 
-      // Create profile - use INSERT instead of UPSERT to avoid constraint issues
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .insert({
@@ -142,7 +152,6 @@ serve(async (req) => {
         console.error('Error creating profile:', profileError);
       }
 
-      // Assign user role - use INSERT instead of UPSERT to avoid constraint issues
       const { error: roleError } = await supabaseAdmin
         .from('user_roles')
         .insert({
@@ -154,7 +163,6 @@ serve(async (req) => {
         console.error('Error assigning user role:', roleError);
       }
 
-      // Send notification email
       const { error: emailError } = await supabaseAdmin.rpc('send_user_notification_email', {
         p_user_id: authData.user.id,
         p_email_type: 'new_user',
@@ -173,7 +181,7 @@ serve(async (req) => {
     }
 
     if (method === 'PUT') {
-      const { id, role } = await req.json();
+      const { id, role } = requestBody as { id: string; role: string };
       console.log('Updating user role:', { id, role });
 
       const { error } = await supabaseAdmin
@@ -192,7 +200,7 @@ serve(async (req) => {
     }
 
     if (method === 'DELETE') {
-      const { id } = await req.json();
+      const { id } = requestBody as { id: string };
       console.log('Deleting user:', id);
       
       // Delete user role
@@ -205,7 +213,6 @@ serve(async (req) => {
         console.error('Error deleting user role:', roleError);
       }
 
-      // Delete profile
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .delete()
@@ -215,7 +222,6 @@ serve(async (req) => {
         console.error('Error deleting profile:', profileError);
       }
 
-      // Delete from auth
       const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
       
       if (authError) {
