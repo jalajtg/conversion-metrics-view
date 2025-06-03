@@ -35,22 +35,17 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/*"
-              element={
-                <PrivateRoute>
-                  <Layout />
-                </PrivateRoute>
-              }
-            >
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="products" element={<Products />} />
-              <Route path="faq" element={<FAQ />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="super-admin" element={<SuperAdmin />} />
-              <Route path="super-admin/users" element={<Users />} />
-              <Route path="super-admin/clinics" element={<Clinics />} />
-              <Route path="super-admin/add-clinic" element={<AddClinic />} />
+            <Route element={<PrivateRoute />}>
+              <Route element={<Layout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/super-admin" element={<SuperAdmin />} />
+                <Route path="/super-admin/users" element={<Users />} />
+                <Route path="/super-admin/clinics" element={<Clinics />} />
+                <Route path="/super-admin/add-clinic" element={<AddClinic />} />
+              </Route>
             </Route>
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
