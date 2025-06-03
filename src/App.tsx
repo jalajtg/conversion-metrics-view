@@ -10,6 +10,7 @@ import { PrivateRoute } from "./components/auth/PrivateRoute";
 import { Layout } from "./components/layout/Layout";
 import { SuperAdminLayout } from "./components/admin/SuperAdminLayout";
 import SuperAdmin from "./pages/SuperAdmin";
+import Users from "./pages/Users";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import FAQPage from "./pages/FAQ";
@@ -44,6 +45,7 @@ const App = () => (
               
               {/* Super Admin routes with their own layout */}
               <Route path="/super-admin" element={<SuperAdmin />} />
+              <Route path="/super-admin/users" element={<Users />} />
               <Route element={<SuperAdminLayout><ClinicsPage /></SuperAdminLayout>}>
                 <Route path="/super-admin/clinics" element={<div />} />
               </Route>

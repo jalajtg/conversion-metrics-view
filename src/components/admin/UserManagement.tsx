@@ -6,9 +6,9 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, User } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { UserManagementTable } from './UserManagementTable';
-import { UserFormDialog } from './UserFormDialog';
+import { CreateUserDialog } from './CreateUserDialog';
 
 interface UserProfile {
   id: string;
@@ -18,66 +18,51 @@ interface UserProfile {
   status: 'active' | 'inactive';
 }
 
-interface UserFormData {
-  name: string;
-  email: string;
-  role: 'user' | 'admin' | 'super_admin';
-  status: 'active' | 'inactive';
-}
-
 export function UserManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-  const [formData, setFormData] = useState<UserFormData>({
-    name: '',
-    email: '',
-    role: 'user',
-    status: 'active'
-  });
-
   const queryClient = useQueryClient();
 
-  // Fetch users with their roles
+  // Fetch users with their roles from profiles and user_roles tables
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      // Get all users from auth.users (via admin API would be needed in real scenario)
-      // For now, we'll get profiles and user_roles
-      const { data: profiles } = await supabase
+      console.log('Fetching users with roles...');
+      
+      // Get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*');
+        .select('id, name');
 
-      const { data: userRoles } = await supabase
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      // Get all user roles
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('*');
+        .select('user_id, role');
 
-      // Mock data for demonstration since we can't access auth.users directly
-      const mockUsers: UserProfile[] = [
-        {
-          id: '1',
-          name: 'John Doe',
-          email: 'john@example.com',
-          role: 'user',
-          status: 'active'
-        },
-        {
-          id: '2',
-          name: 'Jane Smith',
-          email: 'jane@example.com',
-          role: 'admin',
-          status: 'active'
-        },
-        {
-          id: '3',
-          name: 'Super Admin',
-          email: 'admin@toratech.ai',
-          role: 'super_admin',
-          status: 'active'
-        }
-      ];
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+        throw rolesError;
+      }
 
-      return mockUsers;
+      // Get users from auth (we'll need to use a different approach since we can't directly query auth.users)
+      // For now, we'll combine profiles with user_roles and create mock email data
+      const usersWithRoles: UserProfile[] = profiles.map(profile => {
+        const userRole = userRoles.find(role => role.user_id === profile.id);
+        return {
+          id: profile.id,
+          name: profile.name,
+          email: `user-${profile.id.slice(0, 8)}@example.com`, // Mock email - in real app you'd get this from auth.users
+          role: userRole?.role || 'user',
+          status: 'active' as const
+        };
+      });
+
+      console.log('Users with roles:', usersWithRoles);
+      return usersWithRoles;
     }
   });
 
@@ -98,9 +83,9 @@ export function UserManagement() {
         title: "Success",
         description: "User updated successfully",
       });
-      setIsEditDialogOpen(false);
     },
     onError: (error) => {
+      console.error('Error updating user:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -111,12 +96,21 @@ export function UserManagement() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase
+      // Delete user role
+      const { error: roleError } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId);
       
-      if (error) throw error;
+      if (roleError) throw roleError;
+
+      // Delete profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+      
+      if (profileError) throw profileError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -126,6 +120,7 @@ export function UserManagement() {
       });
     },
     onError: (error) => {
+      console.error('Error deleting user:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -135,38 +130,25 @@ export function UserManagement() {
   });
 
   const handleEdit = (user: UserProfile) => {
-    setSelectedUser(user);
-    setFormData({
-      name: user.name || '',
-      email: user.email,
-      role: user.role,
-      status: user.status
-    });
-    setIsEditDialogOpen(true);
-  };
-
-  const handleSave = () => {
-    if (selectedUser) {
+    // For now, we'll just allow role updates
+    const newRole = prompt(`Change role for ${user.name || user.email}?\nCurrent: ${user.role}\nEnter new role (user/admin/super_admin):`);
+    if (newRole && ['user', 'admin', 'super_admin'].includes(newRole)) {
       updateUserMutation.mutate({
-        id: selectedUser.id,
-        role: formData.role
+        id: user.id,
+        role: newRole as 'user' | 'admin' | 'super_admin'
       });
     }
   };
 
   const handleDelete = (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       deleteUserMutation.mutate(userId);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      email: '',
-      role: 'user',
-      status: 'active'
-    });
+  const handleUserCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ['users'] });
+    setIsAddDialogOpen(false);
   };
 
   if (isLoading) {
@@ -182,14 +164,11 @@ export function UserManagement() {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-white flex items-center gap-2">
           <User className="h-5 w-5" />
-          User Management
+          User Management ({users.length} users)
         </CardTitle>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
-              className="bg-theme-blue hover:bg-theme-blue/80"
-              onClick={resetForm}
-            >
+            <Button className="bg-theme-blue hover:bg-theme-blue/80">
               <Plus className="h-4 w-4 mr-2" />
               Add User
             </Button>
@@ -205,26 +184,10 @@ export function UserManagement() {
         />
       </CardContent>
 
-      {/* Add Dialog */}
-      <UserFormDialog
-        isOpen={isAddDialogOpen}
+      <CreateUserDialog
+        open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
-        title="Add New User"
-        formData={formData}
-        onFormDataChange={setFormData}
-        onSave={handleSave}
-        isEditMode={false}
-      />
-
-      {/* Edit Dialog */}
-      <UserFormDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        title="Edit User"
-        formData={formData}
-        onFormDataChange={setFormData}
-        onSave={handleSave}
-        isEditMode={true}
+        onUserCreated={handleUserCreated}
       />
     </Card>
   );

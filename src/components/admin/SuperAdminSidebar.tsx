@@ -33,6 +33,15 @@ export function SuperAdminSidebar() {
               </SidebarMenuItem>
               
               <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive('/super-admin/users')} className="hover:bg-theme-dark-card hover:text-theme-blue">
+                  <Link to="/super-admin/users" className={isActive('/super-admin/users') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
+                    <Users />
+                    <span>Users</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive('/super-admin/clinics')} className="hover:bg-theme-dark-card hover:text-theme-blue">
                   <Link to="/super-admin/clinics" className={isActive('/super-admin/clinics') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
                     <Building2 />
@@ -48,15 +57,6 @@ export function SuperAdminSidebar() {
                     <span>Products</span>
                   </Link>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                {/* <SidebarMenuButton asChild isActive={isActive('/super-admin/users')} className="hover:bg-theme-dark-card hover:text-theme-blue">
-                  <Link to="/super-admin/users" className={isActive('/super-admin/users') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
-                    <Users />
-                    <span>Users</span>
-                  </Link>
-                </SidebarMenuButton> */}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
