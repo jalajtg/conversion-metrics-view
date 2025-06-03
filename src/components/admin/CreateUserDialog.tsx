@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -43,41 +44,62 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
 
   const createUserMutation = useMutation({
     mutationFn: async (data: CreateUserFormData) => {
-      console.log('Creating user via edge function with data:', data);
+      console.log('Creating user with data:', data);
       
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        throw new Error('No session found');
-      }
-
-      const { data: result, error } = await supabase.functions.invoke('user-management', {
-        headers: {
-          'Authorization': `Bearer ${sessionData.session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: {
+      // Generate a random password
+      const password = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase() + '1!';
+      
+      // Create user in auth using admin functions
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: data.email,
+        password: password,
+        email_confirm: true,
+        user_metadata: {
           name: data.name,
-          email: data.email
         },
       });
 
-      if (error) {
-        console.error('Edge function error:', error);
-        throw error;
+      if (authError || !authData.user) {
+        console.error('Auth error:', authError);
+        throw authError || new Error('Failed to create user');
       }
 
-      if (!result.success) {
-        throw new Error('Failed to create user');
+      console.log('User created in auth:', authData.user.id);
+
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          name: data.name,
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        throw profileError;
       }
 
-      console.log('User creation successful via edge function:', result.user.id);
-      return result.user;
+      // Assign user role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authData.user.id,
+          role: 'user',
+        });
+
+      if (roleError) {
+        console.error('Error assigning user role:', roleError);
+        throw roleError;
+      }
+
+      console.log('User creation successful:', authData.user.id);
+      return authData.user;
     },
     onSuccess: (user) => {
       console.log('User creation successful:', user.id);
       toast({
         title: "Success",
-        description: "User created successfully! They will receive login credentials via email.",
+        description: "User created successfully!",
       });
       onUserCreated();
       form.reset();
