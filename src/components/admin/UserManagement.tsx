@@ -22,11 +22,11 @@ export function UserManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch users with their roles from profiles and user_roles tables
+  // Fetch all users from profiles table with their auth data and roles
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['all-users'],
     queryFn: async () => {
-      console.log('Fetching users with roles...');
+      console.log('Fetching all users from profiles table...');
       
       // Get all profiles
       const { data: profiles, error: profilesError } = await supabase
@@ -38,7 +38,9 @@ export function UserManagement() {
         throw profilesError;
       }
 
-      // Get all user roles
+      console.log('Profiles fetched:', profiles);
+
+      // Get user roles for all users
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
@@ -48,26 +50,40 @@ export function UserManagement() {
         throw rolesError;
       }
 
-      // Get users from auth (we'll need to use a different approach since we can't directly query auth.users)
-      // For now, we'll combine profiles with user_roles and create mock email data
-      const usersWithRoles: UserProfile[] = profiles.map(profile => {
+      console.log('User roles fetched:', userRoles);
+
+      // Get auth users data using the admin API
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+
+      if (authError) {
+        console.error('Error fetching auth users:', authError);
+        throw authError;
+      }
+
+      console.log('Auth users fetched:', authUsers.users?.length);
+
+      // Combine all data
+      const usersWithDetails: UserProfile[] = profiles.map(profile => {
         const userRole = userRoles.find(role => role.user_id === profile.id);
+        const authUser = authUsers.users?.find(user => user.id === profile.id);
+        
         return {
           id: profile.id,
           name: profile.name,
-          email: `user-${profile.id.slice(0, 8)}@example.com`, // Mock email - in real app you'd get this from auth.users
+          email: authUser?.email || 'No email found',
           role: userRole?.role || 'user',
           status: 'active' as const
         };
       });
 
-      console.log('Users with roles:', usersWithRoles);
-      return usersWithRoles;
+      console.log('Combined users data:', usersWithDetails);
+      return usersWithDetails;
     }
   });
 
   const updateUserMutation = useMutation({
     mutationFn: async (userData: { id: string; role: 'user' | 'admin' | 'super_admin' }) => {
+      console.log('Updating user role:', userData);
       const { error } = await supabase
         .from('user_roles')
         .upsert({
@@ -78,7 +94,7 @@ export function UserManagement() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
       toast({
         title: "Success",
         description: "User updated successfully",
@@ -96,7 +112,9 @@ export function UserManagement() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      // Delete user role
+      console.log('Deleting user:', userId);
+      
+      // Delete user role first
       const { error: roleError } = await supabase
         .from('user_roles')
         .delete()
@@ -111,9 +129,14 @@ export function UserManagement() {
         .eq('id', userId);
       
       if (profileError) throw profileError;
+
+      // Delete from auth (this will cascade delete the profile due to foreign key)
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      
+      if (authError) throw authError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
       toast({
         title: "Success",
         description: "User deleted successfully",
@@ -130,7 +153,6 @@ export function UserManagement() {
   });
 
   const handleEdit = (user: UserProfile) => {
-    // For now, we'll just allow role updates
     const newRole = prompt(`Change role for ${user.name || user.email}?\nCurrent: ${user.role}\nEnter new role (user/admin/super_admin):`);
     if (newRole && ['user', 'admin', 'super_admin'].includes(newRole)) {
       updateUserMutation.mutate({
@@ -147,7 +169,7 @@ export function UserManagement() {
   };
 
   const handleUserCreated = () => {
-    queryClient.invalidateQueries({ queryKey: ['users'] });
+    queryClient.invalidateQueries({ queryKey: ['all-users'] });
     setIsAddDialogOpen(false);
   };
 

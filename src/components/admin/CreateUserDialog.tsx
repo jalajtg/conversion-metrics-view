@@ -71,7 +71,8 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
 
       console.log('User created in auth:', authData.user.id);
 
-      // Update the profile with the name
+      // The handle_new_user trigger should automatically create the profile
+      // But let's make sure by upserting the profile with the correct data
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
@@ -84,7 +85,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
         // Don't throw here - user creation succeeded, profile update is secondary
       }
 
-      // Assign user role
+      // Assign user role (default to 'user')
       const { error: roleError } = await supabase
         .from('user_roles')
         .upsert({
