@@ -52,14 +52,14 @@ export function UserManagementTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onEdit(user)}
                     className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                   >
                     <Pencil className="h-4 w-4" />
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="ghost"
                     size="sm"
