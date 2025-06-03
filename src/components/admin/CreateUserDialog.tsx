@@ -46,57 +46,28 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
     mutationFn: async (data: CreateUserFormData) => {
       console.log('Creating user with data:', data);
       
-      // Generate a random password
-      const password = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase() + '1!';
-      
-      // Create user in auth using admin functions
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: data.email,
-        password: password,
-        email_confirm: true,
-        user_metadata: {
+      const { data: result, error } = await supabase.functions.invoke('create-user', {
+        body: {
           name: data.name,
+          email: data.email,
         },
       });
 
-      if (authError || !authData.user) {
-        console.error('Auth error:', authError);
-        throw authError || new Error('Failed to create user');
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
       }
 
-      console.log('User created in auth:', authData.user.id);
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          name: data.name,
-        });
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        throw profileError;
+      if (result?.error) {
+        console.error('User creation error:', result.error);
+        throw new Error(result.error);
       }
 
-      // Assign user role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role: 'user',
-        });
-
-      if (roleError) {
-        console.error('Error assigning user role:', roleError);
-        throw roleError;
-      }
-
-      console.log('User creation successful:', authData.user.id);
-      return authData.user;
+      console.log('User creation successful:', result);
+      return result;
     },
-    onSuccess: (user) => {
-      console.log('User creation successful:', user.id);
+    onSuccess: (result) => {
+      console.log('User creation successful:', result);
       toast({
         title: "Success",
         description: "User created successfully!",
