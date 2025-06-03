@@ -45,26 +45,32 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
 
   const createUserMutation = useMutation({
     mutationFn: async (data: CreateUserFormData) => {
-      // Generate a random password for the new user
-      const password = Math.random().toString(36).slice(-12) + 'A1!';
+      console.log('Creating user with data:', data);
       
-      // Create the user in Supabase Auth
+      // Generate a random password for the new user
+      const password = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase() + '1!';
+      console.log('Generated password for user:', password);
+      
+      // Create the user in Supabase Auth using the admin API
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: data.email,
         password: password,
-        email_confirm: true,
+        email_confirm: true, // Skip email confirmation for admin-created users
         user_metadata: {
           name: data.name,
         },
       });
 
       if (authError) {
+        console.error('Auth error:', authError);
         throw authError;
       }
 
       if (!authData.user) {
-        throw new Error('Failed to create user');
+        throw new Error('Failed to create user - no user returned');
       }
+
+      console.log('User created in auth:', authData.user.id);
 
       // Update the profile with the name and generated password
       const { error: profileError } = await supabase
@@ -72,13 +78,15 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
         .upsert({
           id: authData.user.id,
           name: data.name,
-          email: data.email,
           generated_password: password,
         });
 
       if (profileError) {
         console.error('Error updating profile:', profileError);
+        // Don't throw here - user creation succeeded, profile update is secondary
       }
+
+      console.log('Profile updated for user:', authData.user.id);
 
       // Send notification email using the database function
       const { error: emailError } = await supabase.rpc('send_user_notification_email', {
@@ -91,11 +99,14 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
       if (emailError) {
         console.error('Error sending notification email:', emailError);
         // Don't throw here - user creation succeeded, email is secondary
+      } else {
+        console.log('Notification email queued for user:', authData.user.id);
       }
 
       return authData.user;
     },
     onSuccess: (user) => {
+      console.log('User creation successful:', user.id);
       queryClient.invalidateQueries({ queryKey: ['users-for-clinic'] });
       toast({
         title: "Success",
@@ -105,6 +116,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
       form.reset();
     },
     onError: (error: any) => {
+      console.error('User creation failed:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create user. Please try again.",
@@ -114,6 +126,7 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
   });
 
   const onSubmit = (data: CreateUserFormData) => {
+    console.log('Submitting user creation form:', data);
     createUserMutation.mutate(data);
   };
 

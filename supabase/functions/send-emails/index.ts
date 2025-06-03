@@ -66,28 +66,64 @@ const handler = async (req: Request): Promise<Response> => {
         if (email.email_type === 'new_user') {
           subject = 'Welcome! Your account has been created';
           htmlContent = `
-            <h1>Welcome to the platform, ${email.user_name}!</h1>
-            <p>Your account has been created successfully.</p>
-            <p><strong>Login Details:</strong></p>
-            <p>Email: ${email.user_email}</p>
-            <p>Temporary Password: ${email.password}</p>
-            <p>Please change your password after your first login.</p>
-            <p>Best regards,<br>The Admin Team</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h1 style="color: #333; text-align: center;">Welcome to the platform, ${email.user_name}!</h1>
+              <p style="font-size: 16px; line-height: 1.6;">Your account has been created successfully by an administrator.</p>
+              
+              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h2 style="color: #333; margin-top: 0;">Your Login Details:</h2>
+                <p><strong>Email:</strong> ${email.user_email}</p>
+                <p><strong>Temporary Password:</strong> <code style="background-color: #e8e8e8; padding: 4px 8px; border-radius: 4px;">${email.password}</code></p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://conversion-metrics-view.lovable.app/auth" 
+                   style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                  Login to Your Account
+                </a>
+              </div>
+              
+              <p style="color: #666; font-size: 14px;">
+                <strong>Important:</strong> Please change your password after your first login for security purposes.
+              </p>
+              
+              <p style="margin-top: 30px;">
+                Best regards,<br>
+                <strong>The Admin Team</strong>
+              </p>
+            </div>
           `;
         } else if (email.email_type === 'clinic_added') {
-          subject = `You've been added to ${email.clinic_name}`;
+          subject = `You've been assigned to ${email.clinic_name}`;
           htmlContent = `
-            <h1>Hello ${email.user_name},</h1>
-            <p>You have been assigned as the owner of <strong>${email.clinic_name}</strong>.</p>
-            <p>You can now access and manage this clinic through your dashboard.</p>
-            <p>Best regards,<br>The Admin Team</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h1 style="color: #333; text-align: center;">Hello ${email.user_name},</h1>
+              <p style="font-size: 16px; line-height: 1.6;">
+                You have been assigned as the owner of <strong>${email.clinic_name}</strong>.
+              </p>
+              <p style="font-size: 16px; line-height: 1.6;">
+                You can now access and manage this clinic through your dashboard.
+              </p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://conversion-metrics-view.lovable.app/auth" 
+                   style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                  Access Your Dashboard
+                </a>
+              </div>
+              
+              <p style="margin-top: 30px;">
+                Best regards,<br>
+                <strong>The Admin Team</strong>
+              </p>
+            </div>
           `;
         }
 
         // Log the email that would be sent (replace with actual email service)
         console.log(`Would send email to ${email.user_email}:`);
         console.log(`Subject: ${subject}`);
-        console.log(`Content: ${htmlContent}`);
+        console.log(`Content: ${htmlContent.substring(0, 200)}...`);
 
         // TODO: Replace this with actual email sending service (e.g., Resend)
         // For now, we'll just mark as processed

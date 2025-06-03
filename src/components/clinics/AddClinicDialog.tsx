@@ -48,6 +48,8 @@ export function AddClinicDialog() {
 
   const createClinicMutation = useMutation({
     mutationFn: async (data: ClinicFormData) => {
+      console.log('Creating clinic with data:', data);
+      
       const { data: clinic, error } = await supabase
         .from('clinics')
         .insert({
@@ -61,8 +63,11 @@ export function AddClinicDialog() {
         .single();
 
       if (error) {
+        console.error('Error creating clinic:', error);
         throw error;
       }
+
+      console.log('Clinic created:', clinic);
 
       // Send notification email to the clinic owner
       const { error: emailError } = await supabase.rpc('send_user_notification_email', {
@@ -75,11 +80,14 @@ export function AddClinicDialog() {
       if (emailError) {
         console.error('Error sending clinic notification email:', emailError);
         // Don't throw here - clinic creation succeeded, email is secondary
+      } else {
+        console.log('Clinic notification email queued for user:', data.owner_id);
       }
 
       return clinic;
     },
     onSuccess: () => {
+      console.log('Clinic creation successful');
       queryClient.invalidateQueries({ queryKey: ["user-clinics"] });
       toast({
         title: "Success",
@@ -89,6 +97,7 @@ export function AddClinicDialog() {
       setOpen(false);
     },
     onError: (error: any) => {
+      console.error('Clinic creation failed:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create clinic. Please try again.",
@@ -106,6 +115,7 @@ export function AddClinicDialog() {
       });
       return;
     }
+    console.log('Submitting clinic creation form:', data);
     createClinicMutation.mutate(data);
   };
 
