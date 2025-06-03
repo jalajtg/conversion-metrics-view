@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
-import PrivateRoute from '@/components/auth/PrivateRoute';
-import Layout from '@/components/layout/Layout';
+import { PrivateRoute } from '@/components/auth/PrivateRoute';
+import { Layout } from '@/components/layout/Layout';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
 import Products from '@/pages/Products';
@@ -14,7 +14,6 @@ import SuperAdmin from '@/pages/SuperAdmin';
 import Users from '@/pages/Users';
 import Clinics from '@/pages/Clinics';
 import AddClinic from '@/pages/AddClinic';
-import ProductReplication from '@/pages/ProductReplication';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
 import './App.css';
@@ -112,16 +111,6 @@ function App() {
                 <PrivateRoute>
                   <Layout>
                     <AddClinic />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/super-admin/product-replication"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <ProductReplication />
                   </Layout>
                 </PrivateRoute>
               }
