@@ -21,13 +21,10 @@ export default function ClinicsPage() {
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-white">
-            {isSuperAdmin ? 'All Clinics' : 'My Clinics'}
+            All Clinics
           </h1>
           <p className="text-gray-300 mt-2">
-            {isSuperAdmin 
-              ? 'Manage all clinics in the system' 
-              : 'Manage your clinics'
-            }
+            Manage all clinics in the system
           </p>
         </div>
         {isSuperAdmin && <AddClinicDialog />}

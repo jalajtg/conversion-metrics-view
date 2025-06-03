@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Clinic } from "@/types/dashboard";
 
@@ -31,6 +32,7 @@ export const fetchUserClinics = async (): Promise<Clinic[]> => {
 export const fetchAllClinics = async (): Promise<any[]> => {
   console.log("Fetching all clinics from database...");
   
+  // Fetch all clinics without any filtering
   const { data: clinicsData, error: clinicsError } = await supabase
     .from("clinics")
     .select("*")

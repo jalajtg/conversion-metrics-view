@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useAllClinics } from '@/hooks/useAllClinics';
-import { useClinics } from '@/hooks/useClinics';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteClinic } from '@/services/clinicService';
@@ -21,15 +20,14 @@ import { EditClinicDialog } from './EditClinicDialog';
 
 export function ClinicsTable() {
   const { isSuperAdmin, isLoading: roleLoading } = useUserRole();
-  const { data: allClinics, isLoading: allClinicsLoading, error: allClinicsError } = useAllClinics();
-  const { data: userClinics, isLoading: userClinicsLoading, error: userClinicsError } = useClinics();
+  // Always use all clinics for both super admin and regular users
+  const { data: clinics, isLoading: clinicsLoading, error: clinicsError } = useAllClinics();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingClinic, setEditingClinic] = useState<any>(null);
 
-  const clinics = isSuperAdmin ? allClinics : userClinics;
-  const isLoading = roleLoading || (isSuperAdmin ? allClinicsLoading : userClinicsLoading);
-  const error = isSuperAdmin ? allClinicsError : userClinicsError;
+  const isLoading = roleLoading || clinicsLoading;
+  const error = clinicsError;
 
   const deleteClinicMutation = useMutation({
     mutationFn: deleteClinic,
@@ -77,7 +75,7 @@ export function ClinicsTable() {
       <Card className="w-full bg-theme-dark-card border-gray-700">
         <CardHeader className="border-b border-gray-700">
           <CardTitle className="text-white">
-            {isSuperAdmin ? 'All Clinics' : 'My Clinics'}
+            All Clinics
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -86,9 +84,7 @@ export function ClinicsTable() {
               <TableHeader>
                 <TableRow className="border-gray-700 hover:bg-theme-dark-lighter">
                   <TableHead className="text-gray-300 font-semibold">Name</TableHead>
-                  {isSuperAdmin && (
-                    <TableHead className="text-gray-300 font-semibold">Owner</TableHead>
-                  )}
+                  <TableHead className="text-gray-300 font-semibold">Owner</TableHead>
                   <TableHead className="text-gray-300 font-semibold">Email</TableHead>
                   <TableHead className="text-gray-300 font-semibold">Phone</TableHead>
                   <TableHead className="text-gray-300 font-semibold">Address</TableHead>
@@ -100,9 +96,7 @@ export function ClinicsTable() {
                 {clinics.map((clinic: any) => (
                   <TableRow key={clinic.id} className="border-gray-700 hover:bg-theme-dark-lighter transition-colors">
                     <TableCell className="font-medium text-white">{clinic.name}</TableCell>
-                    {isSuperAdmin && (
-                      <TableCell className="text-gray-300">{clinic.profiles?.name || 'Unknown Owner'}</TableCell>
-                    )}
+                    <TableCell className="text-gray-300">{clinic.profiles?.name || 'Unknown Owner'}</TableCell>
                     <TableCell className="text-gray-300">{clinic.email || 'N/A'}</TableCell>
                     <TableCell className="text-gray-300">{clinic.phone || 'N/A'}</TableCell>
                     <TableCell className="text-gray-300">{clinic.address || 'N/A'}</TableCell>
@@ -140,10 +134,7 @@ export function ClinicsTable() {
             <div className="text-center text-gray-400 p-8 bg-theme-dark-lighter/50">
               <p className="text-lg">No clinics found.</p>
               <p className="text-sm text-gray-500 mt-2">
-                {isSuperAdmin 
-                  ? 'Create the first clinic to get started.' 
-                  : 'You have no clinics assigned to you.'
-                }
+                Create the first clinic to get started.
               </p>
             </div>
           )}
