@@ -13,13 +13,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
   Loader2, 
   Trash2, 
-  Edit, 
   Search, 
   ArrowUpDown, 
   ArrowUp, 
@@ -28,14 +38,14 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { EditClinicDialog } from './EditClinicDialog';
 
 export function ClinicsTable() {
   const { isSuperAdmin, isLoading: roleLoading } = useUserRole();
   const { data: clinics, isLoading: clinicsLoading, error: clinicsError } = useAllClinics();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [editingClinic, setEditingClinic] = useState<any>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clinicToDelete, setClinicToDelete] = useState<any>(null);
 
   const { state, updateState, resetToFirstPage } = useTableState(10);
   const { paginatedData, totalPages, totalItems } = usePaginatedAndSortedData(
@@ -56,6 +66,8 @@ export function ClinicsTable() {
         title: "Success",
         description: "Clinic deleted successfully!",
       });
+      setDeleteDialogOpen(false);
+      setClinicToDelete(null);
     },
     onError: () => {
       toast({
@@ -63,12 +75,19 @@ export function ClinicsTable() {
         description: "Failed to delete clinic. Please try again.",
         variant: "destructive",
       });
+      setDeleteDialogOpen(false);
+      setClinicToDelete(null);
     },
   });
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this clinic?')) {
-      deleteClinicMutation.mutate(id);
+  const handleDeleteClick = (clinic: any) => {
+    setClinicToDelete(clinic);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (clinicToDelete) {
+      deleteClinicMutation.mutate(clinicToDelete.id);
     }
   };
 
@@ -268,7 +287,9 @@ export function ClinicsTable() {
                           Created {getSortIcon('created_at')}
                         </Button>
                       </TableHead>
-                      <TableHead className="text-gray-300 font-semibold text-right">Actions</TableHead>
+                      {isSuperAdmin && (
+                        <TableHead className="text-gray-300 font-semibold text-right">Actions</TableHead>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -299,31 +320,52 @@ export function ClinicsTable() {
                         <TableCell className="text-gray-300 hidden lg:table-cell">
                           {new Date(clinic.created_at).toLocaleDateString()}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingClinic(clinic)}
-                              className="bg-theme-dark-lighter border-gray-600 text-white hover:bg-gray-700 hover:border-gray-500"
-                            >
-                              <Edit className="h-4 w-4" />
-                              <span className="hidden sm:inline ml-1">Edit</span>
-                            </Button>
-                            {isSuperAdmin && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDelete(clinic.id)}
-                                disabled={deleteClinicMutation.isPending}
-                                className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                <span className="hidden sm:inline ml-1">Delete</span>
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
+                        {isSuperAdmin && (
+                          <TableCell className="text-right">
+                            <AlertDialog open={deleteDialogOpen && clinicToDelete?.id === clinic.id} onOpenChange={(open) => {
+                              if (!open) {
+                                setDeleteDialogOpen(false);
+                                setClinicToDelete(null);
+                              }
+                            }}>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(clinic)}
+                                  disabled={deleteClinicMutation.isPending}
+                                  className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="hidden sm:inline ml-1">Delete</span>
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="bg-theme-dark-card border-gray-700 text-white">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-white">Delete Clinic</AlertDialogTitle>
+                                  <AlertDialogDescription className="text-gray-300">
+                                    Are you sure you want to delete the clinic "{clinic.name}"? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel 
+                                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                                    disabled={deleteClinicMutation.isPending}
+                                  >
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={handleDeleteConfirm}
+                                    disabled={deleteClinicMutation.isPending}
+                                    className="bg-red-500 hover:bg-red-600 text-white"
+                                  >
+                                    {deleteClinicMutation.isPending ? "Deleting..." : "Delete"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
@@ -337,20 +379,12 @@ export function ClinicsTable() {
                 {state.searchTerm ? 'No clinics found matching your search.' : 'No clinics found.'}
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                {state.searchTerm ? 'Try adjusting your search terms.' : 'Create the first clinic to get started.'}
+                {state.searchTerm ? 'Try adjusting your search terms.' : 'No clinics available.'}
               </p>
             </div>
           )}
         </CardContent>
       </Card>
-
-      {editingClinic && (
-        <EditClinicDialog
-          clinic={editingClinic}
-          open={!!editingClinic}
-          onOpenChange={(open) => !open && setEditingClinic(null)}
-        />
-      )}
     </>
   );
 }
