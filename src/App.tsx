@@ -1,66 +1,139 @@
 
-import React from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { PrivateRoute } from "./components/auth/PrivateRoute";
-import { Layout } from "./components/layout/Layout";
-import { SuperAdminLayout } from "./components/admin/SuperAdminLayout";
-import SuperAdmin from "./pages/SuperAdmin";
-import Users from "./pages/Users";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import FAQPage from "./pages/FAQ";
-import ClinicsPage from "./pages/Clinics";
-import ProductsPage from "./pages/Products";
-import { ProductReplicationPage } from "./pages/ProductReplication";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { Toaster } from '@/components/ui/toaster';
+import PrivateRoute from '@/components/auth/PrivateRoute';
+import Layout from '@/components/layout/Layout';
+import Auth from '@/pages/Auth';
+import Dashboard from '@/pages/Dashboard';
+import Products from '@/pages/Products';
+import FAQ from '@/pages/FAQ';
+import Profile from '@/pages/Profile';
+import SuperAdmin from '@/pages/SuperAdmin';
+import Users from '@/pages/Users';
+import Clinics from '@/pages/Clinics';
+import AddClinic from '@/pages/AddClinic';
+import ProductReplication from '@/pages/ProductReplication';
+import Index from '@/pages/Index';
+import NotFound from '@/pages/NotFound';
+import './App.css';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
+        <Router>
           <Routes>
-            {/* Public routes */}
+            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            
-            {/* Redirect root to dashboard or auth */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            
-            {/* Protected routes */}
-            <Route element={<PrivateRoute />}>
-              <Route element={<Layout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/faq" element={<FAQPage />} />
-                <Route path="/product-replication" element={<ProductReplicationPage />} />
-              </Route>
-              
-              {/* Super Admin routes with their own layout */}
-              <Route path="/super-admin" element={<SuperAdmin />} />
-              <Route path="/super-admin/users" element={<Users />} />
-              <Route element={<SuperAdminLayout><ClinicsPage /></SuperAdminLayout>}>
-                <Route path="/super-admin/clinics" element={<div />} />
-              </Route>
-              <Route element={<SuperAdminLayout><ProductsPage /></SuperAdminLayout>}>
-                <Route path="/super-admin/products" element={<div />} />
-              </Route>
-            </Route>
-            
-            {/* 404 page */}
-            <Route path="*" element={<NotFound />} />
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <Products />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/faq"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <FAQ />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <Profile />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/super-admin"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <SuperAdmin />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/super-admin/users"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <Users />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/super-admin/clinics"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <Clinics />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/super-admin/add-clinic"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <AddClinic />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/super-admin/product-replication"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <ProductReplication />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
-        </TooltipProvider>
+          <Toaster />
+        </Router>
       </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+}
 
 export default App;

@@ -31,6 +31,85 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log('Processing email queue...');
 
+    // Check if this is a direct function call with body data
+    if (req.method === 'POST') {
+      const body = await req.json().catch(() => null);
+      if (body && body.user_id && body.email_type) {
+        console.log('Direct function call detected, processing single email...');
+        
+        // Get user details
+        const { data: userData, error: userError } = await supabase.auth.admin.getUserById(body.user_id);
+        if (userError || !userData.user) {
+          throw new Error('Failed to get user data');
+        }
+
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', body.user_id)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+        }
+
+        const userEmail = userData.user.email;
+        const userName = profileData?.name || 'User';
+
+        let subject = '';
+        let htmlContent = '';
+
+        if (body.email_type === 'clinic_added') {
+          subject = `You've been assigned to ${body.clinic_name}`;
+          htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h1 style="color: #333; text-align: center;">Hello ${userName},</h1>
+              <p style="font-size: 16px; line-height: 1.6;">
+                You have been assigned as the owner of <strong>${body.clinic_name}</strong>.
+              </p>
+              <p style="font-size: 16px; line-height: 1.6;">
+                You can now access and manage this clinic through your dashboard.
+              </p>
+              
+              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h2 style="color: #333; margin-top: 0;">Clinic Details:</h2>
+                <p><strong>Clinic Name:</strong> ${body.clinic_name}</p>
+                <p><strong>Your Role:</strong> Clinic Owner</p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://conversion-metrics-view.lovable.app/auth" 
+                   style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                  Access Your Dashboard
+                </a>
+              </div>
+              
+              <p style="margin-top: 30px;">
+                Best regards,<br>
+                <strong>The Admin Team</strong>
+              </p>
+            </div>
+          `;
+        }
+
+        console.log(`Would send email to ${userEmail}:`);
+        console.log(`Subject: ${subject}`);
+        console.log(`Content: ${htmlContent.substring(0, 200)}...`);
+
+        return new Response(
+          JSON.stringify({ 
+            message: 'Email notification processed',
+            email: userEmail,
+            subject: subject
+          }),
+          { 
+            status: 200, 
+            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          }
+        );
+      }
+    }
+
     // Get unprocessed emails from the queue
     const { data: emails, error: fetchError } = await supabase
       .from('email_queue')
@@ -104,6 +183,12 @@ const handler = async (req: Request): Promise<Response> => {
               <p style="font-size: 16px; line-height: 1.6;">
                 You can now access and manage this clinic through your dashboard.
               </p>
+              
+              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h2 style="color: #333; margin-top: 0;">Clinic Details:</h2>
+                <p><strong>Clinic Name:</strong> ${email.clinic_name}</p>
+                <p><strong>Your Role:</strong> Clinic Owner</p>
+              </div>
               
               <div style="text-align: center; margin: 30px 0;">
                 <a href="https://conversion-metrics-view.lovable.app/auth" 
