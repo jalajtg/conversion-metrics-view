@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,11 +33,9 @@ export function UserManagement() {
       }
 
       const { data, error } = await supabase.functions.invoke('user-management', {
-        method: 'GET',
         headers: {
           'Authorization': `Bearer ${sessionData.session.access_token}`,
         },
-        body: new URLSearchParams({ action: 'list-users' }),
       });
 
       if (error) {

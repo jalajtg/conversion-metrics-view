@@ -52,10 +52,8 @@ serve(async (req) => {
     }
 
     const { method } = req;
-    const url = new URL(req.url);
-    const action = url.searchParams.get('action');
 
-    if (method === 'GET' && action === 'list-users') {
+    if (method === 'GET') {
       console.log('Listing all users...');
       
       // Get all profiles
@@ -108,7 +106,7 @@ serve(async (req) => {
       );
     }
 
-    if (method === 'POST' && action === 'create-user') {
+    if (method === 'POST') {
       const { name, email } = await req.json();
       console.log('Creating user:', { name, email });
 
@@ -132,10 +130,10 @@ serve(async (req) => {
 
       console.log('User created in auth:', authData.user.id);
 
-      // Create profile
+      // Create profile - use INSERT instead of UPSERT to avoid constraint issues
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
-        .upsert({
+        .insert({
           id: authData.user.id,
           name: name,
         });
@@ -144,10 +142,10 @@ serve(async (req) => {
         console.error('Error creating profile:', profileError);
       }
 
-      // Assign user role
+      // Assign user role - use INSERT instead of UPSERT to avoid constraint issues
       const { error: roleError } = await supabaseAdmin
         .from('user_roles')
-        .upsert({
+        .insert({
           user_id: authData.user.id,
           role: 'user',
         });
@@ -174,16 +172,14 @@ serve(async (req) => {
       );
     }
 
-    if (method === 'PUT' && action === 'update-user') {
+    if (method === 'PUT') {
       const { id, role } = await req.json();
       console.log('Updating user role:', { id, role });
 
       const { error } = await supabaseAdmin
         .from('user_roles')
-        .upsert({
-          user_id: id,
-          role: role
-        });
+        .update({ role: role })
+        .eq('user_id', id);
       
       if (error) {
         throw error;
@@ -195,7 +191,7 @@ serve(async (req) => {
       );
     }
 
-    if (method === 'DELETE' && action === 'delete-user') {
+    if (method === 'DELETE') {
       const { id } = await req.json();
       console.log('Deleting user:', id);
       
@@ -233,7 +229,7 @@ serve(async (req) => {
       );
     }
 
-    throw new Error('Invalid action');
+    throw new Error('Invalid method');
 
   } catch (error) {
     console.error('Error in user-management function:', error);

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -52,12 +51,11 @@ export function CreateUserDialog({ open, onOpenChange, onUserCreated }: CreateUs
       }
 
       const { data: result, error } = await supabase.functions.invoke('user-management', {
-        method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionData.session.access_token}`,
+          'Content-Type': 'application/json',
         },
         body: {
-          action: 'create-user',
           name: data.name,
           email: data.email
         },
