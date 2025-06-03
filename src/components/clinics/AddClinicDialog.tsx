@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -124,7 +125,7 @@ export function AddClinicDialog() {
           Add Clinic
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Clinic</DialogTitle>
         </DialogHeader>
@@ -195,7 +196,10 @@ export function AddClinicDialog() {
                   <FormControl>
                     <UserSelector
                       selectedUserId={field.value}
-                      onUserSelect={field.onChange}
+                      onUserSelect={(userId) => {
+                        console.log('User selected in AddClinicDialog:', userId);
+                        field.onChange(userId);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
