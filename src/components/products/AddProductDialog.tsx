@@ -86,12 +86,12 @@ export function AddProductDialog() {
           Add Product
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-theme-dark-card border-theme-dark-lighter text-white max-w-lg mx-auto">
+      <DialogContent className="bg-theme-dark-card border-theme-dark-lighter text-white max-w-lg mx-auto translate-x-[-20%] translate-y-[-20%]">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold text-white">Add New Product</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -104,25 +104,6 @@ export function AddProductDialog() {
                       {...field}
                       placeholder="Enter product name"
                       className="bg-theme-dark-lighter border-theme-dark-lighter text-white placeholder:text-gray-400 focus:border-theme-blue focus:ring-theme-blue"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-400" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-200">Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Enter product description"
-                      rows={3}
-                      className="bg-theme-dark-lighter border-theme-dark-lighter text-white placeholder:text-gray-400 focus:border-theme-blue focus:ring-theme-blue resize-none"
                     />
                   </FormControl>
                   <FormMessage className="text-red-400" />
@@ -168,12 +149,12 @@ export function AddProductDialog() {
                         <SelectValue placeholder="Select a clinic" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-theme-dark-card border-theme-dark-lighter">
+                    <SelectContent className="bg-theme-dark-card border-theme-dark-lighter z-[60] shadow-xl">
                       {clinics?.map((clinic) => (
                         <SelectItem
                           key={clinic.id}
                           value={clinic.id}
-                          className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter"
+                          className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter cursor-pointer"
                         >
                           {clinic.name}
                         </SelectItem>
@@ -185,7 +166,26 @@ export function AddProductDialog() {
               )}
             />
 
-            <div className="flex justify-end space-x-3 pt-6 border-t border-theme-dark-lighter">
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-200">Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Enter product description"
+                      rows={3}
+                      className="bg-theme-dark-lighter border-theme-dark-lighter text-white placeholder:text-gray-400 focus:border-theme-blue focus:ring-theme-blue resize-none"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-400" />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-theme-dark-lighter">
               <Button
                 type="button"
                 variant="outline"
