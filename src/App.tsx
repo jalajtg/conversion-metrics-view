@@ -40,7 +40,6 @@ function App() {
               {/* Regular user routes */}
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/products" element={<Products />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>
@@ -50,6 +49,7 @@ function App() {
                 <Route index element={<SuperAdmin />} />
                 <Route path="users" element={<Users />} />
                 <Route path="clinics" element={<Clinics />} />
+                <Route path="products" element={<Products />} />
                 <Route path="add-clinic" element={<AddClinic />} />
               </Route>
             </Route>

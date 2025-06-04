@@ -48,15 +48,18 @@ import { EditProductDialog } from './EditProductDialog';
 import { AddProductDialog } from './AddProductDialog';
 
 export function ProductsTable() {
+  // All hooks must be called at the top level
   const { data: products, isLoading, error } = useAllProducts();
   const { data: clinics } = useClinics();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
   const { state, updateState, resetToFirstPage } = useTableState();
+  
+  // State hooks
   const [selectedClinic, setSelectedClinic] = useState<string>('all');
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
+  // Mutation hook
   const deleteProductMutation = useMutation({
     mutationFn: deleteProduct,
     onSuccess: () => {
@@ -74,6 +77,25 @@ export function ProductsTable() {
       });
     },
   });
+
+  // Filter products based on search term and selected clinic
+  const filteredProducts = React.useMemo(() => {
+    if (!products) return [];
+    
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+                           product.description?.toLowerCase().includes(state.searchTerm.toLowerCase());
+      const matchesClinic = selectedClinic === 'all' || product.clinic_id === selectedClinic;
+      return matchesSearch && matchesClinic;
+    });
+  }, [products, state.searchTerm, selectedClinic]);
+
+  // Use the filtered products for pagination
+  const { paginatedData, totalPages } = usePaginatedAndSortedData(
+    filteredProducts,
+    state,
+    ['name', 'description']
+  );
 
   const handleDelete = (id: string) => {
     deleteProductMutation.mutate(id);
@@ -98,6 +120,13 @@ export function ProductsTable() {
     resetToFirstPage();
   };
 
+  const SortIcon = ({ column }: { column: string }) => {
+    if (state.sortBy !== column) return null;
+    return state.sortOrder === 'asc' ? 
+      <ChevronUp className="h-4 w-4 ml-1" /> : 
+      <ChevronDown className="h-4 w-4 ml-1" />;
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
@@ -113,27 +142,6 @@ export function ProductsTable() {
       </div>
     );
   }
-
-  // Filter products based on search term and selected clinic
-  const filteredProducts = products?.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-                         product.description?.toLowerCase().includes(state.searchTerm.toLowerCase());
-    const matchesClinic = selectedClinic === 'all' || product.clinic_id === selectedClinic;
-    return matchesSearch && matchesClinic;
-  }) || [];
-
-  const { paginatedData, totalPages } = usePaginatedAndSortedData(
-    filteredProducts,
-    state,
-    ['name', 'description']
-  );
-
-  const SortIcon = ({ column }: { column: string }) => {
-    if (state.sortBy !== column) return null;
-    return state.sortOrder === 'asc' ? 
-      <ChevronUp className="h-4 w-4 ml-1" /> : 
-      <ChevronDown className="h-4 w-4 ml-1" />;
-  };
 
   return (
     <>
