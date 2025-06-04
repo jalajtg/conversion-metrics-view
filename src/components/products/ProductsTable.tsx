@@ -42,9 +42,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Loader2, Trash2, Edit, Search, Filter, ChevronUp, ChevronDown } from 'lucide-react';
+import { Loader2, Trash2, Search, Filter, ChevronUp, ChevronDown } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { EditProductDialog } from './EditProductDialog';
 import { AddProductDialog } from './AddProductDialog';
 
 export function ProductsTable() {
@@ -57,7 +56,6 @@ export function ProductsTable() {
   
   // State hooks
   const [selectedClinic, setSelectedClinic] = useState<string>('all');
-  const [editingProduct, setEditingProduct] = useState<any>(null);
 
   // Mutation hook
   const deleteProductMutation = useMutation({
@@ -83,8 +81,7 @@ export function ProductsTable() {
     if (!products) return [];
     
     return products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-                           product.description?.toLowerCase().includes(state.searchTerm.toLowerCase());
+      const matchesSearch = product.name.toLowerCase().includes(state.searchTerm.toLowerCase());
       const matchesClinic = selectedClinic === 'all' || product.clinic_id === selectedClinic;
       return matchesSearch && matchesClinic;
     });
@@ -94,7 +91,7 @@ export function ProductsTable() {
   const { paginatedData, totalPages } = usePaginatedAndSortedData(
     filteredProducts,
     state,
-    ['name', 'description']
+    ['name']
   );
 
   const handleDelete = (id: string) => {
@@ -127,6 +124,22 @@ export function ProductsTable() {
       <ChevronDown className="h-4 w-4 ml-1" />;
   };
 
+  // Generate page numbers for pagination (show 4 pages at a time)
+  const getVisiblePages = () => {
+    const currentPage = state.page;
+    const maxVisiblePages = 4;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start page if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
@@ -146,21 +159,21 @@ export function ProductsTable() {
   return (
     <>
       <Card className="w-full bg-theme-dark-card border-gray-700">
-        <CardHeader className="border-b border-gray-700">
-          <CardTitle className="text-white flex items-center justify-between">
-            All Products
-            <div className="flex items-center gap-4">
+        <CardHeader className="border-b border-gray-700 pb-4">
+          <CardTitle className="text-white flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <span>All Products</span>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search products..."
                   value={state.searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
+                  className="pl-10 w-full sm:w-64 bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
                 />
               </div>
               <Select value={selectedClinic} onValueChange={handleClinicFilter}>
-                <SelectTrigger className="w-48 bg-theme-dark-lighter border-gray-600 text-white">
+                <SelectTrigger className="w-full sm:w-48 bg-theme-dark-lighter border-gray-600 text-white">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Filter by clinic" />
                 </SelectTrigger>
@@ -180,63 +193,53 @@ export function ProductsTable() {
         <CardContent className="p-0">
           {paginatedData && paginatedData.length > 0 ? (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-700 hover:bg-theme-dark-lighter">
-                    <TableHead 
-                      className="text-gray-300 font-semibold cursor-pointer select-none"
-                      onClick={() => handleSort('name')}
-                    >
-                      <div className="flex items-center">
-                        Name
-                        <SortIcon column="name" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">Description</TableHead>
-                    <TableHead 
-                      className="text-gray-300 font-semibold cursor-pointer select-none"
-                      onClick={() => handleSort('price')}
-                    >
-                      <div className="flex items-center">
-                        Price
-                        <SortIcon column="price" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">Clinic</TableHead>
-                    <TableHead 
-                      className="text-gray-300 font-semibold cursor-pointer select-none"
-                      onClick={() => handleSort('created_at')}
-                    >
-                      <div className="flex items-center">
-                        Created At
-                        <SortIcon column="created_at" />
-                      </div>
-                    </TableHead>
-                    <TableHead className="text-gray-300 font-semibold">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedData.map((product) => (
-                    <TableRow key={product.id} className="border-gray-700 hover:bg-theme-dark-lighter transition-colors">
-                      <TableCell className="font-medium text-white">{product.name}</TableCell>
-                      <TableCell className="text-gray-300 max-w-xs truncate">{product.description || 'N/A'}</TableCell>
-                      <TableCell className="text-gray-300">${Number(product.price).toFixed(2)}</TableCell>
-                      <TableCell className="text-gray-300">
-                        {clinics?.find(c => c.id === product.clinic_id)?.name || 'Unknown Clinic'}
-                      </TableCell>
-                      <TableCell className="text-gray-300">
-                        {new Date(product.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingProduct(product)}
-                            className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700 hover:bg-theme-dark-lighter">
+                      <TableHead 
+                        className="text-gray-300 font-semibold cursor-pointer select-none text-left py-3"
+                        onClick={() => handleSort('name')}
+                      >
+                        <div className="flex items-center">
+                          Name
+                          <SortIcon column="name" />
+                        </div>
+                      </TableHead>
+                      <TableHead 
+                        className="text-gray-300 font-semibold cursor-pointer select-none text-left py-3"
+                        onClick={() => handleSort('price')}
+                      >
+                        <div className="flex items-center">
+                          Price
+                          <SortIcon column="price" />
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-gray-300 font-semibold text-left py-3">Clinic</TableHead>
+                      <TableHead 
+                        className="text-gray-300 font-semibold cursor-pointer select-none text-left py-3"
+                        onClick={() => handleSort('created_at')}
+                      >
+                        <div className="flex items-center">
+                          Created At
+                          <SortIcon column="created_at" />
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-gray-300 font-semibold text-left py-3 w-20">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.map((product) => (
+                      <TableRow key={product.id} className="border-gray-700 hover:bg-theme-dark-lighter transition-colors">
+                        <TableCell className="font-medium text-white text-left py-3">{product.name}</TableCell>
+                        <TableCell className="text-gray-300 text-left py-3">${Number(product.price).toFixed(2)}</TableCell>
+                        <TableCell className="text-gray-300 text-left py-3">
+                          {clinics?.find(c => c.id === product.clinic_id)?.name || 'Unknown Clinic'}
+                        </TableCell>
+                        <TableCell className="text-gray-300 text-left py-3">
+                          {new Date(product.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="py-3">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
@@ -268,12 +271,12 @@ export function ProductsTable() {
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
 
               {totalPages > 1 && (
                 <div className="border-t border-gray-700 p-4">
@@ -288,7 +291,7 @@ export function ProductsTable() {
                         />
                       </PaginationItem>
                       
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      {getVisiblePages().map((page) => (
                         <PaginationItem key={page}>
                           <PaginationLink
                             className={`text-white hover:bg-theme-dark-lighter cursor-pointer ${
@@ -327,14 +330,6 @@ export function ProductsTable() {
           )}
         </CardContent>
       </Card>
-
-      {editingProduct && (
-        <EditProductDialog
-          product={editingProduct}
-          open={!!editingProduct}
-          onOpenChange={(open) => !open && setEditingProduct(null)}
-        />
-      )}
     </>
   );
 }
