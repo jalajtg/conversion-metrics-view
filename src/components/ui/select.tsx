@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -117,7 +118,9 @@ export function SelectItem({ value, className, children }: SelectItemProps) {
 
   const handleClick = () => {
     console.log('SelectItem clicked, value:', value);
-    onValueChange?.(value);
+    if (onValueChange) {
+      onValueChange(value);
+    }
     setIsOpen(false);
   };
 
@@ -164,3 +167,4 @@ export const SelectSeparator = ({ className, ...props }: React.HTMLAttributes<HT
 );
 export const SelectScrollUpButton = () => null;
 export const SelectScrollDownButton = () => null;
+

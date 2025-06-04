@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,11 +49,19 @@ export function UserSelector({
   });
 
   const handleUserCreated = (newUserId: string) => {
+    console.log('New user created with ID:', newUserId);
     onUserSelect(newUserId);
     setShowCreateDialog(false);
   };
 
+  const handleUserSelect = (userId: string) => {
+    console.log('User selected in UserSelector:', userId);
+    onUserSelect(userId);
+  };
+
   const selectedUser = users.find(user => user.id === selectedUserId);
+  console.log('Selected user ID:', selectedUserId);
+  console.log('Found selected user:', selectedUser);
 
   if (isLoading) {
     return <div className="text-gray-400">Loading users...</div>;
@@ -60,14 +69,11 @@ export function UserSelector({
 
   return (
     <div className="space-y-2">
-      <Select value={selectedUserId} onValueChange={onUserSelect}>
+      <Select value={selectedUserId} onValueChange={handleUserSelect}>
         <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
           <SelectValue placeholder="Select a user">
             {selectedUser ? (
-              <div className="flex flex-col">
-                <span>{selectedUser.name || 'Unnamed User'}</span>
-                <span className="text-sm text-gray-400">ID: {selectedUser.id.slice(0, 8)}...</span>
-              </div>
+              <span className="text-white">{selectedUser.name || 'Unnamed User'}</span>
             ) : (
               <span className="text-gray-400">Select a user</span>
             )}
@@ -80,10 +86,7 @@ export function UserSelector({
               value={user.id} 
               className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter"
             >
-              <div className="flex flex-col">
-                <span>{user.name || 'Unnamed User'}</span>
-                <span className="text-sm text-gray-400">ID: {user.id.slice(0, 8)}...</span>
-              </div>
+              <span>{user.name || 'Unnamed User'}</span>
             </SelectItem>
           ))}
         </SelectContent>
@@ -107,3 +110,4 @@ export function UserSelector({
     </div>
   );
 }
+
