@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -144,9 +143,9 @@ export function SelectItem({ value, className, children }: SelectItemProps) {
 export function SelectValue({ placeholder, children }: SelectValueProps) {
   const { value } = React.useContext(SelectContext);
 
-  // If children are provided (custom content), use them
+  // If children are provided (custom content), use them directly
   if (children) {
-    return <div className="flex-1 text-left">{children}</div>;
+    return <div className="flex-1 text-left truncate">{children}</div>;
   }
 
   // Otherwise, show the value or placeholder
@@ -167,4 +166,3 @@ export const SelectSeparator = ({ className, ...props }: React.HTMLAttributes<HT
 );
 export const SelectScrollUpButton = () => null;
 export const SelectScrollDownButton = () => null;
-

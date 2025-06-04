@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,28 +85,17 @@ export function UserSelector({
               value={user.id} 
               className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter"
             >
-              <span>{user.id || 'Unnamed User'}</span>
+              <span>{user.name || 'Unnamed User'}</span>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      {/* 
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => setShowCreateDialog(true)}
-        className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Create New User
-      </Button> */}
 
-      {/* <CreateUserDialog 
+      <CreateUserDialog 
         open={showCreateDialog} 
         onOpenChange={setShowCreateDialog} 
         onUserCreated={handleUserCreated} 
-      /> */}
+      />
     </div>
   );
 }
-
