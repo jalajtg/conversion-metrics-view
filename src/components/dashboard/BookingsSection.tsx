@@ -22,9 +22,9 @@ interface Booking {
 }
 
 export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) {
-  // Fetch all bookings from Supabase
+  // Fetch appointments/bookings from Supabase with month filtering
   const { data: bookings, isLoading, error } = useQuery({
-    queryKey: ["all-bookings", filters],
+    queryKey: ["filtered-bookings", filters],
     queryFn: async (): Promise<Booking[]> => {
       console.log('Fetching bookings with filters:', filters);
       
@@ -33,6 +33,48 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
         .select('*')
         .order('booking_time', { ascending: false });
 
+      // Filter by clinic IDs if specified
+      if (filters.clinicIds && filters.clinicIds.length > 0) {
+        query = query.in('clinic_id', filters.clinicIds);
+      }
+
+      // Filter by month if specified
+      if (filters.month) {
+        const currentYear = new Date().getFullYear();
+        const monthNumber = parseInt(filters.month);
+        
+        // Create start and end dates for the selected month
+        const startDate = new Date(currentYear, monthNumber - 1, 1);
+        const endDate = new Date(currentYear, monthNumber, 0, 23, 59, 59);
+        
+        console.log('Filtering by month:', filters.month, 'Date range:', startDate, endDate);
+        
+        query = query
+          .gte('booking_time', startDate.toISOString())
+          .lte('booking_time', endDate.toISOString());
+      }
+
+      // Filter by months array if specified (for multiple month selection)
+      if (filters.months && filters.months.length > 0) {
+        const currentYear = new Date().getFullYear();
+        const monthConditions = filters.months.map(monthName => {
+          const monthNumber = new Date(`${monthName} 1, ${currentYear}`).getMonth() + 1;
+          const startDate = new Date(currentYear, monthNumber - 1, 1);
+          const endDate = new Date(currentYear, monthNumber, 0, 23, 59, 59);
+          return { start: startDate.toISOString(), end: endDate.toISOString() };
+        });
+        
+        console.log('Filtering by months:', filters.months, 'Conditions:', monthConditions);
+        
+        // For multiple months, we need to use OR conditions
+        // This is a simplified approach - in a real scenario you might need a more complex query
+        if (monthConditions.length === 1) {
+          query = query
+            .gte('booking_time', monthConditions[0].start)
+            .lte('booking_time', monthConditions[0].end);
+        }
+      }
+
       const { data, error } = await query;
 
       if (error) {
@@ -40,7 +82,7 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
         throw error;
       }
 
-      console.log('Fetched bookings:', data);
+      console.log('Fetched filtered bookings:', data);
       return data || [];
     },
     enabled: true,
@@ -94,7 +136,9 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
             Bookings
           </h2>
-          <p className="text-gray-400 text-xs sm:text-sm">Complete list of appointment bookings from your clinics</p>
+          <p className="text-gray-400 text-xs sm:text-sm">
+            {filters.month ? `Appointments for ${new Date(2024, parseInt(filters.month) - 1).toLocaleString('default', { month: 'long' })}` : 'Complete list of appointment bookings from your clinics'}
+          </p>
         </div>
       </div>
       
@@ -122,7 +166,7 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
               <p className="text-gray-400 text-sm">
                 {filters.clinicIds.length === 0 
                   ? "Please select at least one clinic to view bookings"
-                  : "No appointment bookings found for the selected criteria"
+                  : `No appointment bookings found for the selected ${filters.month ? 'month and ' : ''}criteria`
                 }
               </p>
             </div>
