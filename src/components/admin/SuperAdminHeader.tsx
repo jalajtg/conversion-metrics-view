@@ -8,17 +8,11 @@ export function SuperAdminHeader() {
   const { user, profile } = useAuth();
   
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-theme-dark-lighter">
-      <div className="flex h-16 items-center px-6">
-        <div className="flex items-center gap-4 flex-1">
+    <header className="sticky top-0 z-50 border-b border-gray-800 bg-theme-dark-lighter ml-64">
+      <div className="flex h-16 items-center justify-between px-6">
+        <div className="flex items-center gap-4">
           <SidebarTrigger className="lg:hidden text-theme-blue hover:bg-theme-dark-card" />
-          <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" 
-              alt="Logo" 
-              className="h-8 md:h-10" 
-            />
-          </div>
+          <h1 className="text-xl font-semibold text-white">Super Admin Panel</h1>
         </div>
         
         {user && (
