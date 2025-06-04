@@ -8,7 +8,7 @@ export function Header() {
   const { user, profile } = useAuth();
   
   return (
-    <header className="border-b border-gray-800 bg-theme-dark-lighter sticky top-0 z-30 flex h-16 items-center px-4 md:px-6">
+    <header className="border-b border-gray-800 bg-theme-dark-lighter sticky top-0 z-30 flex h-16 items-center px-4 md:px-6 w-full">
       <div className="flex items-center gap-4 flex-1">
         <SidebarTrigger className="lg:hidden text-theme-blue hover:bg-theme-dark-card" />
         <div className="flex items-center gap-3">
