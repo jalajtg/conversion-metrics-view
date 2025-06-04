@@ -82,18 +82,21 @@ export function Dashboard() {
 
   const isLoading = clinicsLoading || dashboardLoading;
   if (isLoading) {
-    return <div className="flex flex-col justify-center items-center min-h-[400px] px-4">
+    return (
+      <div className="flex flex-col justify-center items-center min-h-[400px] px-4">
         <Loader2 className="h-12 w-12 text-theme-blue animate-spin" />
         <p className="mt-4 text-gray-400 text-center">Loading your dashboard data...</p>
-      </div>;
+      </div>
+    );
   }
 
-  return <div className="min-h-screen w-full bg-theme-dark">
-      <div className="container mx-auto py-4 sm:py-6 px-4 max-w-7xl">
+  return (
+    <div className="min-h-screen w-full bg-theme-dark">
+      <div className="container mx-auto py-4 sm:py-6 px-2 sm:px-4 max-w-7xl">
         {/* Responsive Header - Stack on mobile, side-by-side on desktop */}
         <div className="mb-6">
           {/* Mobile Layout - Stacked */}
-          <div className="block md:hidden space-y-4">
+          <div className="block lg:hidden space-y-4">
             <div>
               <h1 className="text-2xl font-bold gradient-text text-center">
                 Sales Dashboard
@@ -107,7 +110,7 @@ export function Dashboard() {
           </div>
 
           {/* Desktop Layout - Side by side */}
-          <div className="hidden md:grid md:grid-cols-4 md:gap-4 md:items-center">
+          <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4 lg:items-center">
             <div className="col-span-1">
               <h1 className="text-3xl font-bold gradient-text">
                 Sales<br />Dashboard
@@ -121,26 +124,35 @@ export function Dashboard() {
           </div>
         </div>
         
-        <div className="px-2 sm:px-0 space-y-8">
-          {filters.clinicIds.length === 0 ? <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+        <div className="px-0 sm:px-2 space-y-6 md:space-y-8">
+          {filters.clinicIds.length === 0 ? (
+            <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                 <BarChart className="h-8 w-8 text-theme-blue" />
               </div>
               <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No clinics selected</h3>
               <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Select one or more clinics to view your dashboard metrics.</p>
-            </div> : <>
+            </div>
+          ) : (
+            <>
               {/* Total Metrics Overview Section */}
-              {dashboardData?.products && dashboardData.products.length > 0 && <TotalMetricsSection unifiedData={dashboardData} />}
+              {dashboardData?.products && dashboardData.products.length > 0 && (
+                <TotalMetricsSection unifiedData={dashboardData} />
+              )}
 
               {/* Main Dashboard Section */}
               <div className="space-y-6">
-                {!dashboardData?.products || dashboardData.products.length === 0 ? <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+                {!dashboardData?.products || dashboardData.products.length === 0 ? (
+                  <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                       <BarChart className="h-8 w-8 text-theme-blue" />
                     </div>
                     <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No data available</h3>
                     <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
-                  </div> : <ProductSection key="unified-products" metrics={null} unifiedData={dashboardData} />}
+                  </div>
+                ) : (
+                  <ProductSection key="unified-products" metrics={null} unifiedData={dashboardData} />
+                )}
               </div>
 
               {/* Bookings Section */}
@@ -148,8 +160,10 @@ export function Dashboard() {
 
               {/* FAQ Section */}
               <FAQSection filters={filters} unifiedData={dashboardData} />
-            </>}
+            </>
+          )}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 }

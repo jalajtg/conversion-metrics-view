@@ -12,7 +12,7 @@ export function SuperAdminSidebar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <Sidebar className="fixed left-0 top-0 h-full w-64 border-r border-gray-800 bg-theme-dark-lighter z-40">
+    <Sidebar className="border-r border-gray-800 bg-theme-dark-lighter">
       <SidebarHeader className="border-b border-gray-800 bg-theme-dark-lighter">
         <div className="px-4 py-4 flex items-center gap-3">
           <img src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" alt="Logo" className="h-8" />

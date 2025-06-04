@@ -12,7 +12,7 @@ export function Layout() {
         <AppSidebar />
         <div className="flex flex-col flex-1 min-h-screen">
           <Header />
-          <main className="flex-1 p-6 overflow-auto bg-theme-dark">
+          <main className="flex-1 p-4 md:p-6 overflow-auto bg-theme-dark">
             <Outlet />
           </main>
         </div>
