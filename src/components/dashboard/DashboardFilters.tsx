@@ -44,33 +44,32 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
   };
 
   return (
-    <Card className="bg-theme-dark-card border-gray-800 w-full">
+    <Card className="bg-theme-dark-card border-gray-800 shadow-lg">
       <CardHeader className="pb-3">
-        <CardTitle className="text-white text-sm font-medium">Filters</CardTitle>
+        <CardTitle className="text-white text-lg font-semibold">Filters</CardTitle>
       </CardHeader>
       <CardContent className="pb-4">
-        {/* Stack on mobile, side-by-side on larger screens */}
-        <div className="flex flex-col space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
-          <div className="w-full">
-            <label className="text-xs text-gray-400 mb-2 block">Clinics</label>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Clinics</label>
             <MultiSelectDropdown
               options={clinicOptions}
               selectedValues={filters.clinicIds}
               onSelectionChange={handleClinicSelectionChange}
               placeholder="Select clinics..."
-              className="w-full"
+              className="w-full bg-theme-dark border-gray-700 text-white"
               showChips={false}
             />
           </div>
           
-          <div className="w-full">
-            <label className="text-xs text-gray-400 mb-2 block">Months</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Months</label>
             <MultiSelectDropdown
               options={months}
               selectedValues={filters.months || []}
               onSelectionChange={handleMonthSelectionChange}
               placeholder="Select months..."
-              className="w-full"
+              className="w-full bg-theme-dark border-gray-700 text-white"
               showChips={false}
             />
           </div>

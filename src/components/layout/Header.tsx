@@ -8,15 +8,15 @@ export function Header() {
   const { user, profile } = useAuth();
   
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-gray-800 bg-theme-dark-lighter">
-      <div className="flex h-16 items-center px-4 md:px-6">
+    <header className="fixed top-0 left-0 lg:left-64 right-0 z-30 h-16 border-b border-gray-800 bg-theme-dark-lighter">
+      <div className="flex h-full items-center px-4 md:px-6">
         <div className="flex items-center gap-4 flex-1">
-          <SidebarTrigger className="md:hidden text-theme-blue hover:bg-theme-dark-card" />
+          <SidebarTrigger className="lg:hidden text-theme-blue hover:bg-theme-dark-card" />
           <div className="hidden md:flex items-center gap-3">
             <img 
               src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" 
               alt="Logo" 
-              className="h-8" 
+              className="h-8 lg:hidden" 
             />
           </div>
         </div>

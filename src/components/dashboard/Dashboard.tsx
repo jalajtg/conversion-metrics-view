@@ -92,46 +92,35 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen w-full bg-theme-dark">
-      <div className="container mx-auto py-4 sm:py-6 px-2 sm:px-4 max-w-7xl">
-        {/* Responsive Header - Stack on mobile, side-by-side on desktop */}
-        <div className="mb-6">
-          {/* Mobile Layout - Stacked */}
-          <div className="block lg:hidden space-y-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-6 lg:mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
             <div>
-              <h1 className="text-2xl font-bold gradient-text text-center">
+              <h1 className="text-2xl lg:text-3xl font-bold gradient-text">
                 Sales Dashboard
               </h1>
+              <p className="text-gray-400 text-sm mt-1">Monitor your clinic performance metrics</p>
             </div>
-            {clinics && (
-              <div className="w-full">
-                <DashboardFilters clinics={clinics} filters={filters} onFiltersChange={setFilters} />
-              </div>
-            )}
-          </div>
-
-          {/* Desktop Layout - Side by side */}
-          <div className="hidden lg:grid lg:grid-cols-4 lg:gap-4 lg:items-center">
-            <div className="col-span-1">
-              <h1 className="text-3xl font-bold gradient-text">
-                Sales<br />Dashboard
-              </h1>
-            </div>
-            {clinics && (
-              <div className="col-span-3">
-                <DashboardFilters clinics={clinics} filters={filters} onFiltersChange={setFilters} />
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Filters Section */}
+        {clinics && (
+          <div className="mb-6">
+            <DashboardFilters clinics={clinics} filters={filters} onFiltersChange={setFilters} />
+          </div>
+        )}
         
-        <div className="px-0 sm:px-2 space-y-6 md:space-y-8">
+        {/* Main Content */}
+        <div className="space-y-6 lg:space-y-8">
           {filters.clinicIds.length === 0 ? (
-            <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+            <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 lg:p-8 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                 <BarChart className="h-8 w-8 text-theme-blue" />
               </div>
-              <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No clinics selected</h3>
-              <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Select one or more clinics to view your dashboard metrics.</p>
+              <h3 className="text-lg lg:text-xl font-medium text-white mb-2">No clinics selected</h3>
+              <p className="text-gray-400 text-sm lg:text-base max-w-md mx-auto">Select one or more clinics to view your dashboard metrics.</p>
             </div>
           ) : (
             <>
@@ -143,12 +132,12 @@ export function Dashboard() {
               {/* Main Dashboard Section */}
               <div className="space-y-6">
                 {!dashboardData?.products || dashboardData.products.length === 0 ? (
-                  <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 sm:p-8 text-center max-w-4xl mx-auto">
+                  <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 lg:p-8 text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                       <BarChart className="h-8 w-8 text-theme-blue" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-medium text-white mb-2">No data available</h3>
-                    <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
+                    <h3 className="text-lg lg:text-xl font-medium text-white mb-2">No data available</h3>
+                    <p className="text-gray-400 text-sm lg:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
                   </div>
                 ) : (
                   <ProductSection key="unified-products" metrics={null} unifiedData={dashboardData} />
@@ -156,10 +145,14 @@ export function Dashboard() {
               </div>
 
               {/* Bookings Section */}
-              <BookingsSection filters={filters} unifiedData={dashboardData} />
+              <div id="bookings-section">
+                <BookingsSection filters={filters} unifiedData={dashboardData} />
+              </div>
 
               {/* FAQ Section */}
-              <FAQSection filters={filters} unifiedData={dashboardData} />
+              <div id="faq-section">
+                <FAQSection filters={filters} unifiedData={dashboardData} />
+              </div>
             </>
           )}
         </div>
