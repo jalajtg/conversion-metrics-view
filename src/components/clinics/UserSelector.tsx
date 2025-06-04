@@ -86,12 +86,12 @@ export function UserSelector({
               value={user.id} 
               className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter"
             >
-              <span>{user.name || 'Unnamed User'}</span>
+              <span>{user.id || 'Unnamed User'}</span>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      
+      {/* 
       <Button
         type="button"
         variant="outline"
@@ -100,13 +100,13 @@ export function UserSelector({
       >
         <Plus className="h-4 w-4 mr-2" />
         Create New User
-      </Button>
+      </Button> */}
 
-      <CreateUserDialog 
+      {/* <CreateUserDialog 
         open={showCreateDialog} 
         onOpenChange={setShowCreateDialog} 
         onUserCreated={handleUserCreated} 
-      />
+      /> */}
     </div>
   );
 }
