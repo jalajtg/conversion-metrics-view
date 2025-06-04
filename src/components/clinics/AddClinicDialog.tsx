@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -20,15 +20,20 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { UserSelector } from './UserSelector';
 
 interface ClinicFormData {
   name: string;
   address: string;
   phone: string;
   owner_id: string;
+}
+
+interface User {
+  id: string;
+  name: string | null;
 }
 
 export function AddClinicDialog() {
@@ -43,6 +48,29 @@ export function AddClinicDialog() {
       phone: '',
       owner_id: '',
     },
+  });
+
+  const {
+    data: users = [],
+    isLoading: isLoadingUsers
+  } = useQuery({
+    queryKey: ['users-for-clinic'],
+    queryFn: async () => {
+      console.log('Fetching users from profiles table...');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching users:', error);
+        return [];
+      }
+      
+      console.log('Users fetched:', data);
+      return data as User[];
+    }
   });
 
   const createClinicMutation = useMutation({
@@ -116,6 +144,8 @@ export function AddClinicDialog() {
     console.log('Submitting clinic creation form:', data);
     createClinicMutation.mutate(data);
   };
+
+  const selectedUser = users.find(user => user.id === form.watch('owner_id'));
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -194,13 +224,31 @@ export function AddClinicDialog() {
                 <FormItem>
                   <FormLabel>Clinic Owner</FormLabel>
                   <FormControl>
-                    <UserSelector
-                      selectedUserId={field.value}
-                      onUserSelect={(userId) => {
-                        console.log('User selected in AddClinicDialog:', userId);
-                        field.onChange(userId);
-                      }}
-                    />
+                    {isLoadingUsers ? (
+                      <div className="text-gray-400">Loading users...</div>
+                    ) : (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a user">
+                            {selectedUser ? (
+                              <span>{selectedUser.name || 'Unnamed User'}</span>
+                            ) : (
+                              <span className="text-gray-400">Select a user</span>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className="z-50">
+                          {users.map(user => (
+                            <SelectItem 
+                              key={user.id} 
+                              value={user.id}
+                            >
+                              {user.name || 'Unnamed User'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>

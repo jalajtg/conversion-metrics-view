@@ -1,11 +1,13 @@
 
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { UserSelector } from './UserSelector';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from 'lucide-react';
 
 interface ClinicFormData {
@@ -25,6 +27,11 @@ interface ClinicFormProps {
   isSubmitting: boolean;
 }
 
+interface User {
+  id: string;
+  name: string | null;
+}
+
 export function ClinicForm({
   formData,
   onInputChange,
@@ -33,6 +40,31 @@ export function ClinicForm({
   onCancel,
   isSubmitting
 }: ClinicFormProps) {
+  const {
+    data: users = [],
+    isLoading: isLoadingUsers
+  } = useQuery({
+    queryKey: ['users-for-clinic'],
+    queryFn: async () => {
+      console.log('Fetching users from profiles table...');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching users:', error);
+        return [];
+      }
+      
+      console.log('Users fetched:', data);
+      return data as User[];
+    }
+  });
+
+  const selectedUser = users.find(user => user.id === formData.owner_id);
+
   return (
     <Card className="bg-theme-dark-card border-gray-700">
       <CardHeader className="border-b border-gray-700">
@@ -94,10 +126,32 @@ export function ClinicForm({
               <Label className="text-gray-300">
                 Clinic Owner *
               </Label>
-              <UserSelector
-                selectedUserId={formData.owner_id}
-                onUserSelect={onUserSelect}
-              />
+              {isLoadingUsers ? (
+                <div className="text-gray-400">Loading users...</div>
+              ) : (
+                <Select value={formData.owner_id} onValueChange={onUserSelect}>
+                  <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
+                    <SelectValue placeholder="Select a user">
+                      {selectedUser ? (
+                        <span className="text-white">{selectedUser.name || 'Unnamed User'}</span>
+                      ) : (
+                        <span className="text-gray-400">Select a user</span>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-theme-dark-card border-gray-700 z-50">
+                    {users.map(user => (
+                      <SelectItem 
+                        key={user.id} 
+                        value={user.id} 
+                        className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter hover:text-white focus:text-white cursor-pointer"
+                      >
+                        <span className="text-white">{user.name || 'Unnamed User'}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 
