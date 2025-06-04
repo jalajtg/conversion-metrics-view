@@ -1,9 +1,9 @@
-
 import React, { useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { updateProduct } from '@/services/productService';
-import { useClinics } from '@/hooks/useClinics';
+import { useAllClinics } from '@/hooks/useAllClinics';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -18,17 +18,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface ProductFormData {
   name: string;
@@ -45,7 +40,7 @@ interface EditProductDialogProps {
 
 export function EditProductDialog({ product, open, onOpenChange }: EditProductDialogProps) {
   const { toast } = useToast();
-  const { data: clinics } = useClinics();
+  const { data: clinics } = useAllClinics();
   const queryClient = useQueryClient();
   
   const form = useForm<ProductFormData>({
@@ -168,20 +163,45 @@ export function EditProductDialog({ product, open, onOpenChange }: EditProductDi
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-gray-300">Clinic</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
-                        <SelectValue placeholder="Select a clinic" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-theme-dark-card border-gray-600">
-                      {clinics?.map((clinic) => (
-                        <SelectItem key={clinic.id} value={clinic.id} className="text-white hover:bg-theme-dark-lighter">
-                          {clinic.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <DropdownMenu.Root>
+                      <DropdownMenu.Trigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between bg-theme-dark-lighter border-gray-600 text-white",
+                            !field.value && "text-gray-400"
+                          )}
+                        >
+                          {field.value
+                            ? clinics?.find((clinic) => clinic.id === field.value)?.name
+                            : "Select a clinic"}
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Portal>
+                        <DropdownMenu.Content
+                          className="z-50 min-w-[200px] overflow-hidden rounded-md border border-gray-700 bg-theme-dark-card shadow-md"
+                          align="start"
+                          side="bottom"
+                          sideOffset={4}
+                        >
+                          <div className="max-h-[200px] overflow-y-auto p-1">
+                            {clinics?.map((clinic) => (
+                              <DropdownMenu.Item
+                                key={clinic.id}
+                                className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                                onSelect={() => field.onChange(clinic.id)}
+                              >
+                                {clinic.name}
+                              </DropdownMenu.Item>
+                            ))}
+                          </div>
+                        </DropdownMenu.Content>
+                      </DropdownMenu.Portal>
+                    </DropdownMenu.Root>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

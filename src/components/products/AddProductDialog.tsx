@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { createProduct } from '@/services/productService';
-import { useClinics } from '@/hooks/useClinics';
+import { useAllClinics } from '@/hooks/useAllClinics';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -19,18 +19,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface ProductFormData {
   name: string;
@@ -42,7 +36,7 @@ interface ProductFormData {
 export function AddProductDialog() {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { data: clinics } = useClinics();
+  const { data: clinics } = useAllClinics();
   const queryClient = useQueryClient();
 
   const form = useForm<ProductFormData>({
@@ -86,12 +80,12 @@ export function AddProductDialog() {
           Add Product
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-theme-dark-card border-theme-dark-lighter text-white max-w-lg mx-auto translate-x-[-20%] translate-y-[-20%]">
-        <DialogHeader className="pb-4">
+      <DialogContent className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-theme-dark-card border-theme-dark-lighter text-white max-w-lg w-[90vw] max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="pb-4 sticky top-0 bg-theme-dark-card border-b border-theme-dark-lighter">
           <DialogTitle className="text-xl font-semibold text-white">Add New Product</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-4">
             <FormField
               control={form.control}
               name="name"
@@ -143,24 +137,45 @@ export function AddProductDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-200">Clinic</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger className="bg-theme-dark-lighter border-theme-dark-lighter text-white focus:border-theme-blue focus:ring-theme-blue">
-                        <SelectValue placeholder="Select a clinic" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-theme-dark-card border-theme-dark-lighter z-[60] shadow-xl">
-                      {clinics?.map((clinic) => (
-                        <SelectItem
-                          key={clinic.id}
-                          value={clinic.id}
-                          className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter cursor-pointer"
+                  <FormControl>
+                    <DropdownMenu.Root>
+                      <DropdownMenu.Trigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between bg-theme-dark-lighter border-theme-dark-lighter text-white",
+                            !field.value && "text-gray-400"
+                          )}
                         >
-                          {clinic.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          {field.value
+                            ? clinics?.find((clinic) => clinic.id === field.value)?.name
+                            : "Select a clinic"}
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Portal>
+                        <DropdownMenu.Content
+                          className="z-50 min-w-[200px] overflow-hidden rounded-md border border-gray-700 bg-theme-dark-card shadow-md"
+                          align="start"
+                          side="bottom"
+                          sideOffset={4}
+                        >
+                          <div className="max-h-[200px] overflow-y-auto p-1">
+                            {clinics?.map((clinic) => (
+                              <DropdownMenu.Item
+                                key={clinic.id}
+                                className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                                onSelect={() => field.onChange(clinic.id)}
+                              >
+                                {clinic.name}
+                              </DropdownMenu.Item>
+                            ))}
+                          </div>
+                        </DropdownMenu.Content>
+                      </DropdownMenu.Portal>
+                    </DropdownMenu.Root>
+                  </FormControl>
                   <FormMessage className="text-red-400" />
                 </FormItem>
               )}
