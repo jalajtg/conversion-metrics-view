@@ -22,19 +22,19 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-b border-gray-800 bg-theme-dark-lighter">
-      <SidebarHeader className="bg-zinc-800">
+    <Sidebar className="border-r border-gray-800 bg-theme-dark-lighter">
+      <SidebarHeader className="border-b border-gray-800 bg-theme-dark-lighter">
         <div className="px-4 py-4 flex items-center gap-3">
           <img src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" alt="Logo" className="h-8" />
         </div>
       </SidebarHeader>
-      <SidebarContent className="bg-zinc-800">
-        <SidebarGroup className="bg-zinc-800">
-          <SidebarGroupLabel className="text-gray-400">Pages</SidebarGroupLabel>
+      <SidebarContent className="bg-theme-dark-lighter">
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-gray-400 px-4">Pages</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/dashboard')} className="hover:bg-theme-dark-card hover:text-theme-blue">
+                <SidebarMenuButton asChild isActive={isActive('/dashboard')} className="hover:bg-theme-dark-card hover:text-theme-blue mx-2">
                   <Link to="/dashboard" className={isActive('/dashboard') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
                     <LayoutDashboard />
                     <span>Dashboard</span>
@@ -43,7 +43,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/faq')} className="hover:bg-theme-dark-card hover:text-theme-blue">
+                <SidebarMenuButton asChild isActive={isActive('/faq')} className="hover:bg-theme-dark-card hover:text-theme-blue mx-2">
                   <Link to="/faq" className={isActive('/faq') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
                     <HelpCircle />
                     <span>FAQ</span>
@@ -53,7 +53,7 @@ export function AppSidebar() {
 
               {isSuperAdmin && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive('/super-admin')} className="hover:bg-theme-dark-card hover:text-theme-blue">
+                  <SidebarMenuButton asChild isActive={isActive('/super-admin')} className="hover:bg-theme-dark-card hover:text-theme-blue mx-2">
                     <Link to="/super-admin" className={isActive('/super-admin') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
                       <Shield />
                       <span>Super Admin</span>
@@ -66,19 +66,19 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {isDashboard && !isSuperAdmin && (
-          <SidebarGroup className="bg-zinc-800">
-            <SidebarGroupLabel className="text-gray-400">Quick Navigation</SidebarGroupLabel>
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-gray-400 px-4">Quick Navigation</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => scrollToSection('bookings-section')} className="text-white hover:bg-theme-dark-card hover:text-theme-blue cursor-pointer">
+                  <SidebarMenuButton onClick={() => scrollToSection('bookings-section')} className="text-white hover:bg-theme-dark-card hover:text-theme-blue cursor-pointer mx-2">
                     <Calendar />
                     <span>Bookings</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => scrollToSection('faq-section')} className="text-white hover:bg-theme-dark-card hover:text-theme-blue cursor-pointer">
+                  <SidebarMenuButton onClick={() => scrollToSection('faq-section')} className="text-white hover:bg-theme-dark-card hover:text-theme-blue cursor-pointer mx-2">
                     <MessageCircle />
                     <span>FAQ Analytics</span>
                   </SidebarMenuButton>
@@ -90,12 +90,12 @@ export function AppSidebar() {
         
         <div className="flex-grow"></div>
         
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel className="text-gray-400">Account</SidebarGroupLabel>
+        <SidebarGroup className="mt-auto border-t border-gray-800 pt-4">
+          <SidebarGroupLabel className="text-gray-400 px-4">Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => signOut()} className="text-white hover:bg-red-500/10 hover:text-red-400">
+                <SidebarMenuButton onClick={() => signOut()} className="text-white hover:bg-red-500/10 hover:text-red-400 mx-2">
                   <LogOut />
                   <span>Log out</span>
                 </SidebarMenuButton>
