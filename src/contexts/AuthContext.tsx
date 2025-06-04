@@ -28,19 +28,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasProcessedInitialSession, setHasProcessedInitialSession] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
         console.log('Auth state change:', event, newSession?.user?.email);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
-        // Fetch user profile after auth state change, but use setTimeout to prevent deadlock
+        // Fetch user profile after auth state change
         if (newSession?.user) {
           setTimeout(() => {
             fetchProfile(newSession.user.id);
@@ -49,55 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(null);
         }
         
-        // Only handle redirects for actual sign-in events, not for existing sessions
-        if (event === 'SIGNED_IN' && hasProcessedInitialSession) {
-          toast({
-            title: "Signed in",
-            description: "You have successfully signed in",
-          });
-          
-          // Only redirect if we're currently on the auth page or root
-          const shouldRedirect = location.pathname === '/auth' || location.pathname === '/';
-          
-          if (shouldRedirect) {
-            // Check user role and redirect accordingly with a delay
-            setTimeout(async () => {
-              try {
-                console.log('Checking user role for redirect:', newSession.user.email);
-                
-                // Special handling for super admin emails
-                const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
-                if (superAdminEmails.includes(newSession.user.email || '')) {
-                  console.log('Super admin detected, redirecting to /super-admin');
-                  navigate('/super-admin');
-                  return;
-                }
-                
-                // For other users, check their role
-                const { data: roleData } = await supabase.rpc('get_user_role', {
-                  _user_id: newSession.user.id
-                });
-                
-                console.log('User role data:', roleData);
-                
-                if (roleData === 'super_admin') {
-                  navigate('/super-admin');
-                } else {
-                  navigate('/dashboard');
-                }
-              } catch (error) {
-                console.error('Error checking user role:', error);
-                // Default redirect based on email
-                const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
-                if (superAdminEmails.includes(newSession.user.email || '')) {
-                  navigate('/super-admin');
-                } else {
-                  navigate('/dashboard');
-                }
-              }
-            }, 500);
-          }
-        } else if (event === 'SIGNED_OUT') {
+        // Handle sign out event
+        if (event === 'SIGNED_OUT') {
           toast({
             title: "Signed out",
             description: "You have been signed out",
@@ -107,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
@@ -116,14 +68,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchProfile(existingSession.user.id);
       }
       setIsLoading(false);
-      // Mark that we've processed the initial session
-      setHasProcessedInitialSession(true);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -148,7 +98,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      // Navigation will be handled by the auth state change listener
+      
+      toast({
+        title: "Signed in",
+        description: "You have successfully signed in",
+      });
+      
+      // Navigate to home to trigger redirect logic
+      navigate('/');
     } catch (error: any) {
       toast({
         variant: "destructive",
