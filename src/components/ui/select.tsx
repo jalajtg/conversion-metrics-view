@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -126,14 +127,14 @@ export function SelectItem({ value, className, children }: SelectItemProps) {
   return (
     <div
       className={cn(
-        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
         isSelected && "bg-accent text-accent-foreground",
         className
       )}
       onClick={handleClick}
     >
       <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-        {isSelected && <Check className="h-4 w-4" />}
+        {isSelected && <Check className="h-4 w-4 text-white" />}
       </span>
       {children}
     </div>

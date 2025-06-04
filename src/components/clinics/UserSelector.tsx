@@ -83,9 +83,9 @@ export function UserSelector({
             <SelectItem 
               key={user.id} 
               value={user.id} 
-              className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter"
+              className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter hover:text-white focus:text-white cursor-pointer"
             >
-              <span>{user.name || 'Unnamed User'}</span>
+              <span className="text-white">{user.name || 'Unnamed User'}</span>
             </SelectItem>
           ))}
         </SelectContent>
