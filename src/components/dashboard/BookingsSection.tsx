@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar, Mail, Phone, User, Clock } from 'lucide-react';
@@ -22,71 +23,72 @@ interface Booking {
 }
 
 export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) {
-  // Fetch appointments/bookings from Supabase with month filtering
-  const { data: bookings, isLoading, error } = useQuery({
-    queryKey: ["filtered-bookings", filters],
+  // Fetch all appointments/bookings from Supabase without filtering
+  const { data: allBookings, isLoading, error } = useQuery({
+    queryKey: ["all-bookings"],
     queryFn: async (): Promise<Booking[]> => {
-      console.log('Fetching bookings with filters:', filters);
+      console.log('Fetching all bookings from database...');
       
-      let query = supabase
+      const { data, error } = await supabase
         .from('bookings')
         .select('*')
         .order('booking_time', { ascending: false });
-
-      // Filter by clinic IDs if specified
-      if (filters.clinicIds && filters.clinicIds.length > 0) {
-        query = query.in('clinic_id', filters.clinicIds);
-      }
-
-      // Filter by month if specified
-      if (filters.month) {
-        const currentYear = new Date().getFullYear();
-        const monthNumber = parseInt(filters.month);
-        
-        // Create start and end dates for the selected month
-        const startDate = new Date(currentYear, monthNumber - 1, 1);
-        const endDate = new Date(currentYear, monthNumber, 0, 23, 59, 59);
-        
-        console.log('Filtering by month:', filters.month, 'Date range:', startDate, endDate);
-        
-        query = query
-          .gte('booking_time', startDate.toISOString())
-          .lte('booking_time', endDate.toISOString());
-      }
-
-      // Filter by months array if specified (for multiple month selection)
-      if (filters.months && filters.months.length > 0) {
-        const currentYear = new Date().getFullYear();
-        const monthConditions = filters.months.map(monthName => {
-          const monthNumber = new Date(`${monthName} 1, ${currentYear}`).getMonth() + 1;
-          const startDate = new Date(currentYear, monthNumber - 1, 1);
-          const endDate = new Date(currentYear, monthNumber, 0, 23, 59, 59);
-          return { start: startDate.toISOString(), end: endDate.toISOString() };
-        });
-        
-        console.log('Filtering by months:', filters.months, 'Conditions:', monthConditions);
-        
-        // For multiple months, we need to use OR conditions
-        // This is a simplified approach - in a real scenario you might need a more complex query
-        if (monthConditions.length === 1) {
-          query = query
-            .gte('booking_time', monthConditions[0].start)
-            .lte('booking_time', monthConditions[0].end);
-        }
-      }
-
-      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching bookings:', error);
         throw error;
       }
 
-      console.log('Fetched filtered bookings:', data);
+      console.log('Fetched all bookings from DB:', data);
       return data || [];
     },
     enabled: true,
   });
+
+  // Apply filters on the frontend
+  const filteredBookings = useMemo(() => {
+    if (!allBookings) return [];
+
+    let filtered = allBookings;
+
+    // Filter by clinic IDs if specified
+    if (filters.clinicIds && filters.clinicIds.length > 0) {
+      filtered = filtered.filter(booking => 
+        booking.clinic_id && filters.clinicIds.includes(booking.clinic_id)
+      );
+    }
+
+    // Filter by month if specified
+    if (filters.month) {
+      const currentYear = new Date().getFullYear();
+      const monthNumber = parseInt(filters.month);
+      
+      // Create start and end dates for the selected month
+      const startDate = new Date(currentYear, monthNumber - 1, 1);
+      const endDate = new Date(currentYear, monthNumber, 0, 23, 59, 59);
+      
+      console.log('Filtering by month:', filters.month, 'Date range:', startDate, endDate);
+      
+      filtered = filtered.filter(booking => {
+        const bookingDate = new Date(booking.booking_time);
+        return bookingDate >= startDate && bookingDate <= endDate;
+      });
+    }
+
+    // Filter by months array if specified (for multiple month selection)
+    if (filters.months && filters.months.length > 0) {
+      const currentYear = new Date().getFullYear();
+      
+      filtered = filtered.filter(booking => {
+        const bookingDate = new Date(booking.booking_time);
+        const bookingMonth = bookingDate.toLocaleString('default', { month: 'long' });
+        return filters.months!.includes(bookingMonth);
+      });
+    }
+
+    console.log('Filtered bookings:', filtered);
+    return filtered;
+  }, [allBookings, filters]);
 
   if (isLoading) {
     return (
@@ -125,7 +127,9 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
       </div>
     );
   }
-  console.log("Bookings", bookings)
+
+  console.log("Final filtered bookings:", filteredBookings);
+
   return (
     <div id="bookings-section" className="space-y-4 sm:space-y-6">
       <div className="flex items-center gap-2 sm:gap-3">
@@ -152,12 +156,12 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
               <span className="text-sm sm:text-base">Appointment Schedule</span>
             </div>
             <span className="text-xs sm:text-sm font-normal text-gray-400 sm:ml-auto">
-              {bookings?.length || 0} total bookings
+              {filteredBookings?.length || 0} total bookings
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {!bookings || bookings.length === 0 ? (
+          {!filteredBookings || filteredBookings.length === 0 ? (
             <div className="text-center py-8 sm:py-12">
               <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 mb-4">
                 <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
@@ -204,7 +208,7 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bookings.map((booking: Booking, index: number) => (
+                  {filteredBookings.map((booking: Booking, index: number) => (
                     <TableRow 
                       key={booking.id} 
                       className="border-gray-700/50 transition-colors duration-200 hover:bg-gray-800/30"
