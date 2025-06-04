@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown } from 'lucide-react';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 interface ClinicFormData {
   name: string;
@@ -129,28 +128,43 @@ export function ClinicForm({
               {isLoadingUsers ? (
                 <div className="text-gray-400">Loading users...</div>
               ) : (
-                <Select value={formData.owner_id} onValueChange={onUserSelect}>
-                  <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
-                    <SelectValue placeholder="Select a user">
-                      {selectedUser ? (
-                        <span className="text-white">{selectedUser.name || 'Unnamed User'}</span>
-                      ) : (
-                        <span className="text-gray-400">Select a user</span>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="bg-theme-dark-card border-gray-700 z-50">
-                    {users.map(user => (
-                      <SelectItem 
-                        key={user.id} 
-                        value={user.id} 
-                        className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter hover:text-white focus:text-white cursor-pointer"
+                <div className="relative">
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="w-full bg-theme-dark-lighter border-gray-600 text-white justify-between"
                       >
-                        <span className="text-white">{user.name || 'Unnamed User'}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        <span className="truncate">
+                          {selectedUser?.name || 'Select a user'}
+                        </span>
+                        <ChevronDown className="h-4 w-4 ml-2 opacity-50" />
+                      </Button>
+                    </DropdownMenu.Trigger>
+                    
+                    <DropdownMenu.Portal>
+                      <DropdownMenu.Content 
+                        className="relative z-50 min-w-[200px] bg-theme-dark-card rounded-md border border-gray-700 shadow-md"
+                        side="bottom"
+                        align="start"
+                        sideOffset={4}
+                        alignOffset={0}
+                      >
+                        <div className="max-h-[300px] overflow-y-auto py-1">
+                          {users.map(user => (
+                            <DropdownMenu.Item
+                              key={user.id}
+                              className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                              onSelect={() => onUserSelect(user.id)}
+                            >
+                              {user.name || 'Unnamed User'}
+                            </DropdownMenu.Item>
+                          ))}
+                        </div>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu.Root>
+                </div>
               )}
             </div>
           </div>

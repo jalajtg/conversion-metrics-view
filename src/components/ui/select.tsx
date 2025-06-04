@@ -133,7 +133,7 @@ export function SelectItem({ value, className, children }: SelectItemProps) {
       )}
       onClick={handleClick}
     >
-      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center" onClick={handleClick}>
         {isSelected && <Check className="h-4 w-4 text-white" />}
       </span>
       {children}
