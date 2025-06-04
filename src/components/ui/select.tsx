@@ -31,6 +31,7 @@ interface SelectItemProps {
 
 interface SelectValueProps {
   placeholder?: string;
+  children?: React.ReactNode;
 }
 
 const SelectContext = React.createContext<{
@@ -85,7 +86,7 @@ export const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerPr
           {...props}
         >
           {children}
-          <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform", isOpen && "rotate-180")} />
+          <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform ml-2 flex-shrink-0", isOpen && "rotate-180")} />
         </button>
       </div>
     );
@@ -115,6 +116,7 @@ export function SelectItem({ value, className, children }: SelectItemProps) {
   const isSelected = selectedValue === value;
 
   const handleClick = () => {
+    console.log('SelectItem clicked, value:', value);
     onValueChange?.(value);
     setIsOpen(false);
   };
@@ -136,9 +138,15 @@ export function SelectItem({ value, className, children }: SelectItemProps) {
   );
 }
 
-export function SelectValue({ placeholder }: SelectValueProps) {
+export function SelectValue({ placeholder, children }: SelectValueProps) {
   const { value } = React.useContext(SelectContext);
 
+  // If children are provided (custom content), use them
+  if (children) {
+    return <div className="flex-1 text-left">{children}</div>;
+  }
+
+  // Otherwise, show the value or placeholder
   return (
     <span className="truncate">
       {value || <span className="text-muted-foreground">{placeholder}</span>}
