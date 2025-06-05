@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useClinics } from '@/hooks/useClinics';
@@ -11,13 +12,47 @@ import { Loader2, BarChart } from 'lucide-react';
 import type { DashboardFilters as DashboardFiltersType } from '@/types/dashboard';
 import { createDummyDataForUser } from '@/services/dummyDataService';
 
+const DASHBOARD_FILTERS_KEY = 'dashboard-filters';
+
 export function Dashboard() {
   const currentDate = new Date();
-  const [filters, setFilters] = useState<DashboardFiltersType>({
-    clinicIds: [],
-    month: (currentDate.getMonth() + 1).toString()
-  });
+  
+  // Load filters from session storage or use defaults
+  const loadFiltersFromStorage = (): DashboardFiltersType => {
+    try {
+      const savedFilters = sessionStorage.getItem(DASHBOARD_FILTERS_KEY);
+      if (savedFilters) {
+        const parsed = JSON.parse(savedFilters);
+        return {
+          clinicIds: parsed.clinicIds || [],
+          month: parsed.month || (currentDate.getMonth() + 1).toString(),
+          months: parsed.months || []
+        };
+      }
+    } catch (error) {
+      console.error('Error loading filters from session storage:', error);
+    }
+    
+    return {
+      clinicIds: [],
+      month: (currentDate.getMonth() + 1).toString()
+    };
+  };
+
+  const [filters, setFilters] = useState<DashboardFiltersType>(loadFiltersFromStorage);
   const [dummyDataCreated, setDummyDataCreated] = useState(false);
+  
+  // Save filters to session storage whenever they change
+  const handleFiltersChange = (newFilters: DashboardFiltersType) => {
+    setFilters(newFilters);
+    try {
+      sessionStorage.setItem(DASHBOARD_FILTERS_KEY, JSON.stringify(newFilters));
+      console.log('Filters saved to session storage:', newFilters);
+    } catch (error) {
+      console.error('Error saving filters to session storage:', error);
+    }
+  };
+
   const {
     data: clinics,
     isLoading: clinicsLoading,
@@ -52,14 +87,14 @@ export function Dashboard() {
     createDummyData();
   }, [clinics, clinicsLoading, dummyDataCreated, refetchClinics]);
 
-  // Auto-select all clinics when they're loaded
+  // Auto-select all clinics when they're loaded if no clinics are selected in session storage
   // useEffect(() => {
   //   if (clinics && clinics.length > 0 && filters.clinicIds.length === 0) {
   //     console.log("Auto-selecting clinic IDs:", clinics.map(clinic => clinic.id));
-  //     setFilters(prev => ({
-  //       ...prev,
+  //     handleFiltersChange({
+  //       ...filters,
   //       clinicIds: clinics.map(clinic => clinic.id)
-  //     }));
+  //     });
   //   }
   // }, [clinics, filters.clinicIds.length]);
 
@@ -108,7 +143,7 @@ export function Dashboard() {
         {/* Filters Section */}
         {clinics && (
           <div className="mb-6">
-            <DashboardFilters clinics={clinics} filters={filters} onFiltersChange={setFilters} />
+            <DashboardFilters clinics={clinics} filters={filters} onFiltersChange={handleFiltersChange} />
           </div>
         )}
         

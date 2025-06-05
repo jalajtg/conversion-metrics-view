@@ -22,9 +22,24 @@ interface Booking {
   clinic_id: string | null;
 }
 
+interface Appointment {
+  id: string;
+  lead_id: string;
+  clinic_id: string | null;
+  type: string;
+  status: string;
+  scheduled_at: string;
+  created_at: string;
+  leads?: {
+    client_name: string;
+    email: string | null;
+    phone: string | null;
+  };
+}
+
 export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) {
-  // Fetch all appointments/bookings from Supabase without filtering
-  const { data: allBookings, isLoading, error } = useQuery({
+  // Fetch all bookings from Supabase without filtering
+  const { data: allBookings, isLoading: bookingsLoading, error: bookingsError } = useQuery({
     queryKey: ["all-bookings"],
     queryFn: async (): Promise<Booking[]> => {
       console.log('Fetching all bookings from database...');
@@ -45,11 +60,57 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
     enabled: true,
   });
 
+  // Fetch all appointments from Supabase
+  const { data: allAppointments, isLoading: appointmentsLoading, error: appointmentsError } = useQuery({
+    queryKey: ["all-appointments"],
+    queryFn: async (): Promise<Appointment[]> => {
+      console.log('Fetching all appointments from database...');
+      
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          leads (
+            client_name,
+            email,
+            phone
+          )
+        `)
+        .order('scheduled_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching appointments:', error);
+        throw error;
+      }
+
+      console.log('Fetched all appointments from DB:', data);
+      return data || [];
+    },
+    enabled: true,
+  });
+
+  // Combine bookings and appointments into unified data structure
+  const allBookingsAndAppointments = useMemo(() => {
+    const bookingsFormatted: Booking[] = allBookings || [];
+    
+    const appointmentsFormatted: Booking[] = (allAppointments || []).map(apt => ({
+      id: apt.id,
+      name: apt.leads?.client_name || 'Unknown',
+      email: apt.leads?.email || null,
+      phone: apt.leads?.phone || null,
+      booking_time: apt.scheduled_at,
+      created_at: apt.created_at,
+      clinic_id: apt.clinic_id
+    }));
+
+    return [...bookingsFormatted, ...appointmentsFormatted];
+  }, [allBookings, allAppointments]);
+
   // Apply filters on the frontend
   const filteredBookings = useMemo(() => {
-    if (!allBookings) return [];
+    if (!allBookingsAndAppointments) return [];
 
-    let filtered = allBookings;
+    let filtered = allBookingsAndAppointments;
 
     // Filter by clinic IDs if specified
     if (filters.clinicIds && filters.clinicIds.length > 0) {
@@ -86,9 +147,12 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
       });
     }
 
-    console.log('Filtered bookings:', filtered);
+    console.log('Filtered bookings and appointments:', filtered);
     return filtered;
-  }, [allBookings, filters]);
+  }, [allBookingsAndAppointments, filters]);
+
+  const isLoading = bookingsLoading || appointmentsLoading;
+  const error = bookingsError || appointmentsError;
 
   if (isLoading) {
     return (
@@ -119,16 +183,16 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
           </div>
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-              Error Loading Bookings
+              Error Loading Appointments
             </h2>
-            <p className="text-gray-400">Failed to load booking data from the database</p>
+            <p className="text-gray-400">Failed to load appointment data from the database</p>
           </div>
         </div>
       </div>
     );
   }
 
-  console.log("Final filtered bookings:", filteredBookings);
+  console.log("Final filtered bookings and appointments:", filteredBookings);
 
   return (
     <div id="bookings-section" className="space-y-4 sm:space-y-6">
@@ -138,10 +202,10 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
         </div>
         <div className="flex-1">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            Bookings
+            Appointments & Bookings
           </h2>
           <p className="text-gray-400 text-xs sm:text-sm">
-            {filters.month ? `Appointments for ${new Date(2024, parseInt(filters.month) - 1).toLocaleString('default', { month: 'long' })}` : 'Complete list of appointment bookings from your clinics'}
+            {filters.month ? `Appointments for ${new Date(2024, parseInt(filters.month) - 1).toLocaleString('default', { month: 'long' })}` : 'Complete list of appointments and bookings from your clinics'}
           </p>
         </div>
       </div>
@@ -156,7 +220,7 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
               <span className="text-sm sm:text-base">Appointment Schedule</span>
             </div>
             <span className="text-xs sm:text-sm font-normal text-gray-400 sm:ml-auto">
-              {filteredBookings?.length || 0} total bookings
+              {filteredBookings?.length || 0} total appointments
             </span>
           </CardTitle>
         </CardHeader>
@@ -166,11 +230,11 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
               <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 mb-4">
                 <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
               </div>
-              <h3 className="text-base sm:text-lg font-medium text-white mb-2">No bookings found</h3>
+              <h3 className="text-base sm:text-lg font-medium text-white mb-2">No appointments found</h3>
               <p className="text-gray-400 text-sm">
                 {filters.clinicIds.length === 0 
-                  ? "Please select at least one clinic to view bookings"
-                  : `No appointment bookings found for the selected ${filters.month ? 'month and ' : ''}criteria`
+                  ? "Please select at least one clinic to view appointments"
+                  : `No appointments found for the selected ${filters.month ? 'month and ' : ''}criteria`
                 }
               </p>
             </div>
