@@ -21,12 +21,12 @@ export default function Users() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+    <div className="w-full">
+      <div className="mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
           User Management
         </h1>
-        <p className="text-gray-400 text-sm">
+        <p className="text-gray-400">
           Manage all users in the system
         </p>
       </div>
