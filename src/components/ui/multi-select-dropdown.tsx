@@ -78,7 +78,7 @@ export function MultiSelectDropdown({
         ref={triggerRef}
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full justify-between bg-theme-dark-lighter border-gray-700 text-white hover:bg-theme-dark-lighter/80 min-h-[40px]"
+        className="w-full justify-between bg-theme-dark-lighter border-gray-700 text-white hover:bg-theme-dark-lighter/80 min-h-[40px] rounded-md border-2 focus:border-gray-600"
       >
         <span className="text-left truncate">
           {selectedValues.length === 0 ? (
@@ -93,7 +93,7 @@ export function MultiSelectDropdown({
       </Button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-theme-dark-lighter border border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto z-50">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-theme-dark-lighter border-2 border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto z-50">
           <div className="p-1">
             <div className="flex items-center justify-between px-3 py-2 text-white hover:bg-theme-blue/20 rounded">
               <div 
