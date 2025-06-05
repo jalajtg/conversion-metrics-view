@@ -105,9 +105,9 @@
   }
 
   /* Remove any transform animations on hover that could move text */
-  * {
+  /* * {
     transform: none !important;
-  }
+  } */
   
   /* Allow only safe hover effects */
   .hover-safe {
