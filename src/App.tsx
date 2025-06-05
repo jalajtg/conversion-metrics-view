@@ -19,7 +19,7 @@ import ClinicsPage from '@/pages/Clinics';
 import ProductsPage from '@/pages/Products';
 import SuperAdmin from '@/pages/SuperAdmin';
 import Users from '@/pages/Users';
-import { ProductReplicationPage } from '@/pages/ProductReplication';
+import ProductReplicationPage from '@/pages/ProductReplication';
 import AddClinicPage from '@/pages/AddClinic';
 import EditClinicPage from '@/pages/EditClinic';
 import FAQ from '@/pages/FAQ';
