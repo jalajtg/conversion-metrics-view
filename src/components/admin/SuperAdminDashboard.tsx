@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { Calendar, Users, Package, BookOpen, MessageSquare, DollarSign, TrendingUp, TrendingDown, Building2 } from 'lucide-react';
 import { useSuperAdminMetrics } from '@/hooks/useSuperAdminMetrics';
 import { SuperAdminFilters } from './SuperAdminFilters';
@@ -90,8 +91,9 @@ export function SuperAdminDashboard() {
   ];
 
   return (
-    <div className="w-full">
-      <div className="mb-8">
+    <div className="w-full space-y-6">
+      {/* Header Section */}
+      <div className="mb-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
           Super Admin Dashboard
         </h1>
@@ -100,74 +102,94 @@ export function SuperAdminDashboard() {
         </p>
       </div>
 
-      {/* User Management Section */}
+      {/* User Management Section with controlled height */}
       <div className="mb-8">
-        <UserManagement />
+        <div className="bg-theme-dark-card border border-gray-800 rounded-lg overflow-hidden">
+          <div className="max-h-[500px] overflow-y-auto">
+            <UserManagement />
+          </div>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6">
-        <SuperAdminFilters filters={filters} onFiltersChange={setFilters} />
-      </div>
+      {/* Visual Separator */}
+      <Separator className="bg-gray-700 my-8" />
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {metricCards.map((metric, index) => {
-          const IconComponent = metric.icon;
-          return (
-            <Card key={index} className="bg-theme-dark-card border-gray-800">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-400">
-                  {metric.title}
-                </CardTitle>
-                <div className={`p-2 rounded-lg ${metric.bgColor}`}>
-                  <IconComponent className={`h-4 w-4 ${metric.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">
-                  {metric.value}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Dashboard Metrics Section */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <Building2 className="h-6 w-6 text-theme-blue" />
+            System Metrics Dashboard
+          </h2>
+          <p className="text-gray-400 text-sm">
+            Overview of system-wide performance and statistics
+          </p>
+        </div>
 
-      {/* Clinic Details */}
-      {metrics?.clinicDetails && metrics.clinicDetails.length > 0 && (
-        <Card className="bg-theme-dark-card border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-white">Clinic Performance Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="text-left py-3 px-4 text-gray-400">Clinic Name</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Products</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Bookings</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Leads</th>
-                    <th className="text-left py-3 px-4 text-gray-400">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {metrics.clinicDetails.map((clinic) => (
-                    <tr key={clinic.id} className="border-b border-gray-800">
-                      <td className="py-3 px-4 text-white font-medium">{clinic.name}</td>
-                      <td className="py-3 px-4 text-gray-300">{clinic.productCount}</td>
-                      <td className="py-3 px-4 text-gray-300">{clinic.bookingCount}</td>
-                      <td className="py-3 px-4 text-gray-300">{clinic.leadCount}</td>
-                      <td className="py-3 px-4 text-gray-300">${clinic.revenue.toLocaleString()}</td>
+        {/* Filters */}
+        <div className="mb-6">
+          <SuperAdminFilters filters={filters} onFiltersChange={setFilters} />
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {metricCards.map((metric, index) => {
+            const IconComponent = metric.icon;
+            return (
+              <Card key={index} className="bg-theme-dark-card border-gray-800 hover:border-gray-700 transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-400">
+                    {metric.title}
+                  </CardTitle>
+                  <div className={`p-2 rounded-lg ${metric.bgColor}`}>
+                    <IconComponent className={`h-4 w-4 ${metric.color}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-white">
+                    {metric.value}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Clinic Details Table */}
+        {metrics?.clinicDetails && metrics.clinicDetails.length > 0 && (
+          <Card className="bg-theme-dark-card border-gray-800">
+            <CardHeader>
+              <CardTitle className="text-white">Clinic Performance Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-700">
+                      <th className="text-left py-3 px-4 text-gray-400">Clinic Name</th>
+                      <th className="text-left py-3 px-4 text-gray-400">Products</th>
+                      <th className="text-left py-3 px-4 text-gray-400">Bookings</th>
+                      <th className="text-left py-3 px-4 text-gray-400">Leads</th>
+                      <th className="text-left py-3 px-4 text-gray-400">Revenue</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                  </thead>
+                  <tbody>
+                    {metrics.clinicDetails.map((clinic) => (
+                      <tr key={clinic.id} className="border-b border-gray-800 hover:bg-gray-800/30 transition-colors">
+                        <td className="py-3 px-4 text-white font-medium">{clinic.name}</td>
+                        <td className="py-3 px-4 text-gray-300">{clinic.productCount}</td>
+                        <td className="py-3 px-4 text-gray-300">{clinic.bookingCount}</td>
+                        <td className="py-3 px-4 text-gray-300">{clinic.leadCount}</td>
+                        <td className="py-3 px-4 text-gray-300">${clinic.revenue.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
