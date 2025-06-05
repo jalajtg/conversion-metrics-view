@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
@@ -57,7 +56,7 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
               selectedValues={filters.clinicIds}
               onSelectionChange={handleClinicSelectionChange}
               placeholder="Select clinics..."
-              className="w-full bg-theme-dark border-gray-700 text-white"
+              className="w-full bg-theme-dark border-gray-700 text-white rounded"
               showChips={false}
             />
           </div>
@@ -69,7 +68,7 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
               selectedValues={filters.months || []}
               onSelectionChange={handleMonthSelectionChange}
               placeholder="Select months..."
-              className="w-full bg-theme-dark border-gray-700 text-white"
+              className="w-full bg-theme-dark border-gray-700 text-white rounded"
               showChips={false}
             />
           </div>
