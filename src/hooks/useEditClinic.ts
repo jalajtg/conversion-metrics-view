@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateClinic } from '@/services/clinicService';
+import { createClinicProductCategory, deleteClinicProductCategory, fetchClinicProductCategories } from '@/services/clinicProductCategoryService';
 import { useToast } from "@/hooks/use-toast";
+import { ProductCategoryWithPrice } from '@/components/clinics/ProductCategorySelector';
 
 interface ClinicFormData {
   name: string;
@@ -11,6 +13,7 @@ interface ClinicFormData {
   phone: string;
   address: string;
   owner_id: string;
+  productCategories: ProductCategoryWithPrice[];
 }
 
 export function useEditClinic(clinic: any) {
@@ -23,23 +26,88 @@ export function useEditClinic(clinic: any) {
     email: clinic.email || '',
     phone: clinic.phone || '',
     address: clinic.address || '',
-    owner_id: clinic.owner_id || ''
+    owner_id: clinic.owner_id || '',
+    productCategories: []
   });
+
+  // Load existing product categories for the clinic
+  React.useEffect(() => {
+    const loadExistingCategories = async () => {
+      try {
+        const existingCategories = await fetchClinicProductCategories(clinic.id);
+        const productCategories = existingCategories.map(cat => ({
+          product_category_id: cat.product_category_id,
+          price: cat.price
+        }));
+        setFormData(prev => ({
+          ...prev,
+          productCategories
+        }));
+      } catch (error) {
+        console.error('Error loading existing product categories:', error);
+      }
+    };
+
+    if (clinic.id) {
+      loadExistingCategories();
+    }
+  }, [clinic.id]);
 
   const updateClinicMutation = useMutation({
     mutationFn: async (clinicData: ClinicFormData) => {
-      const updatedClinic = await updateClinic(clinic.id, clinicData);
+      const updatedClinic = await updateClinic(clinic.id, {
+        name: clinicData.name,
+        email: clinicData.email,
+        phone: clinicData.phone,
+        address: clinicData.address
+      });
+      
       if (!updatedClinic) {
         throw new Error('Failed to update clinic');
       }
+
+      // Get existing product categories to compare
+      const existingCategories = await fetchClinicProductCategories(clinic.id);
+      const existingCategoryIds = existingCategories.map(cat => cat.product_category_id);
+      const newCategoryIds = clinicData.productCategories.map(cat => cat.product_category_id);
+
+      // Delete removed categories
+      for (const existingCategory of existingCategories) {
+        if (!newCategoryIds.includes(existingCategory.product_category_id)) {
+          await deleteClinicProductCategory(existingCategory.id);
+        }
+      }
+
+      // Create or update categories
+      for (const productCategory of clinicData.productCategories) {
+        const existingCategory = existingCategories.find(
+          cat => cat.product_category_id === productCategory.product_category_id
+        );
+
+        if (existingCategory) {
+          // Update existing if price changed
+          if (existingCategory.price !== productCategory.price) {
+            await updateClinicProductCategory(existingCategory.id, { price: productCategory.price });
+          }
+        } else {
+          // Create new association
+          await createClinicProductCategory({
+            clinic_id: clinic.id,
+            product_category_id: productCategory.product_category_id,
+            price: productCategory.price
+          });
+        }
+      }
+      
       return updatedClinic;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-clinics"] });
       queryClient.invalidateQueries({ queryKey: ["user-clinics"] });
+      queryClient.invalidateQueries({ queryKey: ["clinic-product-categories"] });
       toast({
         title: "Success",
-        description: "Clinic updated successfully!",
+        description: "Clinic updated successfully with product categories!",
       });
       navigate('/super-admin/clinics');
     },
@@ -67,6 +135,13 @@ export function useEditClinic(clinic: any) {
     }));
   };
 
+  const handleProductCategoriesChange = (categories: ProductCategoryWithPrice[]) => {
+    setFormData(prev => ({
+      ...prev,
+      productCategories: categories
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -90,6 +165,7 @@ export function useEditClinic(clinic: any) {
     formData,
     handleInputChange,
     handleUserSelect,
+    handleProductCategoriesChange,
     handleSubmit,
     handleCancel,
     isSubmitting: updateClinicMutation.isPending

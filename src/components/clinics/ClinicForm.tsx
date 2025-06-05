@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ChevronDown } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { ProductCategorySelector, ProductCategoryWithPrice } from './ProductCategorySelector';
 
 interface ClinicFormData {
   name: string;
@@ -16,12 +17,14 @@ interface ClinicFormData {
   phone: string;
   address: string;
   owner_id: string;
+  productCategories: ProductCategoryWithPrice[];
 }
 
 interface ClinicFormProps {
   formData: ClinicFormData;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onUserSelect: (userId: string) => void;
+  onProductCategoriesChange: (categories: ProductCategoryWithPrice[]) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   isSubmitting: boolean;
@@ -37,6 +40,7 @@ export function ClinicForm({
   formData,
   onInputChange,
   onUserSelect,
+  onProductCategoriesChange,
   onSubmit,
   onCancel,
   isSubmitting,
@@ -186,6 +190,12 @@ export function ClinicForm({
               className="bg-theme-dark-lighter border-gray-600 text-white placeholder-gray-400 focus:border-theme-blue focus:ring-theme-blue resize-none"
             />
           </div>
+
+          <ProductCategorySelector
+            selectedCategories={formData.productCategories}
+            onSelectionChange={onProductCategoriesChange}
+            className="space-y-4"
+          />
 
           <div className="flex justify-end gap-4 pt-6">
             <Button
