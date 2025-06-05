@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +25,7 @@ interface ClinicFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   isSubmitting: boolean;
+  isEdit?: boolean;
 }
 
 interface User {
@@ -37,7 +39,8 @@ export function ClinicForm({
   onUserSelect,
   onSubmit,
   onCancel,
-  isSubmitting
+  isSubmitting,
+  isEdit = false
 }: ClinicFormProps) {
   const {
     data: users = [],
@@ -202,10 +205,10 @@ export function ClinicForm({
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
+                  {isEdit ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                'Create Clinic'
+                isEdit ? 'Update Clinic' : 'Create Clinic'
               )}
             </Button>
           </div>

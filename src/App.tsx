@@ -1,65 +1,76 @@
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { Toaster } from '@/components/ui/toaster';
-import { PrivateRoute } from '@/components/auth/PrivateRoute';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/layout/Layout';
 import { SuperAdminLayout } from '@/components/admin/SuperAdminLayout';
+import { PrivateRoute } from '@/components/auth/PrivateRoute';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
+
+// Pages
+import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
-import Products from '@/pages/Products';
-import FAQ from '@/pages/FAQ';
 import Profile from '@/pages/Profile';
+import ClinicsPage from '@/pages/Clinics';
+import ProductsPage from '@/pages/Products';
 import SuperAdmin from '@/pages/SuperAdmin';
 import Users from '@/pages/Users';
-import Clinics from '@/pages/Clinics';
-import AddClinic from '@/pages/AddClinic';
-import Index from '@/pages/Index';
+import ProductReplication from '@/pages/ProductReplication';
+import AddClinicPage from '@/pages/AddClinic';
+import EditClinicPage from '@/pages/EditClinic';
+import FAQ from '@/pages/FAQ';
 import NotFound from '@/pages/NotFound';
-import './App.css';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route element={<PrivateRoute />}>
-              {/* Regular user routes */}
-              <Route element={<Layout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/profile" element={<Profile />} />
-              </Route>
-              
-              {/* Super admin routes */}
-              <Route path="/super-admin" element={<SuperAdminLayout />}>
-                <Route index element={<SuperAdmin />} />
-                <Route path="users" element={<Users />} />
-                <Route path="clinics" element={<Clinics />} />
-                <Route path="products" element={<Products />} />
-                <Route path="add-clinic" element={<AddClinic />} />
-              </Route>
-            </Route>
-            <Route path="/404" element={<NotFound />} />
-            <Route path="*" element={<Navigate to="/404" replace />} />
-          </Routes>
+      <BrowserRouter>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <AppRoutes />
           <Toaster />
-        </AuthProvider>
-      </Router>
+          <Sonner />
+        </ThemeProvider>
+      </BrowserRouter>
     </QueryClientProvider>
+  );
+}
+
+function AppRoutes() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Index />} />
+      <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/dashboard" replace />} />
+      
+      <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="faq" element={<FAQ />} />
+      </Route>
+
+      <Route path="/super-admin" element={<PrivateRoute><SuperAdminLayout /></PrivateRoute>}>
+        <Route index element={<SuperAdmin />} />
+        <Route path="users" element={<Users />} />
+        <Route path="clinics" element={<ClinicsPage />} />
+        <Route path="add-clinic" element={<AddClinicPage />} />
+        <Route path="edit-clinic/:id" element={<EditClinicPage />} />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="product-replication" element={<ProductReplication />} />
+      </Route>
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

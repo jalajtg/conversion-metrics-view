@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { useAllClinics } from '@/hooks/useAllClinics';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useTableState, usePaginatedAndSortedData } from '@/hooks/useTableState';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteClinic } from '@/services/clinicService';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -35,7 +35,8 @@ import {
   ArrowUp, 
   ArrowDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Edit
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,6 +45,7 @@ export function ClinicsTable() {
   const { data: clinics, isLoading: clinicsLoading, error: clinicsError } = useAllClinics();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clinicToDelete, setClinicToDelete] = useState<any>(null);
 
@@ -83,6 +85,10 @@ export function ClinicsTable() {
   const handleDeleteClick = (clinic: any) => {
     setClinicToDelete(clinic);
     setDeleteDialogOpen(true);
+  };
+
+  const handleEditClick = (clinic: any) => {
+    navigate(`/super-admin/edit-clinic/${clinic.id}`, { state: { clinic } });
   };
 
   const handleDeleteConfirm = () => {
@@ -322,48 +328,58 @@ export function ClinicsTable() {
                         </TableCell>
                         {isSuperAdmin && (
                           <TableCell className="text-right">
-                            <AlertDialog open={deleteDialogOpen && clinicToDelete?.id === clinic.id} onOpenChange={(open) => {
-                              if (!open) {
-                                setDeleteDialogOpen(false);
-                                setClinicToDelete(null);
-                              }
-                            }}>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDeleteClick(clinic)}
-                                  disabled={deleteClinicMutation.isPending}
-                                  className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  <span className="hidden sm:inline ml-1">Delete</span>
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent className="bg-theme-dark-card border-gray-700 text-white">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="text-white">Delete Clinic</AlertDialogTitle>
-                                  <AlertDialogDescription className="text-gray-300">
-                                    Are you sure you want to delete the clinic "{clinic.name}"? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel 
-                                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                            <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditClick(clinic)}
+                                className="bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/50 hover:text-blue-300"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              
+                              <AlertDialog open={deleteDialogOpen && clinicToDelete?.id === clinic.id} onOpenChange={(open) => {
+                                if (!open) {
+                                  setDeleteDialogOpen(false);
+                                  setClinicToDelete(null);
+                                }
+                              }}>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteClick(clinic)}
                                     disabled={deleteClinicMutation.isPending}
+                                    className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300"
                                   >
-                                    Cancel
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={handleDeleteConfirm}
-                                    disabled={deleteClinicMutation.isPending}
-                                    className="bg-red-500 hover:bg-red-600 text-white"
-                                  >
-                                    {deleteClinicMutation.isPending ? "Deleting..." : "Delete"}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent className="bg-theme-dark-card border-gray-700 text-white">
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-white">Delete Clinic</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-gray-300">
+                                      Are you sure you want to delete the clinic "{clinic.name}"? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel 
+                                      className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                                      disabled={deleteClinicMutation.isPending}
+                                    >
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={handleDeleteConfirm}
+                                      disabled={deleteClinicMutation.isPending}
+                                      className="bg-red-500 hover:bg-red-600 text-white"
+                                    >
+                                      {deleteClinicMutation.isPending ? "Deleting..." : "Delete"}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </TableCell>
                         )}
                       </TableRow>
