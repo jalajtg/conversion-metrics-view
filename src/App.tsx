@@ -1,6 +1,6 @@
 
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, AuthProvider } from '@/contexts/AuthContext';
 import { Layout } from '@/components/layout/Layout';
 import { SuperAdminLayout } from '@/components/admin/SuperAdminLayout';
 import { PrivateRoute } from '@/components/auth/PrivateRoute';
@@ -31,11 +31,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <AppRoutes />
-          <Toaster />
-          <Sonner />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <AppRoutes />
+            <Toaster />
+            <Sonner />
+          </ThemeProvider>
+        </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
@@ -53,16 +55,16 @@ function AppRoutes() {
       <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Index />} />
       <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/dashboard" replace />} />
       
-      <Route path="/" element={<PrivateRoute />}>
-        <Route path="" element={<Layout />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="faq" element={<FAQ />} />
+      <Route element={<PrivateRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/faq" element={<FAQ />} />
         </Route>
       </Route>
 
       <Route path="/super-admin" element={<PrivateRoute />}>
-        <Route path="" element={<SuperAdminLayout />}>
+        <Route element={<SuperAdminLayout />}>
           <Route index element={<SuperAdmin />} />
           <Route path="users" element={<Users />} />
           <Route path="clinics" element={<ClinicsPage />} />
