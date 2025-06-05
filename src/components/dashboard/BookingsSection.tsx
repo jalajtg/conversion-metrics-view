@@ -7,12 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import type { DashboardFilters } from '@/types/dashboard';
 import { useBookings } from '@/hooks/useBookings';
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval, parse } from 'date-fns';
-
 interface BookingsSectionProps {
   filters: DashboardFilters;
   unifiedData?: any;
 }
-
 interface Booking {
   id: string;
   name: string;
@@ -22,9 +20,10 @@ interface Booking {
   created_at: string;
   clinic_id: string | null;
 }
-
-
-export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) {
+export function BookingsSection({
+  filters,
+  unifiedData
+}: BookingsSectionProps) {
   const {
     data: bookings,
     isLoading: bookingsLoading,
@@ -35,58 +34,48 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
     if (!bookings) return [];
     return bookings;
   }, [bookings]);
-
   const filteredBookings = useMemo(() => {
     if (!allBookings) return [];
-
     let filtered = allBookings;
     console.log('Filtered bookings jalaj1:', filtered, filters);
 
     // Filter by clinic IDs if specified
     if (filters.clinicIds && filters.clinicIds.length > 0) {
-      filtered = filtered.filter(booking => 
-        booking.clinic_id && filters.clinicIds.includes(booking.clinic_id)
-      );
+      filtered = filtered.filter(booking => booking.clinic_id && filters.clinicIds.includes(booking.clinic_id));
     }
     console.log('Filtered bookings jalaj:', filtered);
 
     // Filter by months array if specified
     if (filters.months && filters.months.length > 0) {
       const currentYear = new Date().getFullYear();
-      
+
       // Create date ranges for all selected months
       const monthRanges = filters.months.map(monthName => {
         // Parse the month name to get the month index (0-11)
         const monthDate = parse(monthName, 'MMMM', new Date());
         const monthIndex = monthDate.getMonth();
-        
         return {
           start: startOfMonth(new Date(currentYear, monthIndex)),
           end: endOfMonth(new Date(currentYear, monthIndex))
         };
       });
-
       console.log('Month ranges:', monthRanges);
-      
       filtered = filtered.filter(booking => {
         const bookingDate = parseISO(booking.booking_time);
         // Check if the booking date falls within any of the selected month ranges
-        return monthRanges.some(range => 
-          isWithinInterval(bookingDate, { start: range.start, end: range.end })
-        );
+        return monthRanges.some(range => isWithinInterval(bookingDate, {
+          start: range.start,
+          end: range.end
+        }));
       });
     }
     console.log('Filtered bookings jalaj2:', filtered);
-
     return filtered;
   }, [allBookings, filters]);
-
   const isLoading = bookingsLoading;
   const error = bookingsError;
-
   if (isLoading) {
-    return (
-      <div className="animate-pulse space-y-4">
+    return <div className="animate-pulse space-y-4">
         <div className="h-8 bg-gray-700 rounded mb-4 w-48"></div>
         <Card className="bg-theme-dark-card border-gray-800">
           <CardHeader>
@@ -94,19 +83,14 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 bg-gray-700 rounded"></div>
-              ))}
+              {[1, 2, 3].map(i => <div key={i} className="h-16 bg-gray-700 rounded"></div>)}
             </div>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
   if (error) {
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-full bg-gradient-to-r from-red-500/20 to-orange-500/20">
             <Calendar className="h-8 w-8 text-red-400" />
@@ -118,15 +102,11 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
             <p className="text-gray-400">Failed to load appointment data from the database</p>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   console.log("Final filtered bookings and appointments:", filteredBookings);
-
-  return (
-    <div id="bookings-section" className="space-y-4 sm:space-y-6">
-      <div className="flex items-center gap-2 sm:gap-3">
+  return <div id="bookings-section" className="space-y-4 sm:space-y-6">
+      <div className="flex items-left gap-2 sm:gap-3">
         <div className="p-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20">
           <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
         </div>
@@ -135,7 +115,9 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
             Appointments & Bookings
           </h2>
           <p className="text-gray-400 text-xs sm:text-sm">
-            {filters.month ? `Appointments for ${new Date(2024, parseInt(filters.month) - 1).toLocaleString('default', { month: 'long' })}` : 'Complete list of appointments and bookings from your clinics'}
+            {filters.month ? `Appointments for ${new Date(2024, parseInt(filters.month) - 1).toLocaleString('default', {
+            month: 'long'
+          })}` : 'Complete list of appointments and bookings from your clinics'}
           </p>
         </div>
       </div>
@@ -155,21 +137,15 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {!filteredBookings || filteredBookings.length === 0 ? (
-            <div className="text-center py-8 sm:py-12">
+          {!filteredBookings || filteredBookings.length === 0 ? <div className="text-center py-8 sm:py-12">
               <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 mb-4">
                 <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
               </div>
               <h3 className="text-base sm:text-lg font-medium text-white mb-2">No appointments found</h3>
               <p className="text-gray-400 text-sm">
-                {filters.clinicIds.length === 0 
-                  ? "Please select at least one clinic to view appointments"
-                  : `No appointments found for the selected ${filters.month ? 'month and ' : ''}criteria`
-                }
+                {filters.clinicIds.length === 0 ? "Please select at least one clinic to view appointments" : `No appointments found for the selected ${filters.month ? 'month and ' : ''}criteria`}
               </p>
-            </div>
-          ) : (
-            <div className="overflow-hidden">
+            </div> : <div className="overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="border-gray-700/50 hover:bg-transparent">
@@ -202,14 +178,9 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredBookings.map((booking: Booking, index: number) => (
-                    <TableRow 
-                      key={booking.id} 
-                      className="border-gray-700/50 transition-colors duration-200 hover:bg-gray-800/30"
-                      style={{
-                        background: `linear-gradient(90deg, rgba(59, 130, 246, ${0.02 + index * 0.01}) 0%, rgba(147, 51, 234, ${0.02 + index * 0.01}) 100%)`
-                      }}
-                    >
+                  {filteredBookings.map((booking: Booking, index: number) => <TableRow key={booking.id} className="border-gray-700/50 transition-colors duration-200 hover:bg-gray-800/30" style={{
+                background: `linear-gradient(90deg, rgba(59, 130, 246, ${0.02 + index * 0.01}) 0%, rgba(147, 51, 234, ${0.02 + index * 0.01}) 100%)`
+              }}>
                       <TableCell className="px-2 sm:px-4 py-2 sm:py-4">
                         <div className="flex items-start gap-2 sm:gap-3">
                           <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs sm:text-sm flex-shrink-0">
@@ -217,18 +188,14 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                           </div>
                           <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
                             <div className="font-medium text-white text-xs sm:text-sm truncate">{booking.name}</div>
-                            {booking.email && (
-                              <div className="flex items-center gap-1 sm:gap-2 text-gray-300">
+                            {booking.email && <div className="flex items-center gap-1 sm:gap-2 text-gray-300">
                                 <Mail className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-400 flex-shrink-0" />
                                 <span className="text-xs truncate">{booking.email}</span>
-                              </div>
-                            )}
-                            {booking.phone && (
-                              <div className="flex items-center gap-1 sm:gap-2 text-gray-300">
+                              </div>}
+                            {booking.phone && <div className="flex items-center gap-1 sm:gap-2 text-gray-300">
                                 <Phone className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-400 flex-shrink-0" />
                                 <span className="text-xs">{booking.phone}</span>
-                              </div>
-                            )}
+                              </div>}
                           </div>
                         </div>
                       </TableCell>
@@ -241,16 +208,16 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                           <div>
                             <div className="text-white font-medium text-xs sm:text-sm">
                               {new Date(booking.booking_time).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
                             </div>
                             <div className="text-xs text-gray-400">
                               {new Date(booking.booking_time).toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                             </div>
                           </div>
                         </div>
@@ -264,16 +231,16 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                           <div>
                             <div className="text-white font-medium text-xs sm:text-sm">
                               {new Date(booking.created_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
                             </div>
                             <div className="text-xs text-gray-400">
                               {new Date(booking.created_at).toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                             </div>
                           </div>
                         </div>
@@ -289,15 +256,15 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                             <div>
                               <div className="text-white font-medium text-xs">
                                 {new Date(booking.booking_time).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric'
-                                })}
+                            month: 'short',
+                            day: 'numeric'
+                          })}
                               </div>
                               <div className="text-xs text-gray-400">
                                 {new Date(booking.booking_time).toLocaleTimeString('en-US', {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                               </div>
                             </div>
                           </div>
@@ -309,22 +276,19 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
                             <div>
                               <div className="text-gray-300 text-xs">
                                 Created {new Date(booking.created_at).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric'
-                                })}
+                            month: 'short',
+                            day: 'numeric'
+                          })}
                               </div>
                             </div>
                           </div>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
-            </div>
-          )}
+            </div>}
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }
