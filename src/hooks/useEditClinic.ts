@@ -1,9 +1,8 @@
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateClinic } from '@/services/clinicService';
-import { createClinicProductCategory, deleteClinicProductCategory, fetchClinicProductCategories } from '@/services/clinicProductCategoryService';
+import { createClinicProductCategory, deleteClinicProductCategory, fetchClinicProductCategories, updateClinicProductCategory } from '@/services/clinicProductCategoryService';
 import { useToast } from "@/hooks/use-toast";
 import { ProductCategoryWithPrice } from '@/components/clinics/ProductCategorySelector';
 

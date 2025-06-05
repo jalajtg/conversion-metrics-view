@@ -9,6 +9,7 @@ export default function AddClinicPage() {
     formData,
     handleInputChange,
     handleUserSelect,
+    handleProductCategoriesChange,
     handleSubmit,
     handleCancel,
     isSubmitting
@@ -21,6 +22,7 @@ export default function AddClinicPage() {
         formData={formData}
         onInputChange={handleInputChange}
         onUserSelect={handleUserSelect}
+        onProductCategoriesChange={handleProductCategoriesChange}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         isSubmitting={isSubmitting}
