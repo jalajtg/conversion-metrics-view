@@ -23,19 +23,19 @@ export const useBookings = (filters: DashboardFilters) => {
         .order('booking_time', { ascending: false });
 
       // Filter by clinic IDs if specified
-      if (filters.clinicIds.length > 0) {
-        query = query.in('clinic_id', filters.clinicIds);
-      }
+      // if (filters.clinicIds.length > 0) {
+      //   query = query.in('clinic_id', filters.clinicIds);
+      // }
 
-      // Filter by month and year
-      const year = new Date().getFullYear();
-      const month = parseInt(filters.month);
-      const startDate = new Date(year, month - 1, 1);
-      const endDate = new Date(year, month, 0, 23, 59, 59);
+      // // Filter by month and year
+      // const year = new Date().getFullYear();
+      // const month = parseInt(filters.month);
+      // const startDate = new Date(year, month - 1, 1);
+      // const endDate = new Date(year, month, 0, 23, 59, 59);
 
-      query = query
-        .gte('booking_time', startDate.toISOString())
-        .lte('booking_time', endDate.toISOString());
+      // query = query
+      //   .gte('booking_time', startDate.toISOString())
+      //   .lte('booking_time', endDate.toISOString());
 
       const { data, error } = await query;
 

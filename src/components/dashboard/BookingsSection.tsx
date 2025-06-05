@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,6 +5,8 @@ import { Calendar, Mail, Phone, User, Clock } from 'lucide-react';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { DashboardFilters } from '@/types/dashboard';
+import { useBookings } from '@/hooks/useBookings';
+import { startOfMonth, endOfMonth, parseISO, isWithinInterval, parse } from 'date-fns';
 
 interface BookingsSectionProps {
   filters: DashboardFilters;
@@ -22,95 +23,24 @@ interface Booking {
   clinic_id: string | null;
 }
 
-interface Appointment {
-  id: string;
-  lead_id: string;
-  clinic_id: string | null;
-  type: string;
-  status: string;
-  scheduled_at: string;
-  created_at: string;
-  leads?: {
-    client_name: string;
-    email: string | null;
-    phone: string | null;
-  };
-}
 
 export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) {
-  // Fetch all bookings from Supabase without filtering
-  const { data: allBookings, isLoading: bookingsLoading, error: bookingsError } = useQuery({
-    queryKey: ["all-bookings"],
-    queryFn: async (): Promise<Booking[]> => {
-      console.log('Fetching all bookings from database...');
-      
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('booking_time', { ascending: false });
+  const {
+    data: bookings,
+    isLoading: bookingsLoading,
+    error: bookingsError
+  } = useBookings(filters);
+  console.log('Bookings jalaj:', bookings);
+  const allBookings = useMemo(() => {
+    if (!bookings) return [];
+    return bookings;
+  }, [bookings]);
 
-      if (error) {
-        console.error('Error fetching bookings:', error);
-        throw error;
-      }
-
-      console.log('Fetched all bookings from DB:', data);
-      return data || [];
-    },
-    enabled: true,
-  });
-
-  // Fetch all appointments from Supabase
-  const { data: allAppointments, isLoading: appointmentsLoading, error: appointmentsError } = useQuery({
-    queryKey: ["all-appointments"],
-    queryFn: async (): Promise<Appointment[]> => {
-      console.log('Fetching all appointments from database...');
-      
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          leads (
-            client_name,
-            email,
-            phone
-          )
-        `)
-        .order('scheduled_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching appointments:', error);
-        throw error;
-      }
-
-      console.log('Fetched all appointments from DB:', data);
-      return data || [];
-    },
-    enabled: true,
-  });
-
-  // Combine bookings and appointments into unified data structure
-  const allBookingsAndAppointments = useMemo(() => {
-    const bookingsFormatted: Booking[] = allBookings || [];
-    
-    const appointmentsFormatted: Booking[] = (allAppointments || []).map(apt => ({
-      id: apt.id,
-      name: apt.leads?.client_name || 'Unknown',
-      email: apt.leads?.email || null,
-      phone: apt.leads?.phone || null,
-      booking_time: apt.scheduled_at,
-      created_at: apt.created_at,
-      clinic_id: apt.clinic_id
-    }));
-
-    return [...bookingsFormatted, ...appointmentsFormatted];
-  }, [allBookings, allAppointments]);
-
-  // Apply filters on the frontend
   const filteredBookings = useMemo(() => {
-    if (!allBookingsAndAppointments) return [];
+    if (!allBookings) return [];
 
-    let filtered = allBookingsAndAppointments;
+    let filtered = allBookings;
+    console.log('Filtered bookings jalaj1:', filtered, filters);
 
     // Filter by clinic IDs if specified
     if (filters.clinicIds && filters.clinicIds.length > 0) {
@@ -118,41 +48,41 @@ export function BookingsSection({ filters, unifiedData }: BookingsSectionProps) 
         booking.clinic_id && filters.clinicIds.includes(booking.clinic_id)
       );
     }
+    console.log('Filtered bookings jalaj:', filtered);
 
-    // Filter by month if specified
-    if (filters.month) {
-      const currentYear = new Date().getFullYear();
-      const monthNumber = parseInt(filters.month);
-      
-      // Create start and end dates for the selected month
-      const startDate = new Date(currentYear, monthNumber - 1, 1);
-      const endDate = new Date(currentYear, monthNumber, 0, 23, 59, 59);
-      
-      console.log('Filtering by month:', filters.month, 'Date range:', startDate, endDate);
-      
-      filtered = filtered.filter(booking => {
-        const bookingDate = new Date(booking.booking_time);
-        return bookingDate >= startDate && bookingDate <= endDate;
-      });
-    }
-
-    // Filter by months array if specified (for multiple month selection)
+    // Filter by months array if specified
     if (filters.months && filters.months.length > 0) {
       const currentYear = new Date().getFullYear();
       
+      // Create date ranges for all selected months
+      const monthRanges = filters.months.map(monthName => {
+        // Parse the month name to get the month index (0-11)
+        const monthDate = parse(monthName, 'MMMM', new Date());
+        const monthIndex = monthDate.getMonth();
+        
+        return {
+          start: startOfMonth(new Date(currentYear, monthIndex)),
+          end: endOfMonth(new Date(currentYear, monthIndex))
+        };
+      });
+
+      console.log('Month ranges:', monthRanges);
+      
       filtered = filtered.filter(booking => {
-        const bookingDate = new Date(booking.booking_time);
-        const bookingMonth = bookingDate.toLocaleString('default', { month: 'long' });
-        return filters.months!.includes(bookingMonth);
+        const bookingDate = parseISO(booking.booking_time);
+        // Check if the booking date falls within any of the selected month ranges
+        return monthRanges.some(range => 
+          isWithinInterval(bookingDate, { start: range.start, end: range.end })
+        );
       });
     }
+    console.log('Filtered bookings jalaj2:', filtered);
 
-    console.log('Filtered bookings and appointments:', filtered);
     return filtered;
-  }, [allBookingsAndAppointments, filters]);
+  }, [allBookings, filters]);
 
-  const isLoading = bookingsLoading || appointmentsLoading;
-  const error = bookingsError || appointmentsError;
+  const isLoading = bookingsLoading;
+  const error = bookingsError;
 
   if (isLoading) {
     return (
