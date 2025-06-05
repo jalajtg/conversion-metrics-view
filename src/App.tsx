@@ -19,7 +19,7 @@ import ClinicsPage from '@/pages/Clinics';
 import ProductsPage from '@/pages/Products';
 import SuperAdmin from '@/pages/SuperAdmin';
 import Users from '@/pages/Users';
-import ProductReplication from '@/pages/ProductReplication';
+import { ProductReplicationPage } from '@/pages/ProductReplication';
 import AddClinicPage from '@/pages/AddClinic';
 import EditClinicPage from '@/pages/EditClinic';
 import FAQ from '@/pages/FAQ';
@@ -42,9 +42,9 @@ function App() {
 }
 
 function AppRoutes() {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  if (loading) {
+  if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
@@ -53,20 +53,24 @@ function AppRoutes() {
       <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Index />} />
       <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/dashboard" replace />} />
       
-      <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="faq" element={<FAQ />} />
+      <Route path="/" element={<PrivateRoute />}>
+        <Route path="" element={<Layout />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="faq" element={<FAQ />} />
+        </Route>
       </Route>
 
-      <Route path="/super-admin" element={<PrivateRoute><SuperAdminLayout /></PrivateRoute>}>
-        <Route index element={<SuperAdmin />} />
-        <Route path="users" element={<Users />} />
-        <Route path="clinics" element={<ClinicsPage />} />
-        <Route path="add-clinic" element={<AddClinicPage />} />
-        <Route path="edit-clinic/:id" element={<EditClinicPage />} />
-        <Route path="products" element={<ProductsPage />} />
-        <Route path="product-replication" element={<ProductReplication />} />
+      <Route path="/super-admin" element={<PrivateRoute />}>
+        <Route path="" element={<SuperAdminLayout />}>
+          <Route index element={<SuperAdmin />} />
+          <Route path="users" element={<Users />} />
+          <Route path="clinics" element={<ClinicsPage />} />
+          <Route path="add-clinic" element={<AddClinicPage />} />
+          <Route path="edit-clinic/:id" element={<EditClinicPage />} />
+          <Route path="products" element={<ProductsPage />} />
+          <Route path="product-replication" element={<ProductReplicationPage />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<NotFound />} />
