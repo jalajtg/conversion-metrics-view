@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -127,7 +126,7 @@ export default function Auth() {
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-center bg-theme-dark p-4 transition-all duration-300"
+      className="w-full h-screen flex flex-col items-center justify-center bg-theme-dark p-4 transition-all duration-300"
       style={backgroundStyle}
     >
       <div className="mb-10 text-center flex flex-col items-center">
