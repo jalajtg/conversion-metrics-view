@@ -44,40 +44,40 @@ export function BookingsSection({
   } = useBookings(filters);
 
   // Fetch all appointments
-  const {
-    data: appointments,
-    isLoading: appointmentsLoading,
-    error: appointmentsError
-  } = useQuery({
-    queryKey: ['appointments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('*')
-        .order('appointment_time', { ascending: false });
+  // const {
+  //   data: appointments,
+  //   isLoading: appointmentsLoading,
+  //   error: appointmentsError
+  // } = useQuery({
+  //   queryKey: ['appointments'],
+  //   queryFn: async () => {
+  //     const { data, error } = await supabase
+  //       .from('appointments')
+  //       .select('*')
+  //       .order('appointment_time', { ascending: false });
       
-      if (error) throw error;
-      return data;
-    }
-  });
+  //     if (error) throw error;
+  //     return data;
+  //   }
+  // });
 
   console.log('Bookings jalaj:', bookings);
-  console.log('Appointments jalaj:', appointments);
+  // console.log('Appointments jalaj:', appointments);
 
   const allBookingsAndAppointments = useMemo(() => {
     const allBookings: Booking[] = bookings || [];
-    const allAppointments: Booking[] = (appointments || []).map((apt: Appointment) => ({
-      id: apt.id,
-      name: apt.patient_name,
-      email: apt.patient_email,
-      phone: apt.patient_phone,
-      booking_time: apt.appointment_time,
-      created_at: apt.created_at,
-      clinic_id: apt.clinic_id
-    }));
+    // const allAppointments: Booking[] = (appointments || []).map((apt: Appointment) => ({
+    //   id: apt.id,
+    //   name: apt.patient_name,
+    //   email: apt.patient_email,
+    //   phone: apt.patient_phone,
+    //   booking_time: apt.appointment_time,
+    //   created_at: apt.created_at,
+    //   clinic_id: apt.clinic_id
+    // }));
     
-    return [...allBookings, ...allAppointments];
-  }, [bookings, appointments]);
+    return [...allBookings];
+  }, [bookings]);
 
   const filteredBookings = useMemo(() => {
     if (!allBookingsAndAppointments) return [];
@@ -118,8 +118,8 @@ export function BookingsSection({
     return filtered;
   }, [allBookingsAndAppointments, filters]);
 
-  const isLoading = bookingsLoading || appointmentsLoading;
-  const error = bookingsError || appointmentsError;
+  const isLoading = bookingsLoading;
+  const error = bookingsError;
 
   if (isLoading) {
     return (
