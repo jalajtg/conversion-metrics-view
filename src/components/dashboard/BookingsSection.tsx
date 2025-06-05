@@ -202,12 +202,12 @@ export function BookingsSection({
         </CardHeader>
         <CardContent className="p-0">
           {!filteredBookings || filteredBookings.length === 0 ? (
-            <div className="text-left py-8 sm:py-12 px-4 sm:px-6">
+            <div className="text-center py-8 sm:py-12 px-4 sm:px-6">
               <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 mb-4">
                 <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
               </div>
-              <h3 className="text-base sm:text-lg font-medium text-white mb-2 text-left">No appointments found</h3>
-              <p className="text-gray-400 text-sm text-left">
+              <h3 className="text-base sm:text-lg font-medium text-white mb-2">No appointments found</h3>
+              <p className="text-gray-400 text-sm">
                 {filters.clinicIds.length === 0 ? "Please select at least one clinic to view appointments" : `No appointments found for the selected ${filters.month ? 'month and ' : ''}criteria`}
               </p>
             </div>
