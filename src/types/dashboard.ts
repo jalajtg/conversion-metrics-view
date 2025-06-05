@@ -1,3 +1,4 @@
+
 export interface Clinic {
   id: string;
   name: string;
@@ -7,6 +8,24 @@ export interface Clinic {
   owner_id?: string;
   created_at: string;
   updated_at?: string;
+}
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ClinicProductCategory {
+  id: string;
+  clinic_id: string;
+  product_category_id: string;
+  price: number;
+  created_at: string;
+  updated_at: string;
+  product_category?: ProductCategory;
 }
 
 export interface Product {
