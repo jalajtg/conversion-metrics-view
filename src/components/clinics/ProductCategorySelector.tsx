@@ -36,18 +36,18 @@ export function ProductCategorySelector({
 
   const handleCategorySelection = (categoryIds: string[]) => {
     console.log('ProductCategorySelector: Category selection changed:', categoryIds);
-    setSelectedCategoryIds(categoryIds);
+    // setSelectedCategoryIds(categoryIds);
     
-    // Update selected categories, preserving existing prices or setting default
-    const updatedCategories = categoryIds.map(categoryId => {
-      const existing = selectedCategories.find(cat => cat.product_category_id === categoryId);
-      const result = existing || { product_category_id: categoryId, price: 0 };
-      console.log('ProductCategorySelector: Processing category:', categoryId, 'existing:', existing, 'result:', result);
-      return result;
-    });
+    // // Update selected categories, preserving existing prices or setting default
+    // const updatedCategories = categoryIds.map(categoryId => {
+    //   const existing = selectedCategories.find(cat => cat.product_category_id === categoryId);
+    //   const result = existing || { product_category_id: categoryId, price: 0 };
+    //   console.log('ProductCategorySelector: Processing category:', categoryId, 'existing:', existing, 'result:', result);
+    //   return result;
+    // });
     
-    console.log('ProductCategorySelector: Calling onSelectionChange with:', updatedCategories);
-    onSelectionChange(updatedCategories);
+    // console.log('ProductCategorySelector: Calling onSelectionChange with:', updatedCategories);
+    // onSelectionChange(updatedCategories);
   };
 
   const handlePriceChange = (categoryId: string, price: string) => {
@@ -91,7 +91,7 @@ export function ProductCategorySelector({
         <MultiSelectDropdown
           options={categoryOptions}
           selectedValues={selectedCategoryIds}
-          {/* onSelectionChange={handleCategorySelection} */}
+          onSelectionChange={handleCategorySelection}
           placeholder="Select product categories..."
           showChips={false}
         />
