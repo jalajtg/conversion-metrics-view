@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { AppSidebar } from './Sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { ChatbotWidget } from '@/components/ChatbotWidget';
 
 export function Layout() {
   return (
@@ -18,6 +19,7 @@ export function Layout() {
             </div>
           </main>
         </div>
+        <ChatbotWidget />
       </div>
     </SidebarProvider>
   );
