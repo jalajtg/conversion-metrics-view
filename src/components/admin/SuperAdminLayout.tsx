@@ -4,7 +4,6 @@ import { Outlet } from 'react-router-dom';
 import { SuperAdminHeader } from './SuperAdminHeader';
 import { SuperAdminSidebar } from './SuperAdminSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { ChatbotWidget } from '@/components/ChatbotWidget';
 
 export function SuperAdminLayout() {
   return (
@@ -17,7 +16,6 @@ export function SuperAdminLayout() {
             <Outlet />
           </div>
         </main>
-        <ChatbotWidget />
       </div>
     </SidebarProvider>
   );
