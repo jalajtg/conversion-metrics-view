@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AddClinicHeader } from '@/components/clinics/AddClinicHeader';
 import { ClinicForm } from '@/components/clinics/ClinicForm';
 import { useCreateClinic } from '@/hooks/useCreateClinic';
@@ -14,6 +14,11 @@ export default function AddClinicPage() {
     handleCancel,
     isSubmitting
   } = useCreateClinic();
+
+  // Set page title
+  useEffect(() => {
+    document.title = 'Add Clinic | Dashboard Platform';
+  }, []);
 
   return (
     <div className="container mx-auto py-6 px-4 max-w-4xl">

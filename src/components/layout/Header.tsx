@@ -14,7 +14,7 @@ export function Header() {
           <SidebarTrigger className="lg:hidden text-theme-blue hover:bg-theme-dark-card" />
           <div className="hidden md:flex items-center gap-3">
             <img 
-              src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" 
+              src="/lovable-uploads/460f8654-9a04-4cac-a568-cd5421a2911e.png" 
               alt="Logo" 
               className="h-8 lg:hidden" 
             />

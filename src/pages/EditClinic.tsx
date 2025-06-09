@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { AddClinicHeader } from '@/components/clinics/AddClinicHeader';
 import { ClinicForm } from '@/components/clinics/ClinicForm';
@@ -11,6 +11,11 @@ export default function EditClinicPage() {
   const navigate = useNavigate();
   
   const clinic = location.state?.clinic;
+
+  // Set page title
+  useEffect(() => {
+    document.title = 'Edit Clinic | Dashboard Platform';
+  }, []);
   
   // If no clinic data in state, redirect back
   if (!clinic || !id) {

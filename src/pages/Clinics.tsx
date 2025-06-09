@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClinicsTable } from '@/components/clinics/ClinicsTable';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -9,6 +9,11 @@ import { Plus, Loader2 } from 'lucide-react';
 export default function ClinicsPage() {
   const navigate = useNavigate();
   const { isLoading, isSuperAdmin } = useUserRole();
+
+  // Set page title
+  useEffect(() => {
+    document.title = 'Clinics | Dashboard Platform';
+  }, []);
 
   if (isLoading) {
     return (

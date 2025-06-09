@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
@@ -7,6 +7,11 @@ import { Loader2 } from 'lucide-react';
 
 export default function Users() {
   const { isSuperAdmin, isLoading } = useUserRole();
+
+  // Set page title
+  useEffect(() => {
+    document.title = 'Users | Dashboard Platform';
+  }, []);
 
   if (isLoading) {
     return (

@@ -1,8 +1,13 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ProductsTable } from '@/components/products/ProductsTable';
 
 export default function ProductsPage() {
+  // Set page title
+  useEffect(() => {
+    document.title = 'Products | Dashboard Platform';
+  }, []);
+
   return (
     <div className="container mx-auto py-6 px-4">
       <div className="mb-6">

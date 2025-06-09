@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SuperAdminDashboard } from '@/components/admin/SuperAdminDashboard';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Navigate } from 'react-router-dom';
@@ -10,6 +10,11 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function SuperAdmin() {
   const { user } = useAuth();
   const { isSuperAdmin, isLoading, role } = useUserRole();
+
+  // Set page title
+  useEffect(() => {
+    document.title = 'Super Admin Dashboard | Dashboard Platform';
+  }, []);
 
   console.log('SuperAdmin page - user email:', user?.email);
   console.log('SuperAdmin page - isSuperAdmin:', isSuperAdmin, 'isLoading:', isLoading, 'role:', role);

@@ -17,6 +17,11 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Set page title
+  useEffect(() => {
+    document.title = 'Sign In | Dashboard Platform';
+  }, []);
+
   // Background animation effect
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   
@@ -132,7 +137,7 @@ export default function Auth() {
       <div className="mb-10 text-center flex flex-col items-center">
         <div className="mb-4 flex items-center gap-3">
           <img 
-            src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" 
+            src="/lovable-uploads/460f8654-9a04-4cac-a568-cd5421a2911e.png" 
             alt="Logo" 
             className="h-12" 
           />

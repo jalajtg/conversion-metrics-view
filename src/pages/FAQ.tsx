@@ -1,9 +1,14 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FaqList } from '@/components/faq/FaqList';
 import { HelpCircle } from 'lucide-react';
 
 export default function FAQPage() {
+  // Set page title
+  useEffect(() => {
+    document.title = 'FAQ | Dashboard Platform';
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
