@@ -91,7 +91,7 @@ export function ProductCategorySelector({
         <MultiSelectDropdown
           options={categoryOptions}
           selectedValues={selectedCategoryIds}
-          onSelectionChange={handleCategorySelection}
+          {/* onSelectionChange={handleCategorySelection} */}
           placeholder="Select product categories..."
           showChips={false}
         />
