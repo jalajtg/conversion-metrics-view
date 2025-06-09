@@ -4,6 +4,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { AddClinicHeader } from '@/components/clinics/AddClinicHeader';
 import { ClinicForm } from '@/components/clinics/ClinicForm';
 import { useEditClinic } from '@/hooks/useEditClinic';
+import { Loader2 } from 'lucide-react';
 
 export default function EditClinicPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,8 +31,22 @@ export default function EditClinicPage() {
     handleProductCategoriesChange,
     handleSubmit,
     handleCancel,
-    isSubmitting
+    isSubmitting,
+    isLoadingCategories
   } = useEditClinic(clinic);
+
+  // Show loading state while categories are being loaded
+  if (isLoadingCategories) {
+    return (
+      <div className="container mx-auto py-6 px-4 max-w-4xl">
+        <AddClinicHeader isEdit />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-theme-blue" />
+          <span className="ml-2 text-gray-400">Loading clinic data...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 px-4 max-w-4xl">

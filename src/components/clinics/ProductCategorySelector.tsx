@@ -29,32 +29,43 @@ export function ProductCategorySelector({
 
   // Sync selectedCategoryIds with selectedCategories prop
   useEffect(() => {
-    setSelectedCategoryIds(selectedCategories.map(cat => cat.product_category_id));
+    const newIds = selectedCategories.map(cat => cat.product_category_id);
+    console.log('ProductCategorySelector: Syncing selected category IDs:', newIds);
+    setSelectedCategoryIds(newIds);
   }, [selectedCategories]);
 
   const handleCategorySelection = (categoryIds: string[]) => {
+    console.log('ProductCategorySelector: Category selection changed:', categoryIds);
     setSelectedCategoryIds(categoryIds);
     
     // Update selected categories, preserving existing prices or setting default
     const updatedCategories = categoryIds.map(categoryId => {
       const existing = selectedCategories.find(cat => cat.product_category_id === categoryId);
-      return existing || { product_category_id: categoryId, price: 0 };
+      const result = existing || { product_category_id: categoryId, price: 0 };
+      console.log('ProductCategorySelector: Processing category:', categoryId, 'existing:', existing, 'result:', result);
+      return result;
     });
     
+    console.log('ProductCategorySelector: Calling onSelectionChange with:', updatedCategories);
     onSelectionChange(updatedCategories);
   };
 
   const handlePriceChange = (categoryId: string, price: string) => {
     const numPrice = parseFloat(price) || 0;
+    console.log('ProductCategorySelector: Price changed for category:', categoryId, 'new price:', numPrice);
+    
     const updatedCategories = selectedCategories.map(cat =>
       cat.product_category_id === categoryId
         ? { ...cat, price: numPrice }
         : cat
     );
+    
+    console.log('ProductCategorySelector: Updated categories after price change:', updatedCategories);
     onSelectionChange(updatedCategories);
   };
 
   const removeCategory = (categoryId: string) => {
+    console.log('ProductCategorySelector: Removing category:', categoryId);
     const updatedCategoryIds = selectedCategoryIds.filter(id => id !== categoryId);
     handleCategorySelection(updatedCategoryIds);
   };
@@ -68,10 +79,15 @@ export function ProductCategorySelector({
     return <div className="text-gray-400">Loading product categories...</div>;
   }
 
+  console.log('ProductCategorySelector: Current state - selectedCategories:', selectedCategories, 'selectedCategoryIds:', selectedCategoryIds);
+
   return (
     <div className={className}>
       <div className="space-y-2">
         <Label className="text-gray-300">Product Categories & Pricing</Label>
+        <p className="text-sm text-gray-400">
+          Select product categories and set prices. Changes will be saved when you click "Update Clinic".
+        </p>
         <MultiSelectDropdown
           options={categoryOptions}
           selectedValues={selectedCategoryIds}

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ChevronDown } from 'lucide-react';
+import { Loader2, ChevronDown, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ProductCategorySelector, ProductCategoryWithPrice } from './ProductCategorySelector';
 
@@ -71,6 +72,13 @@ export function ClinicForm({
 
   const selectedUser = users.find(user => user.id === formData.owner_id);
 
+  // Validation state
+  const hasNameError = !formData.name.trim();
+  const hasOwnerError = !formData.owner_id;
+  const hasValidationErrors = hasNameError || hasOwnerError;
+
+  console.log('ClinicForm render - formData:', formData);
+
   return (
     <Card className="bg-theme-dark-card border-gray-700">
       <CardHeader className="border-b border-gray-700">
@@ -81,9 +89,19 @@ export function ClinicForm({
       
       <CardContent className="p-6">
         <form onSubmit={onSubmit} className="space-y-6">
+          {/* Validation Errors Alert */}
+          {hasValidationErrors && (
+            <Alert variant="destructive" className="bg-red-500/10 border-red-500/20">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Please fill in all required fields before submitting.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-gray-300">
+              <Label htmlFor="name" className={`text-gray-300 ${hasNameError ? 'text-red-400' : ''}`}>
                 Clinic Name *
               </Label>
               <Input
@@ -94,8 +112,13 @@ export function ClinicForm({
                 onChange={onInputChange}
                 placeholder="Enter clinic name"
                 required
-                className="bg-theme-dark-lighter border-gray-600 text-white placeholder-gray-400 focus:border-theme-blue focus:ring-theme-blue"
+                className={`bg-theme-dark-lighter border-gray-600 text-white placeholder-gray-400 focus:border-theme-blue focus:ring-theme-blue ${
+                  hasNameError ? 'border-red-500 focus:border-red-500' : ''
+                }`}
               />
+              {hasNameError && (
+                <p className="text-red-400 text-sm">Clinic name is required</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -129,7 +152,7 @@ export function ClinicForm({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-gray-300">
+              <Label className={`text-gray-300 ${hasOwnerError ? 'text-red-400' : ''}`}>
                 Clinic Owner *
               </Label>
               {isLoadingUsers ? (
@@ -140,7 +163,9 @@ export function ClinicForm({
                     <DropdownMenu.Trigger asChild>
                       <Button 
                         variant="outline" 
-                        className="w-full bg-theme-dark-lighter border-gray-600 text-white justify-between"
+                        className={`w-full bg-theme-dark-lighter border-gray-600 text-white justify-between ${
+                          hasOwnerError ? 'border-red-500' : ''
+                        }`}
                       >
                         <span className="truncate">
                           {selectedUser?.name || 'Select a user'}
@@ -172,6 +197,9 @@ export function ClinicForm({
                     </DropdownMenu.Portal>
                   </DropdownMenu.Root>
                 </div>
+              )}
+              {hasOwnerError && (
+                <p className="text-red-400 text-sm">Clinic owner must be selected</p>
               )}
             </div>
           </div>
@@ -209,8 +237,8 @@ export function ClinicForm({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting}
-              className="bg-theme-blue hover:bg-theme-blue/90 text-white"
+              disabled={isSubmitting || hasValidationErrors}
+              className="bg-theme-blue hover:bg-theme-blue/90 text-white disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

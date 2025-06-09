@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -29,78 +30,143 @@ export function useEditClinic(clinic: any) {
     productCategories: []
   });
 
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
   // Load existing product categories for the clinic
   React.useEffect(() => {
     const loadExistingCategories = async () => {
       try {
+        console.log('Loading existing categories for clinic:', clinic.id);
+        setIsLoadingCategories(true);
         const existingCategories = await fetchClinicProductCategories(clinic.id);
+        console.log('Existing categories loaded:', existingCategories);
+        
         const productCategories = existingCategories.map(cat => ({
           product_category_id: cat.product_category_id,
           price: cat.price
         }));
-        setFormData(prev => ({
-          ...prev,
-          productCategories
-        }));
+        
+        console.log('Mapped product categories:', productCategories);
+        
+        setFormData(prev => {
+          const updated = {
+            ...prev,
+            productCategories
+          };
+          console.log('Updated form data with categories:', updated);
+          return updated;
+        });
       } catch (error) {
         console.error('Error loading existing product categories:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load existing product categories",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingCategories(false);
       }
     };
 
     if (clinic.id) {
       loadExistingCategories();
     }
-  }, [clinic.id]);
+  }, [clinic.id, toast]);
 
   const updateClinicMutation = useMutation({
     mutationFn: async (clinicData: ClinicFormData) => {
-      const updatedClinic = await updateClinic(clinic.id, {
-        name: clinicData.name,
-        email: clinicData.email,
-        phone: clinicData.phone,
-        address: clinicData.address
-      });
+      console.log('Starting clinic update with data:', clinicData);
       
-      if (!updatedClinic) {
-        throw new Error('Failed to update clinic');
+      // Validate required fields
+      if (!clinicData.name || !clinicData.owner_id) {
+        throw new Error('Clinic name and owner are required');
       }
 
-      // Get existing product categories to compare
-      const existingCategories = await fetchClinicProductCategories(clinic.id);
-      const existingCategoryIds = existingCategories.map(cat => cat.product_category_id);
-      const newCategoryIds = clinicData.productCategories.map(cat => cat.product_category_id);
-
-      // Delete removed categories
-      for (const existingCategory of existingCategories) {
-        if (!newCategoryIds.includes(existingCategory.product_category_id)) {
-          await deleteClinicProductCategory(existingCategory.id);
+      try {
+        // Update clinic basic info
+        console.log('Updating clinic basic info...');
+        const updatedClinic = await updateClinic(clinic.id, {
+          name: clinicData.name,
+          email: clinicData.email,
+          phone: clinicData.phone,
+          address: clinicData.address
+        });
+        
+        if (!updatedClinic) {
+          throw new Error('Failed to update clinic basic information');
         }
-      }
+        console.log('Clinic basic info updated successfully:', updatedClinic);
 
-      // Create or update categories
-      for (const productCategory of clinicData.productCategories) {
-        const existingCategory = existingCategories.find(
-          cat => cat.product_category_id === productCategory.product_category_id
+        // Handle product categories
+        console.log('Processing product categories...');
+        const existingCategories = await fetchClinicProductCategories(clinic.id);
+        console.log('Current existing categories:', existingCategories);
+        console.log('New categories to save:', clinicData.productCategories);
+        
+        const existingCategoryIds = existingCategories.map(cat => cat.product_category_id);
+        const newCategoryIds = clinicData.productCategories.map(cat => cat.product_category_id);
+
+        console.log('Existing category IDs:', existingCategoryIds);
+        console.log('New category IDs:', newCategoryIds);
+
+        // Delete removed categories
+        const categoriesToDelete = existingCategories.filter(
+          cat => !newCategoryIds.includes(cat.product_category_id)
         );
+        console.log('Categories to delete:', categoriesToDelete);
 
-        if (existingCategory) {
-          // Update existing if price changed
-          if (existingCategory.price !== productCategory.price) {
-            await updateClinicProductCategory(existingCategory.id, { price: productCategory.price });
+        for (const categoryToDelete of categoriesToDelete) {
+          console.log('Deleting category:', categoryToDelete.id);
+          const deleteResult = await deleteClinicProductCategory(categoryToDelete.id);
+          if (!deleteResult) {
+            console.error('Failed to delete category:', categoryToDelete.id);
           }
-        } else {
-          // Create new association
-          await createClinicProductCategory({
-            clinic_id: clinic.id,
-            product_category_id: productCategory.product_category_id,
-            price: productCategory.price
-          });
         }
+
+        // Create or update categories
+        for (const productCategory of clinicData.productCategories) {
+          console.log('Processing category:', productCategory);
+          
+          const existingCategory = existingCategories.find(
+            cat => cat.product_category_id === productCategory.product_category_id
+          );
+
+          if (existingCategory) {
+            // Update existing if price changed
+            if (existingCategory.price !== productCategory.price) {
+              console.log('Updating category price:', existingCategory.id, 'from', existingCategory.price, 'to', productCategory.price);
+              const updateResult = await updateClinicProductCategory(existingCategory.id, { 
+                price: productCategory.price 
+              });
+              if (!updateResult) {
+                console.error('Failed to update category price:', existingCategory.id);
+              }
+            } else {
+              console.log('Category price unchanged, skipping update:', existingCategory.id);
+            }
+          } else {
+            // Create new association
+            console.log('Creating new category association:', productCategory);
+            const createResult = await createClinicProductCategory({
+              clinic_id: clinic.id,
+              product_category_id: productCategory.product_category_id,
+              price: productCategory.price
+            });
+            if (!createResult) {
+              console.error('Failed to create category association:', productCategory);
+            }
+          }
+        }
+        
+        console.log('Product categories processed successfully');
+        return updatedClinic;
+      } catch (error) {
+        console.error('Error in clinic update process:', error);
+        throw error;
       }
-      
-      return updatedClinic;
     },
     onSuccess: () => {
+      console.log('Clinic update completed successfully');
       queryClient.invalidateQueries({ queryKey: ["all-clinics"] });
       queryClient.invalidateQueries({ queryKey: ["user-clinics"] });
       queryClient.invalidateQueries({ queryKey: ["clinic-product-categories"] });
@@ -111,9 +177,11 @@ export function useEditClinic(clinic: any) {
       navigate('/super-admin/clinics');
     },
     onError: (error: any) => {
+      console.error('Clinic update failed:', error);
+      const errorMessage = error.message || "Failed to update clinic. Please try again.";
       toast({
         title: "Error",
-        description: error.message || "Failed to update clinic. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -121,6 +189,7 @@ export function useEditClinic(clinic: any) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    console.log('Input changed:', name, '=', value);
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -128,6 +197,7 @@ export function useEditClinic(clinic: any) {
   };
 
   const handleUserSelect = (userId: string) => {
+    console.log('User selected:', userId);
     setFormData(prev => ({
       ...prev,
       owner_id: userId
@@ -135,28 +205,46 @@ export function useEditClinic(clinic: any) {
   };
 
   const handleProductCategoriesChange = (categories: ProductCategoryWithPrice[]) => {
-    setFormData(prev => ({
-      ...prev,
-      productCategories: categories
-    }));
+    console.log('Product categories changed:', categories);
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        productCategories: categories
+      };
+      console.log('Updated form data after category change:', updated);
+      return updated;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     
-    if (!formData.name || !formData.owner_id) {
+    // Validation
+    const errors = [];
+    if (!formData.name.trim()) {
+      errors.push('Clinic name is required');
+    }
+    if (!formData.owner_id) {
+      errors.push('Clinic owner must be selected');
+    }
+    
+    if (errors.length > 0) {
+      console.error('Validation errors:', errors);
       toast({
-        title: "Error",
-        description: "Please fill in the clinic name and select an owner.",
+        title: "Validation Error",
+        description: errors.join('. '),
         variant: "destructive",
       });
       return;
     }
 
+    console.log('Validation passed, submitting clinic update...');
     updateClinicMutation.mutate(formData);
   };
 
   const handleCancel = () => {
+    console.log('Edit cancelled, navigating back');
     navigate('/super-admin/clinics');
   };
 
@@ -167,6 +255,7 @@ export function useEditClinic(clinic: any) {
     handleProductCategoriesChange,
     handleSubmit,
     handleCancel,
-    isSubmitting: updateClinicMutation.isPending
+    isSubmitting: updateClinicMutation.isPending,
+    isLoadingCategories
   };
 }
