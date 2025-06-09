@@ -17,7 +17,7 @@ export default function AddClinicPage() {
 
   // Set page title
   useEffect(() => {
-    document.title = 'Add Clinic | Dashboard Platform';
+    document.title = 'Add Clinic | IronMark | Data Dashboard';
   }, []);
 
   return (

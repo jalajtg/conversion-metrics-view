@@ -10,7 +10,7 @@ export default function Users() {
 
   // Set page title
   useEffect(() => {
-    document.title = 'Users | Dashboard Platform';
+    document.title = 'Users | IronMark | Data Dashboard';
   }, []);
 
   if (isLoading) {

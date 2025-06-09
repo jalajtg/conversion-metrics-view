@@ -6,7 +6,7 @@ import { HelpCircle } from 'lucide-react';
 export default function FAQPage() {
   // Set page title
   useEffect(() => {
-    document.title = 'FAQ | Dashboard Platform';
+    document.title = 'FAQ | IronMark | Data Dashboard';
   }, []);
 
   return (

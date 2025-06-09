@@ -5,7 +5,7 @@ import { ProductsTable } from '@/components/products/ProductsTable';
 export default function ProductsPage() {
   // Set page title
   useEffect(() => {
-    document.title = 'Products | Dashboard Platform';
+    document.title = 'Products | IronMark | Data Dashboard';
   }, []);
 
   return (

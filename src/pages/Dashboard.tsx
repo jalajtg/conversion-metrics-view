@@ -5,7 +5,7 @@ import { Dashboard as DashboardComponent } from "@/components/dashboard/Dashboar
 export default function DashboardPage() {
   // Set page title
   useEffect(() => {
-    document.title = 'Dashboard | Dashboard Platform';
+    document.title = 'Dashboard | IronMark | Data Dashboard';
   }, []);
 
   return (

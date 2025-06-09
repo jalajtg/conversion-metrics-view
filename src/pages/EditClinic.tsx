@@ -14,7 +14,7 @@ export default function EditClinicPage() {
 
   // Set page title
   useEffect(() => {
-    document.title = 'Edit Clinic | Dashboard Platform';
+    document.title = 'Edit Clinic | IronMark | Data Dashboard';
   }, []);
   
   // If no clinic data in state, redirect back
