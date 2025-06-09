@@ -25,7 +25,7 @@ export function AppSidebar() {
     <Sidebar className="fixed left-0 top-0 h-full w-64 border-r border-gray-800 bg-theme-dark-lighter z-40 hidden lg:flex">
       <SidebarHeader className="border-b border-gray-800 bg-theme-dark-lighter h-16">
         <div className="px-4 py-4 flex items-center gap-3">
-          <img src="/lovable-uploads/bfb01530-83c3-492e-9590-62372077dda7.png" alt="Logo" className="h-8" />
+          <img src="/lovable-uploads/460f8654-9a04-4cac-a568-cd5421a2911e.png" alt="Logo" className="h-8" />
         </div>
       </SidebarHeader>
       <SidebarContent className="bg-theme-dark-lighter">
