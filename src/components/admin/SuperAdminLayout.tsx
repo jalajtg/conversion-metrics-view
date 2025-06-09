@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { SuperAdminHeader } from './SuperAdminHeader';
 import { SuperAdminSidebar } from './SuperAdminSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { PopupChat } from '@/components/PopupChat';
 
 export function SuperAdminLayout() {
   return (
@@ -16,6 +17,7 @@ export function SuperAdminLayout() {
             <Outlet />
           </div>
         </main>
+        <PopupChat />
       </div>
     </SidebarProvider>
   );
