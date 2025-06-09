@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
 import { ArrowRight, Mail, Lock, User, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+
+// Dynamically import PopupChat component
+const PopupChat = lazy(() => import('@/components/PopupChat').then(module => ({ default: module.PopupChat })));
 
 export default function Auth() {
   const { user, isLoading, signIn, signUp } = useAuth();
@@ -366,6 +370,11 @@ export default function Auth() {
           </TabsContent>
         </Tabs>
       </Card>
+
+      {/* Dynamically loaded PopupChat component */}
+      <Suspense fallback={null}>
+        <PopupChat />
+      </Suspense>
     </div>
   );
 }
