@@ -6,7 +6,7 @@ import { createClinic } from '@/services/clinicService';
 import { createClinicProductCategory } from '@/services/clinicProductCategoryService';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
-import { ProductCategoryWithPrice } from '@/components/clinics/ProductCategorySelector';
+import { ProductCategoryWithPrice } from '@/components/clinics/ProductCategoryManager';
 
 interface ClinicFormData {
   name: string;
@@ -33,6 +33,8 @@ export function useCreateClinic() {
 
   const createClinicMutation = useMutation({
     mutationFn: async (clinicData: ClinicFormData) => {
+      console.log('Creating clinic with data:', clinicData);
+      
       const clinic = await createClinic({
         name: clinicData.name,
         email: clinicData.email,
@@ -45,13 +47,19 @@ export function useCreateClinic() {
         throw new Error('Failed to create clinic');
       }
 
+      console.log('Clinic created successfully:', clinic);
+
       // Create clinic product category associations
       for (const productCategory of clinicData.productCategories) {
-        await createClinicProductCategory({
+        console.log('Creating product category association:', productCategory);
+        const result = await createClinicProductCategory({
           clinic_id: clinic.id,
           product_category_id: productCategory.product_category_id,
           price: productCategory.price
         });
+        if (!result) {
+          console.error('Failed to create product category association:', productCategory);
+        }
       }
       
       // Send notification email
@@ -71,9 +79,11 @@ export function useCreateClinic() {
       return clinic;
     },
     onSuccess: () => {
+      console.log('Clinic creation completed successfully');
       queryClient.invalidateQueries({ queryKey: ["all-clinics"] });
       queryClient.invalidateQueries({ queryKey: ["user-clinics"] });
       queryClient.invalidateQueries({ queryKey: ["clinic-product-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["product-categories"] });
       toast({
         title: "Success",
         description: "Clinic created successfully with product categories and notification email sent!",
@@ -81,6 +91,7 @@ export function useCreateClinic() {
       navigate('/super-admin/clinics');
     },
     onError: (error: any) => {
+      console.error('Clinic creation failed:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create clinic. Please try again.",
@@ -91,6 +102,7 @@ export function useCreateClinic() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    console.log('Input changed:', name, '=', value);
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -98,6 +110,7 @@ export function useCreateClinic() {
   };
 
   const handleUserSelect = (userId: string) => {
+    console.log('User selected:', userId);
     setFormData(prev => ({
       ...prev,
       owner_id: userId
@@ -105,6 +118,7 @@ export function useCreateClinic() {
   };
 
   const handleProductCategoriesChange = (categories: ProductCategoryWithPrice[]) => {
+    console.log('Product categories changed in useCreateClinic:', categories);
     setFormData(prev => ({
       ...prev,
       productCategories: categories
@@ -113,6 +127,7 @@ export function useCreateClinic() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     
     if (!formData.name || !formData.owner_id) {
       toast({

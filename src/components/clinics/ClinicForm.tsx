@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ChevronDown, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { ProductCategorySelector, ProductCategoryWithPrice } from './ProductCategorySelector';
+import { ProductCategoryManager, ProductCategoryWithPrice } from './ProductCategoryManager';
 
 interface ClinicFormData {
   name: string;
@@ -219,7 +219,7 @@ export function ClinicForm({
             />
           </div>
 
-          <ProductCategorySelector
+          <ProductCategoryManager
             selectedCategories={formData.productCategories}
             onSelectionChange={onProductCategoriesChange}
             className="space-y-4"

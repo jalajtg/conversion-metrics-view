@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateClinic } from '@/services/clinicService';
 import { createClinicProductCategory, deleteClinicProductCategory, fetchClinicProductCategories, updateClinicProductCategory } from '@/services/clinicProductCategoryService';
 import { useToast } from "@/hooks/use-toast";
-import { ProductCategoryWithPrice } from '@/components/clinics/ProductCategorySelector';
+import { ProductCategoryWithPrice } from '@/components/clinics/ProductCategoryManager';
 
 interface ClinicFormData {
   name: string;
@@ -170,6 +170,7 @@ export function useEditClinic(clinic: any) {
       queryClient.invalidateQueries({ queryKey: ["all-clinics"] });
       queryClient.invalidateQueries({ queryKey: ["user-clinics"] });
       queryClient.invalidateQueries({ queryKey: ["clinic-product-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["product-categories"] });
       toast({
         title: "Success",
         description: "Clinic updated successfully with product categories!",
@@ -205,7 +206,7 @@ export function useEditClinic(clinic: any) {
   };
 
   const handleProductCategoriesChange = (categories: ProductCategoryWithPrice[]) => {
-    console.log('Product categories changed:', categories);
+    console.log('Product categories changed in useEditClinic:', categories);
     setFormData(prev => {
       const updated = {
         ...prev,
