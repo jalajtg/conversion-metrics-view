@@ -322,7 +322,7 @@ export type Database = {
       leads: {
         Row: {
           booked: boolean | null
-          client_name: string
+          client_name: string | null
           clinic_id: string | null
           created_at: string
           email: string | null
@@ -334,7 +334,7 @@ export type Database = {
         }
         Insert: {
           booked?: boolean | null
-          client_name: string
+          client_name?: string | null
           clinic_id?: string | null
           created_at?: string
           email?: string | null
@@ -346,7 +346,7 @@ export type Database = {
         }
         Update: {
           booked?: boolean | null
-          client_name?: string
+          client_name?: string | null
           clinic_id?: string | null
           created_at?: string
           email?: string | null
@@ -362,13 +362,6 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "leads_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
