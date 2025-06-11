@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth, AuthProvider } from '@/contexts/AuthContext';
 import { Layout } from '@/components/layout/Layout';
@@ -23,7 +24,6 @@ import AddClinicPage from '@/pages/AddClinic';
 import EditClinicPage from '@/pages/EditClinic';
 import FAQ from '@/pages/FAQ';
 import NotFound from '@/pages/NotFound';
-import ChatbotConfig from '@/pages/ChatbotConfig';
 
 const queryClient = new QueryClient();
 
@@ -60,7 +60,6 @@ function AppRoutes() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/faq" element={<FAQ />} />
-          <Route path="/chatbot-config" element={<ChatbotConfig />} />
         </Route>
       </Route>
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { LayoutDashboard, LogOut, HelpCircle, Calendar, MessageCircle, Shield, Bot } from 'lucide-react';
+import { LayoutDashboard, LogOut, HelpCircle, Calendar, MessageCircle, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 
@@ -50,17 +50,6 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-
-              {!isSuperAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive('/chatbot-config')} className="hover:bg-theme-dark-card hover:text-theme-blue mx-2">
-                    <Link to="/chatbot-config" className={isActive('/chatbot-config') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
-                      <Bot />
-                      <span>Chatbot Config</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
 
               {isSuperAdmin && (
                 <SidebarMenuItem>

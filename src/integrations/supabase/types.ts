@@ -322,6 +322,7 @@ export type Database = {
       leads: {
         Row: {
           booked: boolean | null
+          booking: string | null
           client_name: string | null
           clinic_id: string | null
           created_at: string
@@ -334,6 +335,7 @@ export type Database = {
         }
         Insert: {
           booked?: boolean | null
+          booking?: string | null
           client_name?: string | null
           clinic_id?: string | null
           created_at?: string
@@ -346,6 +348,7 @@ export type Database = {
         }
         Update: {
           booked?: boolean | null
+          booking?: string | null
           client_name?: string | null
           clinic_id?: string | null
           created_at?: string
