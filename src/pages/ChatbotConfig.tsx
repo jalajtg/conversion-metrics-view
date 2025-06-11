@@ -31,28 +31,31 @@ declare global {
 
 export default function ChatbotConfig() {
   const [config, setConfig] = useState({
-    webhookUrl: 'https://your-api.com/webhook',
+    webhookUrl: 'https://luccatora.app.n8n.cloud/webhook/webbot',
     title: 'Chat Support',
     placeholder: 'Type your message...',
     position: 'bottom-right',
     primaryColor: '#3b82f6',
     secondaryColor: '#f3f4f6',
-    textColor: '#1f2937',
+    textColor: '#000000',
     userTextColor: '#ffffff',
     chatBackground: '#ffffff',
     welcomeMessage: 'Hello! How can I help you today?',
-    logoUrl: 'https://your-domain.com/logo.png'
+    logoUrl: ''
   });
+
+  const [chatbotInstance, setChatbotInstance] = useState<any>(null);
 
   useEffect(() => {
     document.title = 'Chatbot Configuration | Dashboard Platform';
   }, []);
 
-  const generateConfiguration = () => {
+  const initializeChatbot = () => {
     if (typeof window !== 'undefined' && window.ChatbotWidget?.ChatbotManager) {
       try {
         const instance = new window.ChatbotWidget.ChatbotManager();
         instance.init(config);
+        setChatbotInstance(instance);
         console.log('Chatbot initialized with config:', config);
       } catch (error) {
         console.error('Failed to initialize chatbot:', error);
@@ -61,6 +64,15 @@ export default function ChatbotConfig() {
       console.error('ChatbotWidget not available');
     }
   };
+
+  // Update chatbot in real-time when config changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      initializeChatbot();
+    }, 300); // Debounce updates
+
+    return () => clearTimeout(timer);
+  }, [config]);
 
   const handleInputChange = (field: string, value: string) => {
     setConfig(prev => ({
@@ -79,8 +91,15 @@ export default function ChatbotConfig() {
       <Label className="text-white">{label}</Label>
       <div className="flex items-center gap-3">
         <div 
-          className="w-12 h-8 rounded border border-gray-600"
+          className="w-12 h-8 rounded border border-gray-600 cursor-pointer hover:border-gray-500 transition-colors"
           style={{ backgroundColor: value }}
+          onClick={() => {
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.value = value;
+            input.onchange = (e) => onChange((e.target as HTMLInputElement).value);
+            input.click();
+          }}
         />
         <div className="flex-1">
           <Input
@@ -100,7 +119,7 @@ export default function ChatbotConfig() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Chatbot Configuration</h1>
-          <p className="text-gray-400">Configure your chatbot's appearance and behavior</p>
+          <p className="text-gray-400">Configure your chatbot's appearance and behavior with real-time preview</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -121,6 +140,7 @@ export default function ChatbotConfig() {
                   className="bg-theme-dark-lighter border-gray-600 text-white"
                   placeholder="https://your-api.com/webhook"
                 />
+                <p className="text-xs text-gray-400">API endpoint for chatbot messages</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -130,6 +150,7 @@ export default function ChatbotConfig() {
                     value={config.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     className="bg-theme-dark-lighter border-gray-600 text-white"
+                    placeholder="Chat Support"
                   />
                 </div>
 
@@ -142,8 +163,6 @@ export default function ChatbotConfig() {
                     <SelectContent className="bg-theme-dark-card border-gray-600">
                       <SelectItem value="bottom-right" className="text-white hover:bg-gray-700">Bottom Right</SelectItem>
                       <SelectItem value="bottom-left" className="text-white hover:bg-gray-700">Bottom Left</SelectItem>
-                      <SelectItem value="top-right" className="text-white hover:bg-gray-700">Top Right</SelectItem>
-                      <SelectItem value="top-left" className="text-white hover:bg-gray-700">Top Left</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -155,6 +174,7 @@ export default function ChatbotConfig() {
                   value={config.placeholder}
                   onChange={(e) => handleInputChange('placeholder', e.target.value)}
                   className="bg-theme-dark-lighter border-gray-600 text-white"
+                  placeholder="Type your message..."
                 />
               </div>
 
@@ -164,6 +184,7 @@ export default function ChatbotConfig() {
                   value={config.welcomeMessage}
                   onChange={(e) => handleInputChange('welcomeMessage', e.target.value)}
                   className="bg-theme-dark-lighter border-gray-600 text-white"
+                  placeholder="Hello! How can I help you today?"
                 />
               </div>
 
@@ -178,10 +199,10 @@ export default function ChatbotConfig() {
               </div>
 
               <Button 
-                onClick={generateConfiguration}
+                onClick={initializeChatbot}
                 className="w-full bg-theme-blue hover:bg-theme-blue/80 text-white"
               >
-                Generate Configuration Code
+                Apply Configuration
               </Button>
             </CardContent>
           </Card>
@@ -229,9 +250,34 @@ export default function ChatbotConfig() {
                 onChange={(value) => handleInputChange('userTextColor', value)}
                 description="Text color for user messages"
               />
+
+              {/* Preview Section */}
+              <div className="mt-8 p-4 bg-theme-dark-lighter rounded-lg border border-gray-600">
+                <h3 className="text-white text-sm font-medium mb-3">Live Preview</h3>
+                <div className="text-xs text-gray-400 space-y-1">
+                  <p>• Position: {config.position}</p>
+                  <p>• Title: "{config.title}"</p>
+                  <p>• Primary Color: {config.primaryColor}</p>
+                  <p>• The chatbot widget will appear in the {config.position} corner</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Configuration Summary */}
+        <Card className="bg-theme-dark-card border-gray-800 mt-6">
+          <CardHeader>
+            <CardTitle className="text-white">Configuration Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-theme-dark-lighter rounded-lg p-4">
+              <pre className="text-sm text-gray-300 overflow-x-auto">
+                {JSON.stringify(config, null, 2)}
+              </pre>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
