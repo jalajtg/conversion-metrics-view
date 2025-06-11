@@ -12,7 +12,7 @@ import { ArrowRight, Mail, Lock, User, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 // Dynamically import PopupChat component
-const PopupChat = lazy(() => import('@/components/PopupChat').then(module => ({ default: module.PopupChat })));
+// const PopupChat = lazy(() => import('@/components/PopupChat').then(module => ({ default: module.PopupChat })));
 
 export default function Auth() {
   const { user, isLoading, signIn, signUp } = useAuth();
@@ -372,9 +372,9 @@ export default function Auth() {
       </Card>
 
       {/* Dynamically loaded PopupChat component */}
-      <Suspense fallback={null}>
+      {/* <Suspense fallback={null}>
         <PopupChat />
-      </Suspense>
+      </Suspense> */}
     </div>
   );
 }
