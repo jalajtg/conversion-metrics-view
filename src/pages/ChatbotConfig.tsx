@@ -1,75 +1,72 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Settings, Palette } from 'lucide-react';
+import { Settings, Palette, RotateCcw } from 'lucide-react';
+import { PopupChat } from '@/components/PopupChat';
 
-declare global {
-  interface Window {
-    ChatbotWidget?: {
-      ChatbotManager: new () => {
-        init: (config: {
-          webhookUrl: string;
-          title: string;
-          placeholder: string;
-          position: string;
-          primaryColor: string;
-          secondaryColor: string;
-          textColor: string;
-          userTextColor: string;
-          chatBackground: string;
-          welcomeMessage: string;
-          logoUrl?: string;
-        }) => void;
-      };
-    };
-  }
+interface ChatbotConfig {
+  webhookUrl: string;
+  title: string;
+  placeholder: string;
+  position: 'bottom-right' | 'bottom-left';
+  primaryColor: string;
+  secondaryColor: string;
+  textColor: string;
+  userTextColor: string;
+  chatBackground: string;
+  welcomeMessage: string;
+  logoUrl: string;
 }
 
+const defaultConfig: ChatbotConfig = {
+  webhookUrl: 'https://luccatora.app.n8n.cloud/webhook/webbot',
+  title: 'Chat Support',
+  placeholder: 'Type your message...',
+  position: 'bottom-right',
+  primaryColor: '#3b82f6',
+  secondaryColor: '#f3f4f6',
+  textColor: '#000000',
+  userTextColor: '#ffffff',
+  chatBackground: '#ffffff',
+  welcomeMessage: 'Hello! How can I help you today?',
+  logoUrl: 'https://your-domain.com/logo.png'
+};
+
 export default function ChatbotConfig() {
-  const [config, setConfig] = useState({
-    webhookUrl: 'https://your-api.com/webhook',
-    title: 'Chat Support',
-    placeholder: 'Type your message...',
-    position: 'bottom-right',
-    primaryColor: '#3b82f6',
-    secondaryColor: '#f3f4f6',
-    textColor: '#1f2937',
-    userTextColor: '#ffffff',
-    chatBackground: '#ffffff',
-    welcomeMessage: 'Hello! How can I help you today?',
-    logoUrl: 'https://your-domain.com/logo.png'
-  });
+  const [config, setConfig] = useState<ChatbotConfig>(defaultConfig);
 
   useEffect(() => {
     document.title = 'Chatbot Configuration | Dashboard Platform';
   }, []);
 
-  const generateConfiguration = () => {
-    if (typeof window !== 'undefined' && window.ChatbotWidget?.ChatbotManager) {
-      try {
-        const instance = new window.ChatbotWidget.ChatbotManager();
-        instance.init(config);
-        console.log('Chatbot initialized with config:', config);
-      } catch (error) {
-        console.error('Failed to initialize chatbot:', error);
-      }
-    } else {
-      console.error('ChatbotWidget not available');
-    }
-  };
-
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = useCallback((field: keyof ChatbotConfig, value: string) => {
     setConfig(prev => ({
       ...prev,
       [field]: value
     }));
-  };
+  }, []);
 
-  const ColorPicker = ({ label, value, onChange, description }: {
+  const handleColorChange = useCallback((field: keyof ChatbotConfig, color: string) => {
+    setConfig(prev => ({
+      ...prev,
+      [field]: color
+    }));
+  }, []);
+
+  const resetToDefault = useCallback(() => {
+    setConfig(defaultConfig);
+  }, []);
+
+  const ColorPicker = ({ 
+    label, 
+    value, 
+    onChange, 
+    description 
+  }: {
     label: string;
     value: string;
     onChange: (value: string) => void;
@@ -78,10 +75,19 @@ export default function ChatbotConfig() {
     <div className="space-y-2">
       <Label className="text-white">{label}</Label>
       <div className="flex items-center gap-3">
-        <div 
-          className="w-12 h-8 rounded border border-gray-600"
-          style={{ backgroundColor: value }}
-        />
+        <div className="relative">
+          <div 
+            className="w-12 h-8 rounded border border-gray-600 cursor-pointer"
+            style={{ backgroundColor: value }}
+          />
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            title={`Pick ${label.toLowerCase()}`}
+          />
+        </div>
         <div className="flex-1">
           <Input
             value={value}
@@ -100,7 +106,7 @@ export default function ChatbotConfig() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Chatbot Configuration</h1>
-          <p className="text-gray-400">Configure your chatbot's appearance and behavior</p>
+          <p className="text-gray-400">Configure your chatbot's appearance and behavior with real-time preview</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -135,15 +141,16 @@ export default function ChatbotConfig() {
 
                 <div className="space-y-2">
                   <Label className="text-white">Position</Label>
-                  <Select value={config.position} onValueChange={(value) => handleInputChange('position', value)}>
+                  <Select 
+                    value={config.position} 
+                    onValueChange={(value) => handleInputChange('position', value)}
+                  >
                     <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-theme-dark-card border-gray-600">
                       <SelectItem value="bottom-right" className="text-white hover:bg-gray-700">Bottom Right</SelectItem>
                       <SelectItem value="bottom-left" className="text-white hover:bg-gray-700">Bottom Left</SelectItem>
-                      <SelectItem value="top-right" className="text-white hover:bg-gray-700">Top Right</SelectItem>
-                      <SelectItem value="top-left" className="text-white hover:bg-gray-700">Top Left</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -178,10 +185,12 @@ export default function ChatbotConfig() {
               </div>
 
               <Button 
-                onClick={generateConfiguration}
-                className="w-full bg-theme-blue hover:bg-theme-blue/80 text-white"
+                onClick={resetToDefault}
+                variant="outline"
+                className="w-full border-gray-600 text-white hover:bg-gray-700"
               >
-                Generate Configuration Code
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset to Default
               </Button>
             </CardContent>
           </Card>
@@ -198,41 +207,56 @@ export default function ChatbotConfig() {
               <ColorPicker
                 label="Primary Color"
                 value={config.primaryColor}
-                onChange={(value) => handleInputChange('primaryColor', value)}
+                onChange={(value) => handleColorChange('primaryColor', value)}
                 description="Header background and user message bubbles"
               />
 
               <ColorPicker
                 label="Secondary Color"
                 value={config.secondaryColor}
-                onChange={(value) => handleInputChange('secondaryColor', value)}
+                onChange={(value) => handleColorChange('secondaryColor', value)}
                 description="Bot message bubble background"
               />
 
               <ColorPicker
                 label="Chat Background"
                 value={config.chatBackground}
-                onChange={(value) => handleInputChange('chatBackground', value)}
+                onChange={(value) => handleColorChange('chatBackground', value)}
                 description="Main chat window background"
               />
 
               <ColorPicker
                 label="Bot Text Color"
                 value={config.textColor}
-                onChange={(value) => handleInputChange('textColor', value)}
+                onChange={(value) => handleColorChange('textColor', value)}
                 description="Text color for bot messages"
               />
 
               <ColorPicker
                 label="User Text Color"
                 value={config.userTextColor}
-                onChange={(value) => handleInputChange('userTextColor', value)}
+                onChange={(value) => handleColorChange('userTextColor', value)}
                 description="Text color for user messages"
               />
             </CardContent>
           </Card>
         </div>
+
+        {/* Configuration Preview */}
+        <Card className="bg-theme-dark-card border-gray-800 mt-6">
+          <CardHeader>
+            <CardTitle className="text-white">Live Configuration</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="text-xs text-gray-300 bg-theme-dark-lighter p-4 rounded overflow-x-auto">
+              {JSON.stringify(config, null, 2)}
+            </pre>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Live Preview Chatbot */}
+      <PopupChat config={config} />
     </div>
   );
 }
