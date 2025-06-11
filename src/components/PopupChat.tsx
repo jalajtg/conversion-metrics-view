@@ -16,6 +16,7 @@ declare global {
           userTextColor: string;
           chatBackground: string;
           welcomeMessage: string;
+          logoUrl?: string;
         }) => void;
       };
     };
