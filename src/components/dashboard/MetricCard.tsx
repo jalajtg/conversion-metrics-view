@@ -80,7 +80,7 @@ export function MetricCard({
   return (
     <div 
       className={`
-        transition-all duration-300 rounded-xl shadow-sm p-4 card-glow relative overflow-hidden
+        transition-all duration-300 rounded-xl shadow-sm p-6 card-glow relative overflow-hidden
         ${isHovered 
           ? 'bg-gradient-to-br from-theme-blue/30 to-theme-blue/10 text-white shadow-lg shadow-theme-blue/20 border border-theme-blue/40' 
           : 'bg-gradient-to-br from-theme-dark-lighter to-theme-dark-card text-white'
