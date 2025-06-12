@@ -104,7 +104,7 @@ export function MetricCard({
         </div>
         
         <div className={`text-2xl font-bold mb-1 transition-all duration-300 ${
-          isHovered ? 'scale-105 transform text-theme-blue-light' : 'text-white'
+          isHovered ? 'transform text-theme-blue-light' : 'text-white'
         }`}>
           {displayValue()}
         </div>
