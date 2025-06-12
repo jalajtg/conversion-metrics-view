@@ -69,7 +69,20 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters): Promise
     {
       name: 'products',
       query: () => {
-        let query = supabase.from('products').select('*');
+        let query = supabase
+          .from('clinic_product_categories')
+          .select(`
+            id,
+            price,
+            clinic_id,
+            created_at,
+            product_category:product_category_id (
+              id,
+              name,
+              description
+            )
+          `);
+        
         if (filters.clinicIds.length > 0) {
           query = query.in('clinic_id', filters.clinicIds);
         }
@@ -128,26 +141,6 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters): Promise
     }
   ];
 
-  // Execute all queries recursively using Promise.all for parallel execution
-  const executeQueriesRecursively = async (queryList: typeof queries, index = 0): Promise<any[]> => {
-    if (index >= queryList.length) {
-      return [];
-    }
-
-    const currentQuery = queryList[index];
-    const { data, error } = await currentQuery.query();
-    
-    if (error) {
-      console.error(`Error fetching ${currentQuery.name}:`, error);
-      throw error;
-    }
-
-    // Recursive call for the next query
-    const remainingResults = await executeQueriesRecursively(queryList, index + 1);
-    
-    return [{ name: currentQuery.name, data: data || [] }, ...remainingResults];
-  };
-
   // For better performance, we'll use Promise.all instead of true recursion
   const results = await Promise.all(
     queries.map(async (queryDef) => {
@@ -179,7 +172,17 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters): Promise
   };
 
   results.forEach(result => {
-    if (result.name in dashboardData) {
+    if (result.name === 'products') {
+      // Transform clinic_product_categories data to match Product interface
+      dashboardData.products = (result.data || []).map((item: any) => ({
+        id: item.id,
+        name: item.product_category?.name || 'Unknown Product',
+        description: item.product_category?.description || '',
+        price: Number(item.price),
+        clinic_id: item.clinic_id,
+        created_at: item.created_at
+      }));
+    } else if (result.name in dashboardData) {
       (dashboardData as any)[result.name] = result.data;
     }
   });

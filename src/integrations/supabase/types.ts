@@ -63,7 +63,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
-          product_id: string[] | null
+          product_id: string | null
         }
         Insert: {
           booking_time: string
@@ -73,7 +73,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
-          product_id?: string[] | null
+          product_id?: string | null
         }
         Update: {
           booking_time?: string
@@ -83,7 +83,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
-          product_id?: string[] | null
+          product_id?: string | null
         }
         Relationships: [
           {
@@ -91,6 +91,13 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_product_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -331,7 +338,7 @@ export type Database = {
           id: string
           lead: boolean | null
           phone: string | null
-          product_id: string
+          product_id: string | null
         }
         Insert: {
           booked?: boolean | null
@@ -344,7 +351,7 @@ export type Database = {
           id?: string
           lead?: boolean | null
           phone?: string | null
-          product_id: string
+          product_id?: string | null
         }
         Update: {
           booked?: boolean | null
@@ -357,7 +364,7 @@ export type Database = {
           id?: string
           lead?: boolean | null
           phone?: string | null
-          product_id?: string
+          product_id?: string | null
         }
         Relationships: [
           {

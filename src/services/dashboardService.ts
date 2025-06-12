@@ -22,16 +22,34 @@ export const fetchProducts = async (clinicIds: string[]): Promise<Product[]> => 
   if (clinicIds.length === 0) return [];
   
   const { data, error } = await supabase
-    .from("products")
-    .select("*")
+    .from("clinic_product_categories")
+    .select(`
+      id,
+      price,
+      clinic_id,
+      created_at,
+      product_category:product_category_id (
+        id,
+        name,
+        description
+      )
+    `)
     .in("clinic_id", clinicIds);
   
   if (error) {
-    console.error("Error fetching products:", error);
+    console.error("Error fetching clinic product categories:", error);
     return [];
   }
   
-  return data || [];
+  // Transform the data to match the Product interface
+  return (data || []).map(item => ({
+    id: item.id,
+    name: item.product_category?.name || 'Unknown Product',
+    description: item.product_category?.description || '',
+    price: Number(item.price),
+    clinic_id: item.clinic_id,
+    created_at: item.created_at
+  }));
 };
 
 export const fetchLeadsByProduct = async (productId: string, filters: DashboardFilters): Promise<Lead[]> => {
