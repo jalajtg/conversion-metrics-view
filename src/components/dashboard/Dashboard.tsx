@@ -16,6 +16,7 @@ const DASHBOARD_FILTERS_KEY = 'dashboard-filters';
 
 export function Dashboard() {
   const currentDate = new Date();
+  const currentMonth = (currentDate.getMonth() + 1).toString();
   
   // Load filters from session storage or use defaults
   const loadFiltersFromStorage = (): DashboardFiltersType => {
@@ -25,7 +26,7 @@ export function Dashboard() {
         const parsed = JSON.parse(savedFilters);
         return {
           clinicIds: parsed.clinicIds || [],
-          month: parsed.month || (currentDate.getMonth() + 1).toString(),
+          month: parsed.month || currentMonth,
           months: parsed.months || []
         };
       }
@@ -35,12 +36,13 @@ export function Dashboard() {
     
     return {
       clinicIds: [],
-      month: (currentDate.getMonth() + 1).toString()
+      month: currentMonth
     };
   };
 
   const [filters, setFilters] = useState<DashboardFiltersType>(loadFiltersFromStorage);
   const [dummyDataCreated, setDummyDataCreated] = useState(false);
+  const [hasAutoSelected, setHasAutoSelected] = useState(false);
   
   // Save filters to session storage whenever they change
   const handleFiltersChange = (newFilters: DashboardFiltersType) => {
@@ -87,16 +89,25 @@ export function Dashboard() {
     createDummyData();
   }, [clinics, clinicsLoading, dummyDataCreated, refetchClinics]);
 
-  // Auto-select all clinics when they're loaded if no clinics are selected in session storage
-  // useEffect(() => {
-  //   if (clinics && clinics.length > 0 && filters.clinicIds.length === 0) {
-  //     console.log("Auto-selecting clinic IDs:", clinics.map(clinic => clinic.id));
-  //     handleFiltersChange({
-  //       ...filters,
-  //       clinicIds: clinics.map(clinic => clinic.id)
-  //     });
-  //   }
-  // }, [clinics, filters.clinicIds.length]);
+  // Auto-select all clinics and current month when they're loaded for the first time
+  useEffect(() => {
+    if (clinics && clinics.length > 0 && !hasAutoSelected) {
+      // Check if we have saved filters
+      const savedFilters = sessionStorage.getItem(DASHBOARD_FILTERS_KEY);
+      
+      if (!savedFilters) {
+        // No saved filters, auto-select all clinics and current month
+        console.log("Auto-selecting all clinics and current month");
+        const allClinicIds = clinics.map(clinic => clinic.id);
+        handleFiltersChange({
+          ...filters,
+          clinicIds: allClinicIds,
+          months: [currentMonth]
+        });
+      }
+      setHasAutoSelected(true);
+    }
+  }, [clinics, hasAutoSelected, filters, currentMonth]);
 
   useEffect(() => {
     if (clinicsError) {

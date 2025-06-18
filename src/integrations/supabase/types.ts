@@ -258,6 +258,36 @@ export type Database = {
           },
         ]
       }
+      demo_requests: {
+        Row: {
+          company_name: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone_number: string | null
+          purpose_of_chatbot: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone_number?: string | null
+          purpose_of_chatbot: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone_number?: string | null
+          purpose_of_chatbot?: string
+        }
+        Relationships: []
+      }
       email_queue: {
         Row: {
           clinic_name: string | null
