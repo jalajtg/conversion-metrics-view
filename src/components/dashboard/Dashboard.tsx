@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useClinics } from '@/hooks/useClinics';
+import { useAllClinics } from '@/hooks/useAllClinics';
+import { useUserRole } from '@/hooks/useUserRole';
 import { ProductSection } from './ProductSection';
 import { TotalMetricsSection } from './TotalMetricsSection';
 import { DashboardFilters } from './DashboardFilters';
@@ -17,6 +19,9 @@ const DASHBOARD_FILTERS_KEY = 'dashboard-filters';
 export function Dashboard() {
   const currentDate = new Date();
   const currentMonth = (currentDate.getMonth() + 1).toString();
+  
+  // Check if user is super admin
+  const { isSuperAdmin } = useUserRole();
   
   // Load filters from session storage or use defaults
   const loadFiltersFromStorage = (): DashboardFiltersType => {
@@ -55,12 +60,26 @@ export function Dashboard() {
     }
   };
 
+  // Use different hooks based on user role
   const {
-    data: clinics,
-    isLoading: clinicsLoading,
-    error: clinicsError,
-    refetch: refetchClinics
+    data: userClinics,
+    isLoading: userClinicsLoading,
+    error: userClinicsError,
+    refetch: refetchUserClinics
   } = useClinics();
+
+  const {
+    data: allClinics,
+    isLoading: allClinicsLoading,
+    error: allClinicsError
+  } = useAllClinics();
+
+  // Determine which clinics data to use
+  const clinics = isSuperAdmin ? allClinics : userClinics;
+  const clinicsLoading = isSuperAdmin ? allClinicsLoading : userClinicsLoading;
+  const clinicsError = isSuperAdmin ? allClinicsError : userClinicsError;
+  const refetchClinics = isSuperAdmin ? () => {} : refetchUserClinics;
+
   const {
     data: dashboardData,
     isLoading: dashboardLoading,
@@ -72,13 +91,14 @@ export function Dashboard() {
     if (clinics) {
       console.log("Dashboard received clinics:", clinics);
       console.log("Clinic names:", clinics.map(c => c.name));
+      console.log("Is super admin:", isSuperAdmin);
     }
-  }, [clinics]);
+  }, [clinics, isSuperAdmin]);
 
-  // Create dummy data if no clinics exist
+  // Create dummy data if no clinics exist (only for regular users)
   useEffect(() => {
     const createDummyData = async () => {
-      if (!clinicsLoading && clinics && clinics.length === 0 && !dummyDataCreated) {
+      if (!isSuperAdmin && !clinicsLoading && clinics && clinics.length === 0 && !dummyDataCreated) {
         console.log('No clinics found, creating dummy data...');
         setDummyDataCreated(true);
         await createDummyDataForUser();
@@ -87,7 +107,7 @@ export function Dashboard() {
       }
     };
     createDummyData();
-  }, [clinics, clinicsLoading, dummyDataCreated, refetchClinics]);
+  }, [clinics, clinicsLoading, dummyDataCreated, refetchClinics, isSuperAdmin]);
 
   // Auto-select all clinics and current month when they're loaded for the first time
   useEffect(() => {
@@ -144,9 +164,11 @@ export function Dashboard() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold gradient-text">
-                Sales Dashboard
+                {isSuperAdmin ? 'Super Admin Dashboard' : 'Sales Dashboard'}
               </h1>
-              <p className="text-gray-400 text-sm mt-1">Monitor your clinic performance metrics</p>
+              <p className="text-gray-400 text-sm mt-1">
+                {isSuperAdmin ? 'Monitor all clinic performance metrics' : 'Monitor your clinic performance metrics'}
+              </p>
             </div>
           </div>
         </div>

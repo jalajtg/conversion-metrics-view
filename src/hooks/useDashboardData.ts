@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
 import type { DashboardFilters } from "@/types/dashboard";
 
 interface DashboardData {
@@ -15,7 +16,7 @@ interface DashboardData {
   appointments: any[];
 }
 
-const fetchDashboardDataRecursively = async (filters: DashboardFilters): Promise<DashboardData> => {
+const fetchDashboardDataRecursively = async (filters: DashboardFilters, isSuperAdmin: boolean): Promise<DashboardData> => {
   // Get the current user ID first
   const { data: { user } } = await supabase.auth.getUser();
   const userId = user?.id;
@@ -61,10 +62,16 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters): Promise
     },
     {
       name: 'clinics',
-      query: () => supabase
-        .from('clinics')
-        .select('*')
-        .eq('owner_id', userId)
+      query: () => {
+        let query = supabase.from('clinics').select('*');
+        
+        // For super admin, fetch all clinics, for regular users, only their own
+        if (!isSuperAdmin && userId) {
+          query = query.eq('owner_id', userId);
+        }
+        
+        return query;
+      }
     },
     {
       name: 'products',
@@ -191,9 +198,11 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters): Promise
 };
 
 export const useDashboardData = (filters: DashboardFilters) => {
+  const { isSuperAdmin } = useUserRole();
+  
   return useQuery({
-    queryKey: ["dashboard-unified", filters],
-    queryFn: () => fetchDashboardDataRecursively(filters),
+    queryKey: ["dashboard-unified", filters, isSuperAdmin],
+    queryFn: () => fetchDashboardDataRecursively(filters, isSuperAdmin),
     enabled: filters.clinicIds.length > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime)
