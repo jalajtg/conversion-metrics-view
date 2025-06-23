@@ -30,39 +30,36 @@ const getDateRangesForMonths = (selectedMonths: number[], year: number) => {
     };
   });
 
+  console.log('Generated date ranges for months:', selectedMonths, 'year:', year, 'ranges:', ranges);
   return ranges;
 };
 
-const applyDateFilter = (query: any, dateRanges: any[] | null, dateField: string = 'created_at') => {
+const applyDateFilterToQuery = (query: any, dateRanges: any[] | null, dateField: string = 'created_at') => {
   if (!dateRanges || dateRanges.length === 0) {
+    console.log('No date ranges provided, returning query as-is');
     return query;
   }
 
-  // If multiple date ranges, we need to use OR conditions
+  console.log(`Applying date filter to field '${dateField}' with ranges:`, dateRanges);
+
   if (dateRanges.length === 1) {
+    // Single date range - use simple gte/lte
+    console.log(`Single range filter: ${dateField} between ${dateRanges[0].start} and ${dateRanges[0].end}`);
     return query
       .gte(dateField, dateRanges[0].start)
       .lte(dateField, dateRanges[0].end);
   }
 
-  // For multiple months, we'll filter in memory after fetching
-  // This is a limitation of Supabase's query builder for complex OR conditions
-  return query;
-};
-
-const filterDataByDateRanges = (data: any[], dateRanges: any[] | null, dateField: string = 'created_at') => {
-  if (!dateRanges || dateRanges.length === 0 || !data) {
-    return data;
-  }
-
-  return data.filter(item => {
-    const itemDate = new Date(item[dateField]);
-    return dateRanges.some(range => {
-      const startDate = new Date(range.start);
-      const endDate = new Date(range.end);
-      return itemDate >= startDate && itemDate <= endDate;
-    });
-  });
+  // Multiple date ranges - use OR conditions
+  console.log(`Multiple ranges filter for ${dateField}:`, dateRanges);
+  
+  // Build OR conditions for multiple date ranges
+  const orConditions = dateRanges.map(range => 
+    `(${dateField}.gte.${range.start},${dateField}.lte.${range.end})`
+  ).join(',');
+  
+  console.log(`OR conditions string: or(${orConditions})`);
+  return query.or(orConditions);
 };
 
 const fetchDashboardDataRecursively = async (filters: DashboardFilters, isSuperAdmin: boolean): Promise<DashboardData> => {
@@ -76,8 +73,9 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters, isSuperA
 
   console.log('Dashboard filters:', filters);
   console.log('Date ranges for filtering:', dateRanges);
+  console.log('Selected clinics:', filters.clinicIds);
 
-  // Define all queries
+  // Define all queries with proper date filtering
   const queries = [
     {
       name: 'bookings',
@@ -88,11 +86,12 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters, isSuperA
           .order('booking_time', { ascending: false });
 
         if (filters.clinicIds.length > 0) {
+          console.log('Filtering bookings by clinic IDs:', filters.clinicIds);
           query = query.in('clinic_id', filters.clinicIds);
         }
 
         // Apply date filter to booking_time
-        return applyDateFilter(query, dateRanges, 'booking_time');
+        return applyDateFilterToQuery(query, dateRanges, 'booking_time');
       }
     },
     {
@@ -104,11 +103,12 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters, isSuperA
           .order('asked_count', { ascending: false });
 
         if (filters.clinicIds.length > 0) {
+          console.log('Filtering FAQs by clinic IDs:', filters.clinicIds);
           query = query.in('clinic_id', filters.clinicIds);
         }
 
-        // Apply date filter
-        return applyDateFilter(query, dateRanges);
+        // Apply date filter to created_at
+        return applyDateFilterToQuery(query, dateRanges, 'created_at');
       }
     },
     {
@@ -121,6 +121,7 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters, isSuperA
           query = query.eq('owner_id', userId);
         }
         
+        // No date filtering for clinics as they don't change based on month/year selection
         return query;
       }
     },
@@ -142,99 +143,100 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters, isSuperA
           `);
         
         if (filters.clinicIds.length > 0) {
+          console.log('Filtering products by clinic IDs:', filters.clinicIds);
           query = query.in('clinic_id', filters.clinicIds);
         }
 
-        // Apply date filter
-        return applyDateFilter(query, dateRanges);
+        // Apply date filter to created_at
+        return applyDateFilterToQuery(query, dateRanges, 'created_at');
       }
     },
     {
       name: 'leads',
       query: () => {
         let query = supabase.from('leads').select('*');
+        
         if (filters.clinicIds.length > 0) {
+          console.log('Filtering leads by clinic IDs:', filters.clinicIds);
           query = query.in('clinic_id', filters.clinicIds);
         }
 
-        // Apply date filter
-        return applyDateFilter(query, dateRanges);
+        // Apply date filter to created_at
+        return applyDateFilterToQuery(query, dateRanges, 'created_at');
       }
     },
     {
       name: 'sales',
       query: () => {
         let query = supabase.from('sales').select('*');
+        
         if (filters.clinicIds.length > 0) {
+          console.log('Filtering sales by clinic IDs:', filters.clinicIds);
           query = query.in('clinic_id', filters.clinicIds);
         }
 
-        // Apply date filter
-        return applyDateFilter(query, dateRanges);
+        // Apply date filter to created_at
+        return applyDateFilterToQuery(query, dateRanges, 'created_at');
       }
     },
     {
       name: 'costs',
       query: () => {
         let query = supabase.from('costs').select('*');
+        
         if (filters.clinicIds.length > 0) {
+          console.log('Filtering costs by clinic IDs:', filters.clinicIds);
           query = query.in('clinic_id', filters.clinicIds);
         }
 
-        // Apply date filter
-        return applyDateFilter(query, dateRanges);
+        // Apply date filter to created_at
+        return applyDateFilterToQuery(query, dateRanges, 'created_at');
       }
     },
     {
       name: 'conversations',
       query: () => {
         let query = supabase.from('conversations').select('*');
+        
         if (filters.clinicIds.length > 0) {
+          console.log('Filtering conversations by clinic IDs:', filters.clinicIds);
           query = query.in('clinic_id', filters.clinicIds);
         }
 
-        // Apply date filter
-        return applyDateFilter(query, dateRanges);
+        // Apply date filter to created_at
+        return applyDateFilterToQuery(query, dateRanges, 'created_at');
       }
     },
     {
       name: 'appointments',
       query: () => {
         let query = supabase.from('appointments').select('*');
+        
         if (filters.clinicIds.length > 0) {
+          console.log('Filtering appointments by clinic IDs:', filters.clinicIds);
           query = query.in('clinic_id', filters.clinicIds);
         }
 
         // Apply date filter to scheduled_at
-        return applyDateFilter(query, dateRanges, 'scheduled_at');
+        return applyDateFilterToQuery(query, dateRanges, 'scheduled_at');
       }
     }
   ];
 
-  // For better performance, we'll use Promise.all instead of true recursion
+  // Execute all queries with proper error handling
   const results = await Promise.all(
     queries.map(async (queryDef) => {
       try {
+        console.log(`Executing query for ${queryDef.name}...`);
         const { data, error } = await queryDef.query();
+        
         if (error) {
           console.error(`Error fetching ${queryDef.name}:`, error);
           throw error;
         }
         
-        // Apply additional date filtering for multiple months (if needed)
-        let filteredData = data || [];
-        if (dateRanges && dateRanges.length > 1) {
-          if (queryDef.name === 'bookings') {
-            filteredData = filterDataByDateRanges(filteredData, dateRanges, 'booking_time');
-          } else if (queryDef.name === 'appointments') {
-            filteredData = filterDataByDateRanges(filteredData, dateRanges, 'scheduled_at');
-          } else if (queryDef.name !== 'clinics') {
-            filteredData = filterDataByDateRanges(filteredData, dateRanges, 'created_at');
-          }
-        }
-        
-        console.log(`Filtered ${queryDef.name} data:`, filteredData.length, 'items');
-        return { name: queryDef.name, data: filteredData };
+        console.log(`Successfully fetched ${queryDef.name}:`, data?.length || 0, 'items');
+        return { name: queryDef.name, data: data || [] };
       } catch (err) {
         console.error(`Failed to fetch ${queryDef.name}:`, err);
         return { name: queryDef.name, data: [] };
@@ -271,7 +273,18 @@ const fetchDashboardDataRecursively = async (filters: DashboardFilters, isSuperA
     }
   });
 
-  console.log('Final dashboard data:', dashboardData);
+  console.log('Final dashboard data counts:', {
+    bookings: dashboardData.bookings.length,
+    faqs: dashboardData.faqs.length,
+    clinics: dashboardData.clinics.length,
+    products: dashboardData.products.length,
+    leads: dashboardData.leads.length,
+    sales: dashboardData.sales.length,
+    costs: dashboardData.costs.length,
+    conversations: dashboardData.conversations.length,
+    appointments: dashboardData.appointments.length
+  });
+
   return dashboardData;
 };
 
