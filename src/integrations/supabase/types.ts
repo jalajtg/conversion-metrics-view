@@ -367,6 +367,7 @@ export type Database = {
           engaged: boolean | null
           id: string
           lead: boolean | null
+          old_user_id: string | null
           phone: string | null
           product_id: string | null
         }
@@ -380,6 +381,7 @@ export type Database = {
           engaged?: boolean | null
           id?: string
           lead?: boolean | null
+          old_user_id?: string | null
           phone?: string | null
           product_id?: string | null
         }
@@ -393,6 +395,7 @@ export type Database = {
           engaged?: boolean | null
           id?: string
           lead?: boolean | null
+          old_user_id?: string | null
           phone?: string | null
           product_id?: string | null
         }

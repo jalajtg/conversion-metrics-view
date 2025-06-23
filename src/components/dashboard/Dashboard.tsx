@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useClinics } from '@/hooks/useClinics';
@@ -18,7 +17,8 @@ const DASHBOARD_FILTERS_KEY = 'dashboard-filters';
 
 export function Dashboard() {
   const currentDate = new Date();
-  const currentMonth = (currentDate.getMonth() + 1).toString();
+  const currentMonth = currentDate.getMonth() + 1; // 1-12
+  const currentYear = currentDate.getFullYear();
   
   // Check if user is super admin
   const { isSuperAdmin } = useUserRole();
@@ -31,8 +31,11 @@ export function Dashboard() {
         const parsed = JSON.parse(savedFilters);
         return {
           clinicIds: parsed.clinicIds || [],
-          month: parsed.month || currentMonth,
-          months: parsed.months || []
+          selectedMonths: parsed.selectedMonths || [],
+          year: parsed.year || currentYear,
+          // Keep for backward compatibility
+          month: parsed.month,
+          months: parsed.months
         };
       }
     } catch (error) {
@@ -41,7 +44,8 @@ export function Dashboard() {
     
     return {
       clinicIds: [],
-      month: currentMonth
+      selectedMonths: [],
+      year: currentYear
     };
   };
 
@@ -120,14 +124,14 @@ export function Dashboard() {
         console.log("Auto-selecting all clinics and current month");
         const allClinicIds = clinics.map(clinic => clinic.id);
         handleFiltersChange({
-          ...filters,
           clinicIds: allClinicIds,
-          months: [currentMonth]
+          selectedMonths: [currentMonth],
+          year: currentYear
         });
       }
       setHasAutoSelected(true);
     }
-  }, [clinics, hasAutoSelected, filters, currentMonth]);
+  }, [clinics, hasAutoSelected, currentMonth, currentYear]);
 
   useEffect(() => {
     if (clinicsError) {

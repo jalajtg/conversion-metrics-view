@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { DashboardFilters } from '@/types/dashboard';
 import { useBookings } from '@/hooks/useBookings';
-import { startOfMonth, endOfMonth, parseISO, isWithinInterval, parse } from 'date-fns';
+import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
 
 interface BookingsSectionProps {
   filters: DashboardFilters;
@@ -68,8 +68,9 @@ export function BookingsSection({
     }
   });
 
-  console.log('Bookings jalaj:', bookings);
-  console.log('Appointments jalaj:', appointments);
+  console.log('Bookings data:', bookings);
+  console.log('Appointments data:', appointments);
+  console.log('Current filters:', filters);
 
   const allBookingsAndAppointments = useMemo(() => {
     const allBookings: Booking[] = bookings || [];
@@ -89,39 +90,33 @@ export function BookingsSection({
   const filteredBookings = useMemo(() => {
     if (!allBookingsAndAppointments) return [];
     let filtered = allBookingsAndAppointments;
-    console.log('Filtered bookings jalaj1:', filtered, filters);
 
     // Filter by clinic IDs if specified
     if (filters.clinicIds && filters.clinicIds.length > 0) {
       filtered = filtered.filter(booking => booking.clinic_id && filters.clinicIds.includes(booking.clinic_id));
     }
-    console.log('Filtered bookings jalaj:', filtered);
 
-    // Filter by months array if specified
-    if (filters.months && filters.months.length > 0) {
-      const currentYear = new Date().getFullYear();
-
-      // Create date ranges for all selected months
-      const monthRanges = filters.months.map(monthName => {
-        // Parse the month name to get the month index (0-11)
-        const monthDate = parse(monthName, 'MMMM', new Date());
-        const monthIndex = monthDate.getMonth();
+    // Filter by selected months and year if specified
+    if (filters.selectedMonths && filters.selectedMonths.length > 0 && filters.year) {
+      const monthRanges = filters.selectedMonths.map(month => {
         return {
-          start: startOfMonth(new Date(currentYear, monthIndex)),
-          end: endOfMonth(new Date(currentYear, monthIndex))
+          start: startOfMonth(new Date(filters.year!, month - 1)),
+          end: endOfMonth(new Date(filters.year!, month - 1))
         };
       });
-      console.log('Month ranges:', monthRanges);
+      
+      console.log('Month ranges for booking filtering:', monthRanges);
+      
       filtered = filtered.filter(booking => {
         const bookingDate = parseISO(booking.booking_time);
-        // Check if the booking date falls within any of the selected month ranges
         return monthRanges.some(range => isWithinInterval(bookingDate, {
           start: range.start,
           end: range.end
         }));
       });
     }
-    console.log('Filtered bookings jalaj2:', filtered);
+
+    console.log('Filtered bookings result:', filtered.length, 'items');
     return filtered;
   }, [allBookingsAndAppointments, filters]);
 
@@ -166,8 +161,6 @@ export function BookingsSection({
     );
   }
 
-  console.log("Final filtered bookings and appointments:", filteredBookings);
-
   return (
     <div id="bookings-section" className="space-y-4 sm:space-y-6">
       <div className="flex items-start gap-2 sm:gap-3">
@@ -179,9 +172,12 @@ export function BookingsSection({
             Appointments & Bookings
           </h2>
           <p className="text-gray-400 text-xs sm:text-sm text-left">
-            {filters.month ? `Appointments for ${new Date(2024, parseInt(filters.month) - 1).toLocaleString('default', {
-              month: 'long'
-            })}` : 'Complete list of appointments and bookings from your clinics'}
+            {filters.selectedMonths?.length ? 
+              `Appointments for ${filters.selectedMonths.length === 1 ? 
+                new Date(filters.year || new Date().getFullYear(), filters.selectedMonths[0] - 1).toLocaleString('default', { month: 'long' }) : 
+                'selected months'} ${filters.year || new Date().getFullYear()}` : 
+              'Complete list of appointments and bookings from your clinics'
+            }
           </p>
         </div>
       </div>
@@ -208,7 +204,7 @@ export function BookingsSection({
               </div>
               <h3 className="text-base sm:text-lg font-medium text-white mb-2">No appointments found</h3>
               <p className="text-gray-400 text-sm">
-                {filters.clinicIds.length === 0 ? "Please select at least one clinic to view appointments" : `No appointments found for the selected ${filters.month ? 'month and ' : ''}criteria`}
+                {filters.clinicIds.length === 0 ? "Please select at least one clinic to view appointments" : `No appointments found for the selected criteria`}
               </p>
             </div>
           ) : (
@@ -222,7 +218,6 @@ export function BookingsSection({
                         <span className="text-xs sm:text-sm">Patient Details</span>
                       </div>
                     </TableHead>
-                    {/* Desktop: Two separate columns */}
                     <TableHead className="hidden sm:table-cell text-gray-300 font-semibold px-2 sm:px-4 text-left">
                       <div className="flex items-center gap-1 sm:gap-2">
                         <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -235,7 +230,6 @@ export function BookingsSection({
                         <span className="text-xs sm:text-sm">Created</span>
                       </div>
                     </TableHead>
-                    {/* Mobile: Combined column */}
                     <TableHead className="sm:hidden text-gray-300 font-semibold px-2 text-left">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
@@ -275,7 +269,6 @@ export function BookingsSection({
                           </div>
                         </div>
                       </TableCell>
-                      {/* Desktop: Separate appointment time column */}
                       <TableCell className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-4">
                         <div className="flex items-center gap-1 sm:gap-2">
                           <div className="p-0.5 sm:p-1 rounded bg-blue-500/10">
@@ -298,7 +291,6 @@ export function BookingsSection({
                           </div>
                         </div>
                       </TableCell>
-                      {/* Desktop: Separate created column */}
                       <TableCell className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-4">
                         <div className="flex items-center gap-1 sm:gap-2">
                           <div className="p-0.5 sm:p-1 rounded bg-green-500/10">
@@ -321,10 +313,8 @@ export function BookingsSection({
                           </div>
                         </div>
                       </TableCell>
-                      {/* Mobile: Combined booking details column */}
                       <TableCell className="sm:hidden px-2 py-2">
                         <div className="space-y-2 text-left">
-                          {/* Appointment Time */}
                           <div className="flex items-center gap-1">
                             <div className="p-0.5 rounded bg-blue-500/10">
                               <Calendar className="h-2.5 w-2.5 text-blue-400" />
@@ -344,7 +334,6 @@ export function BookingsSection({
                               </div>
                             </div>
                           </div>
-                          {/* Created */}
                           <div className="flex items-center gap-1">
                             <div className="p-0.5 rounded bg-green-500/10">
                               <Clock className="h-2.5 w-2.5 text-green-400" />
