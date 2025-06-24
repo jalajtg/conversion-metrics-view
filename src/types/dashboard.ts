@@ -1,3 +1,4 @@
+
 export interface Clinic {
   id: string;
   name: string;
@@ -98,9 +99,12 @@ export interface ProductMetrics {
 
 export interface DashboardFilters {
   clinicIds: string[];
-  selectedMonths?: number[]; // Array of month numbers (1-12)
-  year?: number; // Year for filtering
-  // Keep for backward compatibility
-  month?: string;
-  months?: string[];
+  selectedMonths: number[];
+  year: number;
+  pendingChanges: boolean;
+  appliedFilters?: {
+    clinicIds: string[];
+    selectedMonths: number[];
+    year: number;
+  };
 }
