@@ -41,23 +41,24 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
   console.log("DashboardFilters - current filters:", filters);
 
   const handleClinicSelectionChange = (selectedIds: string[]) => {
-    onFiltersChange({ ...filters, clinicIds: selectedIds });
+    onFiltersChange({ ...filters, clinicIds: selectedIds, pendingChanges: true });
   };
 
   const handleMonthSelectionChange = (selectedMonths: string[]) => {
     const numericMonths = selectedMonths.map(month => parseInt(month));
-    onFiltersChange({ ...filters, selectedMonths: numericMonths });
+    onFiltersChange({ ...filters, selectedMonths: numericMonths, pendingChanges: true });
   };
 
   const handleYearChange = (year: string) => {
-    onFiltersChange({ ...filters, year: parseInt(year) });
+    onFiltersChange({ ...filters, year: parseInt(year), pendingChanges: true });
   };
 
   const handleClearAll = () => {
     onFiltersChange({
       clinicIds: [],
       selectedMonths: [],
-      year: currentYear
+      year: currentYear,
+      pendingChanges: true
     });
   };
 

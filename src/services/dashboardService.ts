@@ -11,11 +11,14 @@ import {
   DashboardFilters
 } from "@/types/dashboard";
 
-const getDateRange = (month: string) => {
-  const currentYear = new Date().getFullYear();
-  const startDate = new Date(currentYear, parseInt(month) - 1, 1);
-  const endDate = new Date(currentYear, parseInt(month), 0, 23, 59, 59);
-  return { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
+const getDateRanges = (selectedMonths: number[], year: number) => {
+  if (!selectedMonths || selectedMonths.length === 0) return [];
+  
+  return selectedMonths.map(month => {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59);
+    return { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
+  });
 };
 
 export const fetchProducts = async (clinicIds: string[]): Promise<Product[]> => {
@@ -53,16 +56,24 @@ export const fetchProducts = async (clinicIds: string[]): Promise<Product[]> => 
 };
 
 export const fetchLeadsByProduct = async (productId: string, filters: DashboardFilters): Promise<Lead[]> => {
-  if (!filters.month) return [];
+  if (!filters.selectedMonths || filters.selectedMonths.length === 0) return [];
   
-  const { startDate, endDate } = getDateRange(filters.month);
+  const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
+  if (dateRanges.length === 0) return [];
   
-  const { data, error } = await supabase
-    .from("leads")
-    .select("*")
-    .eq("product_id", productId)
-    .gte("created_at", startDate)
-    .lte("created_at", endDate);
+  // Build query with multiple date ranges
+  let query = supabase.from("leads").select("*").eq("product_id", productId);
+  
+  // Apply OR conditions for multiple date ranges
+  const dateConditions = dateRanges.map(range => 
+    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+  ).join(',');
+  
+  if (dateConditions) {
+    query = query.or(dateConditions);
+  }
+  
+  const { data, error } = await query;
   
   if (error) {
     console.error(`Error fetching leads for product ${productId}:`, error);
@@ -73,16 +84,22 @@ export const fetchLeadsByProduct = async (productId: string, filters: DashboardF
 };
 
 export const fetchConversationsByLeads = async (leadIds: string[], filters: DashboardFilters): Promise<Conversation[]> => {
-  if (leadIds.length === 0 || !filters.month) return [];
+  if (leadIds.length === 0 || !filters.selectedMonths || filters.selectedMonths.length === 0) return [];
   
-  const { startDate, endDate } = getDateRange(filters.month);
+  const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
+  if (dateRanges.length === 0) return [];
   
-  const { data, error } = await supabase
-    .from("conversations")
-    .select("*")
-    .in("lead_id", leadIds)
-    .gte("created_at", startDate)
-    .lte("created_at", endDate);
+  let query = supabase.from("conversations").select("*").in("lead_id", leadIds);
+  
+  const dateConditions = dateRanges.map(range => 
+    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+  ).join(',');
+  
+  if (dateConditions) {
+    query = query.or(dateConditions);
+  }
+  
+  const { data, error } = await query;
   
   if (error) {
     console.error("Error fetching conversations:", error);
@@ -93,16 +110,22 @@ export const fetchConversationsByLeads = async (leadIds: string[], filters: Dash
 };
 
 export const fetchAppointmentsByLeads = async (leadIds: string[], filters: DashboardFilters): Promise<Appointment[]> => {
-  if (leadIds.length === 0 || !filters.month) return [];
+  if (leadIds.length === 0 || !filters.selectedMonths || filters.selectedMonths.length === 0) return [];
   
-  const { startDate, endDate } = getDateRange(filters.month);
+  const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
+  if (dateRanges.length === 0) return [];
   
-  const { data, error } = await supabase
-    .from("appointments")
-    .select("*")
-    .in("lead_id", leadIds)
-    .gte("created_at", startDate)
-    .lte("created_at", endDate);
+  let query = supabase.from("appointments").select("*").in("lead_id", leadIds);
+  
+  const dateConditions = dateRanges.map(range => 
+    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+  ).join(',');
+  
+  if (dateConditions) {
+    query = query.or(dateConditions);
+  }
+  
+  const { data, error } = await query;
   
   if (error) {
     console.error("Error fetching appointments:", error);
@@ -113,16 +136,22 @@ export const fetchAppointmentsByLeads = async (leadIds: string[], filters: Dashb
 };
 
 export const fetchSalesByProduct = async (productId: string, filters: DashboardFilters): Promise<Sale[]> => {
-  if (!filters.month) return [];
+  if (!filters.selectedMonths || filters.selectedMonths.length === 0) return [];
   
-  const { startDate, endDate } = getDateRange(filters.month);
+  const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
+  if (dateRanges.length === 0) return [];
   
-  const { data, error } = await supabase
-    .from("sales")
-    .select("*")
-    .eq("product_id", productId)
-    .gte("created_at", startDate)
-    .lte("created_at", endDate);
+  let query = supabase.from("sales").select("*").eq("product_id", productId);
+  
+  const dateConditions = dateRanges.map(range => 
+    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+  ).join(',');
+  
+  if (dateConditions) {
+    query = query.or(dateConditions);
+  }
+  
+  const { data, error } = await query;
   
   if (error) {
     console.error(`Error fetching sales for product ${productId}:`, error);
@@ -133,16 +162,22 @@ export const fetchSalesByProduct = async (productId: string, filters: DashboardF
 };
 
 export const fetchCostsByProduct = async (productId: string, filters: DashboardFilters): Promise<Cost[]> => {
-  if (!filters.month) return [];
+  if (!filters.selectedMonths || filters.selectedMonths.length === 0) return [];
   
-  const { startDate, endDate } = getDateRange(filters.month);
+  const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
+  if (dateRanges.length === 0) return [];
   
-  const { data, error } = await supabase
-    .from("costs")
-    .select("*")
-    .eq("product_id", productId)
-    .gte("created_at", startDate)
-    .lte("created_at", endDate);
+  let query = supabase.from("costs").select("*").eq("product_id", productId);
+  
+  const dateConditions = dateRanges.map(range => 
+    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+  ).join(',');
+  
+  if (dateConditions) {
+    query = query.or(dateConditions);
+  }
+  
+  const { data, error } = await query;
   
   if (error) {
     console.error(`Error fetching costs for product ${productId}:`, error);

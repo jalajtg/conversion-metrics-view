@@ -254,7 +254,12 @@ export const useDashboardData = (filters: DashboardFilters) => {
   
   return useQuery({
     queryKey: ["dashboard-enhanced", filters.appliedFilters, isSuperAdmin],
-    queryFn: () => fetchDashboardData(filters.appliedFilters || filters, isSuperAdmin),
+    queryFn: () => fetchDashboardData(filters.appliedFilters || {
+      clinicIds: filters.clinicIds,
+      selectedMonths: filters.selectedMonths,
+      year: filters.year,
+      pendingChanges: false
+    }, isSuperAdmin),
     enabled: (filters.appliedFilters?.clinicIds.length || 0) > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
