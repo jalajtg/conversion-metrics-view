@@ -257,7 +257,7 @@ export const useDashboardData = (filters: DashboardFilters) => {
     queryFn: () => {
       const filtersToUse: DashboardFilters = filters.appliedFilters ? {
         ...filters.appliedFilters,
-        pendingChanges: filters.appliedFilters.pendingChanges || false
+        pendingChanges: false
       } : {
         clinicIds: filters.clinicIds,
         selectedMonths: filters.selectedMonths,
