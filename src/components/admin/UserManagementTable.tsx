@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
 import { UserRoleBadge } from './UserRoleBadge';
-import { UserStatusBadge } from './UserStatusBadge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,27 +61,23 @@ export function UserManagementTable({
         <Table>
           <TableHeader>
             <TableRow className="border-gray-700">
-              <TableHead className="text-gray-400">Name</TableHead>
-              <TableHead className="text-gray-400">Email</TableHead>
-              <TableHead className="text-gray-400">Role</TableHead>
-              <TableHead className="text-gray-400">Status</TableHead>
-              <TableHead className="text-gray-400">Actions</TableHead>
+              <TableHead className="text-gray-400 w-1/3">Name</TableHead>
+              <TableHead className="text-gray-400 w-1/3">Email</TableHead>
+              <TableHead className="text-gray-400 w-1/6">Role</TableHead>
+              <TableHead className="text-gray-400 w-1/6">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map(user => (
               <TableRow key={user.id} className="border-gray-800">
-                <TableCell className="text-white font-medium">
+                <TableCell className="text-white font-medium w-1/3">
                   {user.name || 'No name'}
                 </TableCell>
-                <TableCell className="text-gray-300">{user.email}</TableCell>
-                <TableCell>
+                <TableCell className="text-gray-300 w-1/3">{user.email}</TableCell>
+                <TableCell className="w-1/6">
                   <UserRoleBadge role={user.role} />
                 </TableCell>
-                <TableCell>
-                  <UserStatusBadge status={user.status} />
-                </TableCell>
-                <TableCell>
+                <TableCell className="w-1/6">
                   <div className="flex items-center gap-2">
                     {/* <Button
                       variant="ghost"
