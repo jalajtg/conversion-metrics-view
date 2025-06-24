@@ -255,7 +255,10 @@ export const useDashboardData = (filters: DashboardFilters) => {
   return useQuery({
     queryKey: ["dashboard-enhanced", filters.appliedFilters, isSuperAdmin],
     queryFn: () => {
-      const filtersToUse = filters.appliedFilters || {
+      const filtersToUse: DashboardFilters = filters.appliedFilters ? {
+        ...filters.appliedFilters,
+        pendingChanges: filters.appliedFilters.pendingChanges || false
+      } : {
         clinicIds: filters.clinicIds,
         selectedMonths: filters.selectedMonths,
         year: filters.year,
