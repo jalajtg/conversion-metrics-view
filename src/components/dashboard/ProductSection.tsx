@@ -17,11 +17,12 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
 
   // If we have unified data, process it to create metrics
   if (unifiedData && !metrics) {
-    const { products, leads, sales, costs } = unifiedData;
+    const { products, leads, sales, costs, bookings } = unifiedData;
     
     if (!products || products.length === 0) {
       return null;
     }
+    console.log('Products:', products, leads, sales, costs, bookings);
 
     const productSections = products.map((product: any, index: number) => {
       const productLeads = leads?.filter((lead: any) => lead.product_id === product.id) || [];
@@ -32,7 +33,7 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
       const engagedConversationsCount = productLeads.filter((lead: any) => lead.engaged === true).length;
       
       // Count bookings from leads where booked: true
-      const bookings = productLeads.filter((lead: any) => lead.booked === true).length;
+      const productBookings = bookings.filter((booking: any) => booking.product_id === product.id).length;
 
       // Paid amount is simply the product price
       const paidAmount = product.price;
@@ -47,7 +48,7 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
         conversationCount: engagedConversationsCount,
         paidAmount,
         verbalAppointments,
-        bookings,
+        bookings: productBookings,
         costPerBooking: bookings > 0 ? paidAmount / bookings : 0,
         costPerLead: productLeads.length > 0 ? paidAmount / productLeads.length : 0,
       };

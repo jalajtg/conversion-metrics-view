@@ -18,7 +18,8 @@ export function TotalMetricsSection({
     products,
     leads,
     sales,
-    costs
+    costs,
+    bookings
   } = unifiedData;
 
   // Calculate totals across all products
@@ -28,7 +29,7 @@ export function TotalMetricsSection({
   const totalEngagedConversations = leads?.filter((lead: any) => lead.engaged === true).length || 0;
 
   // Count bookings from leads where booked: true
-  const totalBookings = leads?.filter((lead: any) => lead.booked === true).length || 0;
+  const totalBookings = bookings.length || 0;
 
   // Calculate total paid amount as sum of all product prices
   const totalPaidAmount = products.reduce((total: number, product: any) => {

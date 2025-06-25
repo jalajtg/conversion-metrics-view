@@ -1,8 +1,8 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import type { DashboardFilters } from "@/types/dashboard";
+import { startOfMonth, endOfMonth } from 'date-fns';
 
 interface DashboardData {
   bookings: any[];
@@ -17,29 +17,19 @@ interface DashboardData {
 }
 
 const buildDateFilter = (selectedMonths: number[], year: number) => {
-  if (!selectedMonths || selectedMonths.length === 0) {
-    return null;
-  }
-
-  const dateConditions = selectedMonths.map(month => {
-    const startDate = new Date(year, month - 1, 1).toISOString();
-    const endDate = new Date(year, month, 0, 23, 59, 59).toISOString();
-    return { start: startDate, end: endDate };
+  if (!selectedMonths || selectedMonths.length === 0 || !year) return [];
+  return selectedMonths.map(month => {
+    const start = startOfMonth(new Date(year, month - 1));
+    const end = endOfMonth(new Date(year, month - 1));
+    return { start: start.toISOString(), end: end.toISOString() };
   });
-
-  return dateConditions;
 };
 
 const buildPostgRESTDateFilter = (dateConditions: any[], dateField: string = 'created_at') => {
-  if (!dateConditions || dateConditions.length === 0) {
-    return '';
-  }
-
-  // Build OR conditions for multiple date ranges
-  const orConditions = dateConditions.map(condition => 
+  if (!dateConditions || dateConditions.length === 0) return '';
+  const orConditions = dateConditions.map(condition =>
     `and(${dateField}.gte.${condition.start},${dateField}.lte.${condition.end})`
   ).join(',');
-
   return `or(${orConditions})`;
 };
 
@@ -94,10 +84,12 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       const dateFilter = buildPostgRESTDateFilter(dateConditions, 'booking_time');
       bookingsQuery = bookingsQuery.or(dateFilter);
     }
+    console.log('Fetching bookings...', bookingsQuery);
 
     const { data: bookingsData, error: bookingsError } = await bookingsQuery;
     if (bookingsError) throw bookingsError;
     dashboardData.bookings = bookingsData || [];
+    console.log('Bookings data:', bookingsData);
 
     // Fetch FAQs with optimized query
     console.log('Fetching FAQs...');
@@ -133,14 +125,14 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       `)
       .in('clinic_id', filters.clinicIds);
 
-    if (dateConditions && dateConditions.length > 0) {
-      const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
-      productsQuery = productsQuery.or(dateFilter);
-    }
+    // if (dateConditions && dateConditions.length > 0) {
+    //   const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
+    //   productsQuery = productsQuery.or(dateFilter);
+    // }
 
     const { data: productsData, error: productsError } = await productsQuery;
     if (productsError) throw productsError;
-    
+    console.log('Products data:', productsData);
     dashboardData.products = (productsData || []).map((item: any) => ({
       id: item.id,
       name: item.product_category?.name || 'Unknown Product',
