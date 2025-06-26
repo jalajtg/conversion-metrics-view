@@ -64,6 +64,7 @@ export type Database = {
           name: string
           phone: string | null
           product_id: string | null
+          user_id: string | null
         }
         Insert: {
           booking_time: string
@@ -74,6 +75,7 @@ export type Database = {
           name: string
           phone?: string | null
           product_id?: string | null
+          user_id?: string | null
         }
         Update: {
           booking_time?: string
@@ -84,6 +86,7 @@ export type Database = {
           name?: string
           phone?: string | null
           product_id?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
