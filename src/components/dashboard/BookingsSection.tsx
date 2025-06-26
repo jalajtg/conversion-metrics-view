@@ -104,15 +104,18 @@ export function BookingsSection({
           end: endOfMonth(new Date(filters.year!, month - 1))
         };
       });
-      
-      console.log('Month ranges for booking filtering:', monthRanges);
-      
       filtered = filtered.filter(booking => {
         const bookingDate = parseISO(booking.booking_time);
         return monthRanges.some(range => isWithinInterval(bookingDate, {
           start: range.start,
           end: range.end
         }));
+      });
+    } else if (filters.year && (!filters.selectedMonths || filters.selectedMonths.length === 0)) {
+      // If year is selected and no months, filter by year only
+      filtered = filtered.filter(booking => {
+        const bookingDate = parseISO(booking.booking_time);
+        return bookingDate.getFullYear() === filters.year;
       });
     }
 

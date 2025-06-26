@@ -17,7 +17,14 @@ interface DashboardData {
 }
 
 const buildDateFilter = (selectedMonths: number[], year: number) => {
-  if (!selectedMonths || selectedMonths.length === 0 || !year) return [];
+  if (!year) return [];
+  // If all 12 months are selected, or no months are selected, use the year range
+  if (!selectedMonths || selectedMonths.length === 0 || selectedMonths.length === 12) {
+    const start = startOfMonth(new Date(year, 0));
+    const end = endOfMonth(new Date(year, 11));
+    return [{ start: start.toISOString(), end: end.toISOString() }];
+  }
+  // Otherwise, filter by selected months
   return selectedMonths.map(month => {
     const start = startOfMonth(new Date(year, month - 1));
     const end = endOfMonth(new Date(year, month - 1));
@@ -81,8 +88,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .order('booking_time', { ascending: false });
 
     if (dateConditions && dateConditions.length > 0) {
-      const dateFilter = buildPostgRESTDateFilter(dateConditions, 'booking_time');
-      bookingsQuery = bookingsQuery.or(dateFilter);
+      if (dateConditions.length === 1) {
+        // Only one range (whole year or one month): use gte/lte
+        const { start, end } = dateConditions[0];
+        bookingsQuery = bookingsQuery.gte('booking_time', start).lte('booking_time', end);
+      } else {
+        // Multiple months: use or
+        const dateFilter = buildPostgRESTDateFilter(dateConditions, 'booking_time');
+        bookingsQuery = bookingsQuery.or(dateFilter);
+      }
     }
     console.log('Fetching bookings...', bookingsQuery);
 

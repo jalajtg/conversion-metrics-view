@@ -15,7 +15,20 @@ interface Booking {
 
 // Helper to build date ranges for selected months/year
 const buildDateFilter = (selectedMonths: number[], year: number) => {
-  if (!selectedMonths || selectedMonths.length === 0 || !year) return [];
+  if (!year) return [];
+  // If all 12 months are selected, just use the year range
+  if (selectedMonths && selectedMonths.length === 12) {
+    const start = startOfMonth(new Date(year, 0));
+    const end = endOfMonth(new Date(year, 11));
+    return [{ start: start.toISOString(), end: end.toISOString() }];
+  }
+  // If no months are selected, filter by the whole year
+  if (!selectedMonths || selectedMonths.length === 0) {
+    const start = startOfMonth(new Date(year, 0));
+    const end = endOfMonth(new Date(year, 11));
+    return [{ start: start.toISOString(), end: end.toISOString() }];
+  }
+  // Otherwise, filter by selected months
   return selectedMonths.map(month => {
     const start = startOfMonth(new Date(year, month - 1));
     const end = endOfMonth(new Date(year, month - 1));
@@ -46,11 +59,20 @@ export const useBookings = (filters: DashboardFilters) => {
         query = query.in('clinic_id', filters.clinicIds);
       }
 
-      // Filter by selected months and year
+      // Build date conditions
       const dateConditions = buildDateFilter(filters.selectedMonths, filters.year);
-      if (dateConditions && dateConditions.length > 0) {
-        const dateFilter = buildPostgRESTDateFilter(dateConditions, 'booking_time');
-        query = query.or(dateFilter);
+      if (filters.year && dateConditions.length > 0) {
+        if (dateConditions.length === 1) {
+          // Only one range (whole year or one month): use gte/lte
+          const { start, end } = dateConditions[0];
+          query = query.gte('booking_time', start).lte('booking_time', end);
+        } else {
+          // Multiple months: use or
+          const dateFilter = buildPostgRESTDateFilter(dateConditions, 'booking_time');
+          if (dateFilter) {
+            query = query.or(dateFilter);
+          }
+        }
       }
 
       const { data, error } = await query;
