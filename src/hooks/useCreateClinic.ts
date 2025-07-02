@@ -50,16 +50,30 @@ export function useCreateClinic() {
       console.log('Clinic created successfully:', clinic);
 
       // Create clinic product category associations with monthly pricing
+      // Convert the new format to individual database entries
       for (const productCategory of clinicData.productCategories) {
-        console.log('Creating product category association:', productCategory);
-        const result = await createClinicProductCategory({
-          clinic_id: clinic.id,
-          product_category_id: productCategory.product_category_id,
-          price: productCategory.price,
-          month: productCategory.month
-        });
-        if (!result) {
-          console.error('Failed to create product category association:', productCategory);
+        for (const monthPrice of productCategory.prices) {
+          console.log('Creating product category association:', {
+            clinic_id: clinic.id,
+            product_category_id: productCategory.product_category_id,
+            price: monthPrice.price,
+            month: monthPrice.month
+          });
+          
+          const result = await createClinicProductCategory({
+            clinic_id: clinic.id,
+            product_category_id: productCategory.product_category_id,
+            price: monthPrice.price,
+            month: monthPrice.month
+          });
+          
+          if (!result) {
+            console.error('Failed to create product category association:', {
+              product_category_id: productCategory.product_category_id,
+              month: monthPrice.month,
+              price: monthPrice.price
+            });
+          }
         }
       }
       

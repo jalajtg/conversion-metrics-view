@@ -41,12 +41,27 @@ export function useEditClinic(clinic: any) {
         const existingCategories = await fetchClinicProductCategories(clinic.id);
         console.log('Existing categories loaded:', existingCategories);
         
-        const productCategories = existingCategories.map(cat => ({
-          product_category_id: cat.product_category_id,
-          price: cat.price,
-          month: cat.month
-        }));
+        // Convert database format to new UI format
+        const categoryMap = new Map<string, ProductCategoryWithPrice>();
         
+        existingCategories.forEach(cat => {
+          const categoryId = cat.product_category_id;
+          
+          if (!categoryMap.has(categoryId)) {
+            categoryMap.set(categoryId, {
+              product_category_id: categoryId,
+              prices: []
+            });
+          }
+          
+          const category = categoryMap.get(categoryId)!;
+          category.prices.push({
+            month: cat.month,
+            price: cat.price
+          });
+        });
+        
+        const productCategories = Array.from(categoryMap.values());
         console.log('Mapped product categories:', productCategories);
         
         setFormData(prev => {
@@ -106,7 +121,20 @@ export function useEditClinic(clinic: any) {
         
         // Create a key for comparison (category_id + month)
         const existingKeys = existingCategories.map(cat => `${cat.product_category_id}-${cat.month}`);
-        const newKeys = clinicData.productCategories.map(cat => `${cat.product_category_id}-${cat.month}`);
+        
+        // Convert new format to individual entries for comparison
+        const newEntries: Array<{product_category_id: string, month: number, price: number}> = [];
+        clinicData.productCategories.forEach(cat => {
+          cat.prices.forEach(price => {
+            newEntries.push({
+              product_category_id: cat.product_category_id,
+              month: price.month,
+              price: price.price
+            });
+          });
+        });
+        
+        const newKeys = newEntries.map(entry => `${entry.product_category_id}-${entry.month}`);
 
         console.log('Existing keys:', existingKeys);
         console.log('New keys:', newKeys);
@@ -126,20 +154,20 @@ export function useEditClinic(clinic: any) {
         }
 
         // Create or update categories
-        for (const productCategory of clinicData.productCategories) {
-          console.log('Processing category:', productCategory);
+        for (const newEntry of newEntries) {
+          console.log('Processing entry:', newEntry);
           
           const existingCategory = existingCategories.find(
-            cat => cat.product_category_id === productCategory.product_category_id && 
-                   cat.month === productCategory.month
+            cat => cat.product_category_id === newEntry.product_category_id && 
+                   cat.month === newEntry.month
           );
 
           if (existingCategory) {
             // Update existing if price changed
-            if (existingCategory.price !== productCategory.price) {
-              console.log('Updating category price:', existingCategory.id, 'from', existingCategory.price, 'to', productCategory.price);
+            if (existingCategory.price !== newEntry.price) {
+              console.log('Updating category price:', existingCategory.id, 'from', existingCategory.price, 'to', newEntry.price);
               const updateResult = await updateClinicProductCategory(existingCategory.id, { 
-                price: productCategory.price 
+                price: newEntry.price 
               });
               if (!updateResult) {
                 console.error('Failed to update category price:', existingCategory.id);
@@ -149,15 +177,15 @@ export function useEditClinic(clinic: any) {
             }
           } else {
             // Create new association
-            console.log('Creating new category association:', productCategory);
+            console.log('Creating new category association:', newEntry);
             const createResult = await createClinicProductCategory({
               clinic_id: clinic.id,
-              product_category_id: productCategory.product_category_id,
-              price: productCategory.price,
-              month: productCategory.month
+              product_category_id: newEntry.product_category_id,
+              price: newEntry.price,
+              month: newEntry.month
             });
             if (!createResult) {
-              console.error('Failed to create category association:', productCategory);
+              console.error('Failed to create category association:', newEntry);
             }
           }
         }

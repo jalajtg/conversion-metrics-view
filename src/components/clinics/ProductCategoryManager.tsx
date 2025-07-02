@@ -6,12 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+// Monthly pricing entry for a product category (using month numbers to match DB)
+export interface MonthlyPrice {
+  month: number; // 1=January, 2=February, etc. (matches DB structure)
+  price: number;
+}
+
+// Representation of a selected product category together with all of its monthly prices
 export interface ProductCategoryWithPrice {
   product_category_id: string;
-  price: number;
-  month: number;
+  prices: MonthlyPrice[];
 }
 
 interface ProductCategoryManagerProps {
@@ -42,114 +47,95 @@ export function ProductCategoryManager({
 }: ProductCategoryManagerProps) {
   const { data: productCategories = [], isLoading } = useProductCategories();
 
-  const selectedCategoryIds = Array.from(new Set(selectedCategories.map(cat => cat.product_category_id)));
+  // Helper list of unique selected product category ids (one per card)
+  const selectedCategoryIds = React.useMemo(() => {
+    return Array.from(new Set(selectedCategories.map(cat => cat.product_category_id)));
+  }, [selectedCategories]);
 
   const handleCategorySelection = (categoryIds: string[]) => {
     console.log('ProductCategoryManager: Category selection changed:', categoryIds);
     
-    // Create new categories array based on selection
-    const updatedCategories: ProductCategoryWithPrice[] = [];
-    
-    categoryIds.forEach(categoryId => {
-      // Keep existing entries for this category
-      const existingEntries = selectedCategories.filter(cat => cat.product_category_id === categoryId);
-      
-      if (existingEntries.length > 0) {
-        updatedCategories.push(...existingEntries);
-      } else {
-        // Add new entry with default month (January) and price 0
-        updatedCategories.push({
-          product_category_id: categoryId,
-          price: 0,
-          month: 1
-        });
-      }
-    });
-    
-    console.log('ProductCategoryManager: Updated categories:', updatedCategories);
+    // 1. Keep only categories that are still selected
+    let updatedCategories = selectedCategories.filter(cat => categoryIds.includes(cat.product_category_id));
+
+    // 2. For newly added categories create an empty price array
+    const newlyAddedIds = categoryIds.filter(id => !updatedCategories.some(cat => cat.product_category_id === id));
+    const newlyAddedCategories: ProductCategoryWithPrice[] = newlyAddedIds.map(id => ({
+      product_category_id: id,
+      prices: [],
+    }));
+
+    updatedCategories = [...updatedCategories, ...newlyAddedCategories];
+
+    console.log('ProductCategoryManager: Updated categories after category selection:', updatedCategories);
     onSelectionChange(updatedCategories);
   };
 
   const handlePriceChange = (categoryId: string, month: number, price: string) => {
     const numPrice = parseFloat(price) || 0;
     console.log('ProductCategoryManager: Price changed for category:', categoryId, 'month:', month, 'new price:', numPrice);
-    
-    const updatedCategories = selectedCategories.map(cat =>
-      cat.product_category_id === categoryId && cat.month === month
-        ? { ...cat, price: numPrice }
-        : cat
-    );
-    
+
+    const updatedCategories = selectedCategories.map(cat => {
+      if (cat.product_category_id !== categoryId) return cat;
+
+      const updatedPrices = cat.prices.map(mp =>
+        mp.month === month ? { ...mp, price: numPrice } : mp
+      );
+
+      return { ...cat, prices: updatedPrices };
+    });
+
     console.log('ProductCategoryManager: Updated categories after price change:', updatedCategories);
     onSelectionChange(updatedCategories);
   };
 
-  const handleMonthChange = (categoryId: string, oldMonth: number, newMonth: number) => {
-    console.log('ProductCategoryManager: Month changed for category:', categoryId, 'from:', oldMonth, 'to:', newMonth);
-    
-    // Check if this category already has an entry for the new month
-    const existingEntry = selectedCategories.find(cat => 
-      cat.product_category_id === categoryId && cat.month === newMonth
-    );
-    
-    if (existingEntry) {
-      console.log('Category already has entry for month', newMonth, ', skipping');
-      return;
-    }
-    
-    const updatedCategories = selectedCategories.map(cat =>
-      cat.product_category_id === categoryId && cat.month === oldMonth
-        ? { ...cat, month: newMonth }
-        : cat
-    );
-    
-    console.log('ProductCategoryManager: Updated categories after month change:', updatedCategories);
+  const addMonthToCategory = (categoryId: string, month: number) => {
+    console.log('ProductCategoryManager: Adding month to category:', categoryId, month);
+
+    const updatedCategories = selectedCategories.map(cat => {
+      if (cat.product_category_id !== categoryId) return cat;
+
+      // Prevent duplicates (should already be prevented by UI)
+      if (cat.prices.some(mp => mp.month === month)) return cat;
+
+      return {
+        ...cat,
+        prices: [...cat.prices, { month, price: 0 }],
+      };
+    });
+
     onSelectionChange(updatedCategories);
   };
 
-  const addMonthForCategory = (categoryId: string) => {
-    console.log('ProductCategoryManager: Adding month for category:', categoryId);
-    
-    const existingMonths = selectedCategories
-      .filter(cat => cat.product_category_id === categoryId)
-      .map(cat => cat.month);
-    
-    // Find the next available month
-    const availableMonth = MONTHS.find(month => !existingMonths.includes(month.value));
-    
-    if (!availableMonth) {
-      console.log('All months already selected for this category');
-      return;
-    }
-    
-    const newEntry: ProductCategoryWithPrice = {
-      product_category_id: categoryId,
-      price: 0,
-      month: availableMonth.value
-    };
-    
-    const updatedCategories = [...selectedCategories, newEntry];
-    console.log('ProductCategoryManager: Added new month entry:', updatedCategories);
+  const removeMonthFromCategory = (categoryId: string, month: number) => {
+    console.log('ProductCategoryManager: Removing month:', month, 'from category:', categoryId);
+
+    const updatedCategories = selectedCategories.map(cat => {
+      if (cat.product_category_id !== categoryId) return cat;
+
+      return {
+        ...cat,
+        prices: cat.prices.filter(mp => mp.month !== month),
+      };
+    });
+
     onSelectionChange(updatedCategories);
   };
 
-  const removeCategory = (categoryId: string, month: number) => {
-    console.log('ProductCategoryManager: Removing category:', categoryId, 'month:', month);
-    const updatedCategories = selectedCategories.filter(cat => 
-      !(cat.product_category_id === categoryId && cat.month === month)
-    );
-    onSelectionChange(updatedCategories);
-  };
-
-  const removeCategoryCompletely = (categoryId: string) => {
-    console.log('ProductCategoryManager: Removing category completely:', categoryId);
+  const removeCategory = (categoryId: string) => {
+    console.log('ProductCategoryManager: Removing category:', categoryId);
     const updatedCategoryIds = selectedCategoryIds.filter(id => id !== categoryId);
     handleCategorySelection(updatedCategoryIds);
   };
 
+  const getMonthLabel = (monthNumber: number) => {
+    const month = MONTHS.find(m => m.value === monthNumber);
+    return month ? month.label : `Month ${monthNumber}`;
+  };
+
   const categoryOptions = productCategories.map(category => ({
     value: category.id,
-    label: category.name
+    label: category.name,
   }));
 
   if (isLoading) {
@@ -173,14 +159,18 @@ export function ProductCategoryManager({
           className="w-full"
         />
       </div>
-
+      
       {selectedCategories.length > 0 && (
         <div className="mt-4 space-y-3">
           <Label className="text-gray-300 text-sm">Set Monthly Prices for Selected Categories</Label>
-          {selectedCategoryIds.map(categoryId => {
+          {selectedCategoryIds.map((categoryId) => {
             const category = productCategories.find(cat => cat.id === categoryId);
-            const categoryEntries = selectedCategories.filter(cat => cat.product_category_id === categoryId);
-            
+            // Find all month price entries for this category
+            const categoryEntry = selectedCategories.find(cat => cat.product_category_id === categoryId);
+            const monthPrices = categoryEntry?.prices || [];
+            const usedMonths = monthPrices.map(mp => mp.month);
+            const availableMonths = MONTHS.filter(m => !usedMonths.includes(m.value));
+
             return (
               <Card key={categoryId} className="bg-theme-dark-lighter border-gray-600">
                 <CardContent className="p-4">
@@ -192,22 +182,29 @@ export function ProductCategoryManager({
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeCategoryCompletely(categoryId)}
+                          onClick={() => removeCategory(categoryId)}
                           className="h-6 w-6 p-0 text-gray-400 hover:text-red-400 hover:bg-red-500/20"
                         >
                           <X className="h-3 w-3" />
                         </Button>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addMonthForCategory(categoryId)}
-                        disabled={categoryEntries.length >= 12}
-                        className="text-xs bg-theme-blue hover:bg-theme-blue/90 text-white border-theme-blue"
-                      >
-                        Add Month
-                      </Button>
+                      {availableMonths.length > 0 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Add the first available month
+                            if (availableMonths.length > 0) {
+                              addMonthToCategory(categoryId, availableMonths[0].value);
+                            }
+                          }}
+                          disabled={availableMonths.length === 0}
+                          className="text-xs bg-theme-blue hover:bg-theme-blue/90 text-white border-theme-blue"
+                        >
+                          Add Month
+                        </Button>
+                      )}
                     </div>
                     
                     {category?.description && (
@@ -215,42 +212,39 @@ export function ProductCategoryManager({
                     )}
                     
                     <div className="space-y-2">
-                      {categoryEntries.map((entry, index) => (
-                        <div key={`${categoryId}-${entry.month}`} className="flex items-center gap-3 p-2 bg-theme-dark rounded border border-gray-700">
+                      {monthPrices.map(({ month, price }) => (
+                        <div key={`${categoryId}-${month}`} className="flex items-center gap-3 p-2 bg-theme-dark rounded border border-gray-700">
                           <div className="flex-1">
                             <Label className="text-gray-300 text-xs">Month:</Label>
-                            <Select
-                              value={entry.month.toString()}
-                              onValueChange={(value) => handleMonthChange(categoryId, entry.month, parseInt(value))}
+                            <select
+                              value={month}
+                              onChange={(e) => {
+                                const newMonth = parseInt(e.target.value);
+                                if (newMonth !== month && !usedMonths.includes(newMonth)) {
+                                  // Remove old month and add new month
+                                  removeMonthFromCategory(categoryId, month);
+                                  addMonthToCategory(categoryId, newMonth);
+                                }
+                              }}
+                              className="w-full px-2 py-1 bg-theme-dark-lighter border border-gray-600 rounded text-white text-sm"
                             >
-                              <SelectTrigger className="w-full bg-theme-dark-lighter border-gray-600 text-white">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="bg-theme-dark-card border-gray-600">
-                                {MONTHS
-                                  .filter(month => 
-                                    month.value === entry.month || 
-                                    !categoryEntries.some(e => e.month === month.value)
-                                  )
-                                  .map(month => (
-                                    <SelectItem 
-                                      key={month.value} 
-                                      value={month.value.toString()}
-                                      className="text-white hover:bg-theme-dark-lighter"
-                                    >
-                                      {month.label}
-                                    </SelectItem>
-                                  ))}
-                              </SelectContent>
-                            </Select>
+                              {MONTHS
+                                .filter(m => m.value === month || !usedMonths.includes(m.value))
+                                .map(m => (
+                                  <option key={m.value} value={m.value} className="bg-theme-dark-card">
+                                    {m.label}
+                                  </option>
+                                ))
+                              }
+                            </select>
                           </div>
                           
                           <div className="flex-1">
                             <Label className="text-gray-300 text-xs">Price:</Label>
                             <Input
                               type="number"
-                              value={entry.price || ''}
-                              onChange={(e) => handlePriceChange(categoryId, entry.month, e.target.value)}
+                              value={price || ''}
+                              onChange={(e) => handlePriceChange(categoryId, month, e.target.value)}
                               placeholder="0.00"
                               className="bg-theme-dark-lighter border-gray-600 text-white"
                               min="0"
@@ -258,12 +252,12 @@ export function ProductCategoryManager({
                             />
                           </div>
                           
-                          {categoryEntries.length > 1 && (
+                          {monthPrices.length > 1 && (
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              onClick={() => removeCategory(categoryId, entry.month)}
+                              onClick={() => removeMonthFromCategory(categoryId, month)}
                               className="h-8 w-8 p-0 text-gray-400 hover:text-red-400 hover:bg-red-500/20"
                             >
                               <X className="h-3 w-3" />

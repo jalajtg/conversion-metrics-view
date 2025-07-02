@@ -1,4 +1,3 @@
-
 export interface Clinic {
   id: string;
   name: string;
@@ -96,6 +95,14 @@ export interface ProductMetrics {
   bookings: number;
   costPerBooking: number;
   costPerLead: number;
+}
+
+export interface ProductCategoryWithPrice {
+  product_category_id: string;
+  prices: Array<{
+    month: number; // 1-12 to match database
+    price: number;
+  }>;
 }
 
 export interface DashboardFilters {
