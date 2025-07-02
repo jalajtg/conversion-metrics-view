@@ -38,6 +38,21 @@ interface ClinicProductCategoriesProps {
   clinicName: string;
 }
 
+const MONTHS = [
+  { value: 1, label: 'January' },
+  { value: 2, label: 'February' },
+  { value: 3, label: 'March' },
+  { value: 4, label: 'April' },
+  { value: 5, label: 'May' },
+  { value: 6, label: 'June' },
+  { value: 7, label: 'July' },
+  { value: 8, label: 'August' },
+  { value: 9, label: 'September' },
+  { value: 10, label: 'October' },
+  { value: 11, label: 'November' },
+  { value: 12, label: 'December' }
+];
+
 export function ClinicProductCategories({ clinicId, clinicName }: ClinicProductCategoriesProps) {
   const { data: clinicCategories, isLoading } = useClinicProductCategories(clinicId);
   const { data: allCategories } = useProductCategories();
@@ -47,6 +62,7 @@ export function ClinicProductCategories({ clinicId, clinicName }: ClinicProductC
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [price, setPrice] = useState<string>('');
 
   const createMutation = useMutation({
@@ -59,6 +75,7 @@ export function ClinicProductCategories({ clinicId, clinicName }: ClinicProductC
       });
       setIsAddDialogOpen(false);
       setSelectedCategoryId('');
+      setSelectedMonth('');
       setPrice('');
     },
     onError: () => {
@@ -109,12 +126,13 @@ export function ClinicProductCategories({ clinicId, clinicName }: ClinicProductC
   });
 
   const handleAdd = () => {
-    if (!selectedCategoryId || !price) return;
+    if (!selectedCategoryId || !selectedMonth || !price) return;
     
     createMutation.mutate({
       clinic_id: clinicId,
       product_category_id: selectedCategoryId,
       price: parseFloat(price),
+      month: parseInt(selectedMonth),
     });
   };
 
@@ -125,13 +143,36 @@ export function ClinicProductCategories({ clinicId, clinicName }: ClinicProductC
     });
   };
 
-  const availableCategories = allCategories?.filter(
-    category => !clinicCategories?.some(cc => cc.product_category_id === category.id)
-  ) || [];
+  // Get available categories and months for selection
+  const getAvailableCategories = () => {
+    return allCategories?.filter(
+      category => !clinicCategories?.some(cc => cc.product_category_id === category.id)
+    ) || [];
+  };
+
+  const getAvailableMonths = () => {
+    if (!selectedCategoryId) return MONTHS;
+    
+    const usedMonths = clinicCategories?.filter(
+      cc => cc.product_category_id === selectedCategoryId
+    ).map(cc => cc.month) || [];
+    
+    return MONTHS.filter(month => !usedMonths.includes(month.value));
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
+
+  // Group categories by product category
+  const groupedCategories = clinicCategories?.reduce((acc, category) => {
+    const key = category.product_category_id;
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(category);
+    return acc;
+  }, {} as Record<string, typeof clinicCategories>) || {};
 
   return (
     <Card className="w-full bg-theme-dark-card border-gray-700">
@@ -157,9 +198,24 @@ export function ClinicProductCategories({ clinicId, clinicName }: ClinicProductC
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent className="bg-theme-dark-card border-gray-600">
-                      {availableCategories.map((category) => (
+                      {getAvailableCategories().map((category) => (
                         <SelectItem key={category.id} value={category.id} className="text-white hover:bg-theme-dark-lighter">
                           {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-300 mb-2 block">Month</label>
+                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
+                      <SelectValue placeholder="Select a month" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-theme-dark-card border-gray-600">
+                      {getAvailableMonths().map((month) => (
+                        <SelectItem key={month.value} value={month.value.toString()} className="text-white hover:bg-theme-dark-lighter">
+                          {month.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -178,7 +234,7 @@ export function ClinicProductCategories({ clinicId, clinicName }: ClinicProductC
                 </div>
                 <Button 
                   onClick={handleAdd}
-                  disabled={!selectedCategoryId || !price || createMutation.isPending}
+                  disabled={!selectedCategoryId || !selectedMonth || !price || createMutation.isPending}
                   className="w-full bg-theme-blue hover:bg-theme-blue-light"
                 >
                   {createMutation.isPending ? "Adding..." : "Add Category"}
@@ -189,58 +245,71 @@ export function ClinicProductCategories({ clinicId, clinicName }: ClinicProductC
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        {clinicCategories && clinicCategories.length > 0 ? (
-          <div className="space-y-4">
-            {clinicCategories.map((clinicCategory) => (
-              <div key={clinicCategory.id} className="flex items-center justify-between p-4 bg-theme-dark-lighter rounded-lg border border-gray-600">
-                <div className="flex-1">
-                  <h3 className="text-white font-medium">{clinicCategory.product_category?.name}</h3>
-                  <p className="text-gray-400 text-sm">{clinicCategory.product_category?.description}</p>
+        {Object.keys(groupedCategories).length > 0 ? (
+          <div className="space-y-6">
+            {Object.entries(groupedCategories).map(([categoryId, categories]) => {
+              const productCategory = allCategories?.find(cat => cat.id === categoryId);
+              return (
+                <div key={categoryId} className="bg-theme-dark-lighter rounded-lg border border-gray-600 p-4">
+                  <div className="mb-4">
+                    <h3 className="text-white font-medium text-lg">{productCategory?.name}</h3>
+                    {productCategory?.description && (
+                      <p className="text-gray-400 text-sm">{productCategory.description}</p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {categories.map((clinicCategory) => (
+                      <div key={clinicCategory.id} className="flex items-center justify-between p-3 bg-theme-dark rounded border border-gray-700">
+                        <div className="flex items-center gap-4">
+                          <span className="text-gray-300 text-sm min-w-[80px]">
+                            {MONTHS.find(m => m.value === clinicCategory.month)?.label}
+                          </span>
+                          {editingCategory === clinicCategory.id ? (
+                            <Input
+                              type="number"
+                              step="0.01"
+                              defaultValue={clinicCategory.price.toString()}
+                              className="w-24 bg-theme-dark-card border-gray-600 text-white"
+                              onBlur={(e) => {
+                                handleUpdatePrice(clinicCategory.id, e.target.value);
+                              }}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleUpdatePrice(clinicCategory.id, e.currentTarget.value);
+                                }
+                              }}
+                              autoFocus
+                            />
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="text-white font-medium">${Number(clinicCategory.price).toFixed(2)}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setEditingCategory(clinicCategory.id)}
+                                className="text-gray-400 hover:text-white"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteMutation.mutate(clinicCategory.id)}
+                          disabled={deleteMutation.isPending}
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  {editingCategory === clinicCategory.id ? (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        defaultValue={clinicCategory.price.toString()}
-                        className="w-24 bg-theme-dark-card border-gray-600 text-white"
-                        onBlur={(e) => {
-                          handleUpdatePrice(clinicCategory.id, e.target.value);
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            handleUpdatePrice(clinicCategory.id, e.currentTarget.value);
-                          }
-                        }}
-                        autoFocus
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="text-white font-medium">${Number(clinicCategory.price).toFixed(2)}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingCategory(clinicCategory.id)}
-                        className="text-gray-400 hover:text-white"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteMutation.mutate(clinicCategory.id)}
-                    disabled={deleteMutation.isPending}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center text-gray-400 py-8">
