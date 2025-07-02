@@ -110,6 +110,7 @@ export type Database = {
           clinic_id: string
           created_at: string
           id: string
+          month: number
           price: number
           product_category_id: string
           updated_at: string
@@ -118,6 +119,7 @@ export type Database = {
           clinic_id: string
           created_at?: string
           id?: string
+          month: number
           price: number
           product_category_id: string
           updated_at?: string
@@ -126,6 +128,7 @@ export type Database = {
           clinic_id?: string
           created_at?: string
           id?: string
+          month?: number
           price?: number
           product_category_id?: string
           updated_at?: string

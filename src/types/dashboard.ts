@@ -23,6 +23,7 @@ export interface ClinicProductCategory {
   clinic_id: string;
   product_category_id: string;
   price: number;
+  month: number;
   created_at: string;
   updated_at: string;
   product_category?: ProductCategory;

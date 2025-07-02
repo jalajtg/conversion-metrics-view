@@ -43,7 +43,8 @@ export function useEditClinic(clinic: any) {
         
         const productCategories = existingCategories.map(cat => ({
           product_category_id: cat.product_category_id,
-          price: cat.price
+          price: cat.price,
+          month: cat.month
         }));
         
         console.log('Mapped product categories:', productCategories);
@@ -97,21 +98,22 @@ export function useEditClinic(clinic: any) {
         }
         console.log('Clinic basic info updated successfully:', updatedClinic);
 
-        // Handle product categories
+        // Handle product categories with monthly pricing
         console.log('Processing product categories...');
         const existingCategories = await fetchClinicProductCategories(clinic.id);
         console.log('Current existing categories:', existingCategories);
         console.log('New categories to save:', clinicData.productCategories);
         
-        const existingCategoryIds = existingCategories.map(cat => cat.product_category_id);
-        const newCategoryIds = clinicData.productCategories.map(cat => cat.product_category_id);
+        // Create a key for comparison (category_id + month)
+        const existingKeys = existingCategories.map(cat => `${cat.product_category_id}-${cat.month}`);
+        const newKeys = clinicData.productCategories.map(cat => `${cat.product_category_id}-${cat.month}`);
 
-        console.log('Existing category IDs:', existingCategoryIds);
-        console.log('New category IDs:', newCategoryIds);
+        console.log('Existing keys:', existingKeys);
+        console.log('New keys:', newKeys);
 
         // Delete removed categories
         const categoriesToDelete = existingCategories.filter(
-          cat => !newCategoryIds.includes(cat.product_category_id)
+          cat => !newKeys.includes(`${cat.product_category_id}-${cat.month}`)
         );
         console.log('Categories to delete:', categoriesToDelete);
 
@@ -128,7 +130,8 @@ export function useEditClinic(clinic: any) {
           console.log('Processing category:', productCategory);
           
           const existingCategory = existingCategories.find(
-            cat => cat.product_category_id === productCategory.product_category_id
+            cat => cat.product_category_id === productCategory.product_category_id && 
+                   cat.month === productCategory.month
           );
 
           if (existingCategory) {
@@ -150,7 +153,8 @@ export function useEditClinic(clinic: any) {
             const createResult = await createClinicProductCategory({
               clinic_id: clinic.id,
               product_category_id: productCategory.product_category_id,
-              price: productCategory.price
+              price: productCategory.price,
+              month: productCategory.month
             });
             if (!createResult) {
               console.error('Failed to create category association:', productCategory);
@@ -173,7 +177,7 @@ export function useEditClinic(clinic: any) {
       queryClient.invalidateQueries({ queryKey: ["product-categories"] });
       toast({
         title: "Success",
-        description: "Clinic updated successfully with product categories!",
+        description: "Clinic updated successfully with monthly product category pricing!",
       });
       navigate('/super-admin/clinics');
     },

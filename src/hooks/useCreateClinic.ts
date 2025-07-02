@@ -49,13 +49,14 @@ export function useCreateClinic() {
 
       console.log('Clinic created successfully:', clinic);
 
-      // Create clinic product category associations
+      // Create clinic product category associations with monthly pricing
       for (const productCategory of clinicData.productCategories) {
         console.log('Creating product category association:', productCategory);
         const result = await createClinicProductCategory({
           clinic_id: clinic.id,
           product_category_id: productCategory.product_category_id,
-          price: productCategory.price
+          price: productCategory.price,
+          month: productCategory.month
         });
         if (!result) {
           console.error('Failed to create product category association:', productCategory);
@@ -86,7 +87,7 @@ export function useCreateClinic() {
       queryClient.invalidateQueries({ queryKey: ["product-categories"] });
       toast({
         title: "Success",
-        description: "Clinic created successfully with product categories and notification email sent!",
+        description: "Clinic created successfully with monthly product category pricing!",
       });
       navigate('/super-admin/clinics');
     },

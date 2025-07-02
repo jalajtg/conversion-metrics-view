@@ -54,7 +54,8 @@ export const createClinicProductCategory = async (
     .insert({
       clinic_id: clinicProductCategory.clinic_id,
       product_category_id: clinicProductCategory.product_category_id,
-      price: clinicProductCategory.price
+      price: clinicProductCategory.price,
+      month: clinicProductCategory.month
     })
     .select()
     .single();
@@ -69,12 +70,13 @@ export const createClinicProductCategory = async (
 
 export const updateClinicProductCategory = async (
   id: string, 
-  updates: Partial<Pick<ClinicProductCategory, 'price'>>
+  updates: Partial<Pick<ClinicProductCategory, 'price' | 'month'>>
 ): Promise<ClinicProductCategory | null> => {
   const { data, error } = await supabase
     .from("clinic_product_categories")
     .update({
       price: updates.price,
+      month: updates.month,
       updated_at: new Date().toISOString()
     })
     .eq("id", id)
