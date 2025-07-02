@@ -91,16 +91,13 @@ export function BookingsSection({
     if (!allBookingsAndAppointments) return [];
     let filtered = allBookingsAndAppointments;
 
-    // The booking time filtering is now handled by the useBookings hook directly
-    // So we don't need additional filtering here for booking_time
-    
-    // Keep existing clinic filtering for appointments
+    // Filter by clinic IDs if specified
     if (filters.clinicIds && filters.clinicIds.length > 0) {
       filtered = filtered.filter(booking => booking.clinic_id && filters.clinicIds.includes(booking.clinic_id));
     }
 
-    // Apply month/year filtering only if no specific booking time range is set
-    if (!filters.bookingStartDate && !filters.bookingEndDate && filters.selectedMonths && filters.selectedMonths.length > 0 && filters.year) {
+    // Filter by selected months and year if specified
+    if (filters.selectedMonths && filters.selectedMonths.length > 0 && filters.year) {
       const monthRanges = filters.selectedMonths.map(month => {
         return {
           start: startOfMonth(new Date(filters.year!, month - 1)),
@@ -114,7 +111,7 @@ export function BookingsSection({
           end: range.end
         }));
       });
-    } else if (!filters.bookingStartDate && !filters.bookingEndDate && filters.year && (!filters.selectedMonths || filters.selectedMonths.length === 0)) {
+    } else if (filters.year && (!filters.selectedMonths || filters.selectedMonths.length === 0)) {
       // If year is selected and no months, filter by year only
       filtered = filtered.filter(booking => {
         const bookingDate = parseISO(booking.booking_time);

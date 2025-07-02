@@ -110,14 +110,10 @@ export interface DashboardFilters {
   clinicIds: string[];
   selectedMonths: number[];
   year: number;
-  bookingStartDate?: string;
-  bookingEndDate?: string;
   pendingChanges: boolean;
   appliedFilters?: {
     clinicIds: string[];
     selectedMonths: number[];
     year: number;
-    bookingStartDate?: string;
-    bookingEndDate?: string;
   };
 }
