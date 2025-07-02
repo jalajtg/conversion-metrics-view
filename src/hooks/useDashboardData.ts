@@ -122,7 +122,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     if (faqsError) throw faqsError;
     dashboardData.faqs = faqsData || [];
 
-    // Fetch products with optimized query
+    // Fetch products with month filtering
     console.log('Fetching products...');
     let productsQuery = supabase
       .from('clinic_product_categories')
@@ -131,6 +131,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
         price,
         clinic_id,
         created_at,
+        month,
         product_category:product_category_id (
           id,
           name,
@@ -139,10 +140,10 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       `)
       .in('clinic_id', filters.clinicIds);
 
-    // if (dateConditions && dateConditions.length > 0) {
-    //   const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
-    //   productsQuery = productsQuery.or(dateFilter);
-    // }
+    // Filter by selected months for products
+    if (filters.selectedMonths && filters.selectedMonths.length > 0) {
+      productsQuery = productsQuery.in('month', filters.selectedMonths);
+    }
 
     const { data: productsData, error: productsError } = await productsQuery;
     if (productsError) throw productsError;
@@ -153,7 +154,8 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       description: item.product_category?.description || '',
       price: Number(item.price),
       clinic_id: item.clinic_id,
-      created_at: item.created_at
+      created_at: item.created_at,
+      month: item.month
     }));
 
     // Fetch leads with optimized query

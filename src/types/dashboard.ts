@@ -35,6 +35,7 @@ export interface Product {
   description?: string;
   clinic_id: string;
   created_at: string;
+  month?: number; // Add month field for filtering
 }
 
 export interface Lead {
