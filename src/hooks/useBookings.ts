@@ -62,7 +62,7 @@ export const useBookings = (filters: DashboardFilters) => {
         .from('bookings')
         .select('*')
         .order('booking_time', { ascending: false })
-        .limit(100000); // Add explicit high limit to get all bookings
+        .range(0, 99999);
 
       // Filter by clinic IDs based on user role
       if (!isSuperAdmin) {

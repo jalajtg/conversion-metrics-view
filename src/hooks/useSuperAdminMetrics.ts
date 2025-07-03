@@ -13,12 +13,12 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       const { data: clinicsData, error: clinicsError } = await supabase
         .from('clinics')
         .select('id, name')
-        .limit(10000); // Explicit high limit to get all clinics
+        .range(0, 9999);
 
       if (clinicsError) throw clinicsError;
 
       // Get total products
-      let productsQuery = supabase.from('products').select('id, clinic_id').limit(50000);
+      let productsQuery = supabase.from('products').select('id, clinic_id').range(0, 49999);
       if (filters.clinicIds.length > 0) {
         productsQuery = productsQuery.in('clinic_id', filters.clinicIds);
       }
@@ -26,7 +26,7 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       if (productsError) throw productsError;
 
       // Get bookings with date and clinic filters - FIXED FOR SUPER ADMIN
-      let bookingsQuery = supabase.from('bookings').select('id, clinic_id, created_at').limit(100000);
+      let bookingsQuery = supabase.from('bookings').select('id, clinic_id, created_at').range(0, 99999);
       
       // Only apply clinic filter if specific clinics are selected
       if (filters.clinicIds.length > 0) {
@@ -49,7 +49,7 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       console.log('Super admin bookings data:', bookingsData?.length || 0, 'bookings found');
 
       // Get leads with date and clinic filters - FIXED FOR SUPER ADMIN
-      let leadsQuery = supabase.from('leads').select('id, clinic_id, created_at').limit(100000);
+      let leadsQuery = supabase.from('leads').select('id, clinic_id, created_at').range(0, 99999);
       if (filters.clinicIds.length > 0) {
         leadsQuery = leadsQuery.in('clinic_id', filters.clinicIds);
       }
@@ -65,7 +65,7 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       console.log('Super admin leads data:', leadsData?.length || 0, 'leads found');
 
       // Get conversations with date and clinic filters
-      let conversationsQuery = supabase.from('conversations').select('id, clinic_id, created_at').limit(100000);
+      let conversationsQuery = supabase.from('conversations').select('id, clinic_id, created_at').range(0, 99999);
       if (filters.clinicIds.length > 0) {
         conversationsQuery = conversationsQuery.in('clinic_id', filters.clinicIds);
       }
@@ -79,7 +79,7 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       if (conversationsError) throw conversationsError;
 
       // Get sales data for revenue
-      let salesQuery = supabase.from('sales').select('amount, clinic_id, created_at').limit(100000);
+      let salesQuery = supabase.from('sales').select('amount, clinic_id, created_at').range(0, 49999);
       if (filters.clinicIds.length > 0) {
         salesQuery = salesQuery.in('clinic_id', filters.clinicIds);
       }
@@ -93,7 +93,7 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       if (salesError) throw salesError;
 
       // Get costs data
-      let costsQuery = supabase.from('costs').select('amount, clinic_id, created_at').limit(100000);
+      let costsQuery = supabase.from('costs').select('amount, clinic_id, created_at').range(0, 49999);
       if (filters.clinicIds.length > 0) {
         costsQuery = costsQuery.in('clinic_id', filters.clinicIds);
       }

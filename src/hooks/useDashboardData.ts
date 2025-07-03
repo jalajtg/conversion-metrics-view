@@ -72,7 +72,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
   try {
     // Fetch clinics (no date filtering needed)
     console.log('Fetching clinics...');
-    let clinicsQuery = supabase.from('clinics').select('*').limit(10000);
+    let clinicsQuery = supabase.from('clinics').select('*').range(0, 9999);
     
     if (!isSuperAdmin && userId) {
       clinicsQuery = clinicsQuery.eq('owner_id', userId);
@@ -94,7 +94,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('bookings')
       .select('*')
       .order('booking_time', { ascending: false })
-      .limit(100000); // Add explicit high limit
+      .range(0, 99999);
 
     // Apply clinic filter only if clinics are selected AND not super admin, OR if regular user
     if (!isSuperAdmin) {
@@ -133,7 +133,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('frequently_asked_questions')
       .select('*')
       .order('asked_count', { ascending: false })
-      .limit(50000); // Add explicit high limit
+      .range(0, 49999);
 
     // Apply same logic for FAQs
     if (!isSuperAdmin) {
@@ -176,7 +176,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
           description
         )
       `)
-      .limit(50000); // Add explicit high limit
+      .range(0, 49999);
 
     // Apply same logic for products
     if (!isSuperAdmin) {
@@ -212,7 +212,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let leadsQuery = supabase
       .from('leads')
       .select('*')
-      .limit(100000); // Add explicit high limit
+      .range(0, 99999);
 
     // Apply same logic for leads
     if (!isSuperAdmin) {
@@ -245,7 +245,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let salesQuery = supabase
       .from('sales')
       .select('*')
-      .limit(50000); // Add explicit high limit
+      .range(0, 49999);
 
     // Apply same logic for sales
     if (!isSuperAdmin) {
@@ -277,7 +277,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let costsQuery = supabase
       .from('costs')
       .select('*')
-      .limit(50000); // Add explicit high limit
+      .range(0, 49999);
 
     // Apply same logic for costs
     if (!isSuperAdmin) {
@@ -309,7 +309,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let conversationsQuery = supabase
       .from('conversations')
       .select('*')
-      .limit(100000); // Add explicit high limit
+      .range(0, 99999);
 
     // Apply same logic for conversations
     if (!isSuperAdmin) {
@@ -341,7 +341,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let appointmentsQuery = supabase
       .from('appointments')
       .select('*')
-      .limit(50000); // Add explicit high limit
+      .range(0, 49999);
 
     // Apply same logic for appointments
     if (!isSuperAdmin) {
