@@ -1,10 +1,10 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clinic } from '@/types/dashboard';
 import type { DashboardFilters } from '@/types/dashboard';
-import { BookingTimeFilter } from './filters/BookingTimeFilter';
 
 interface DashboardFiltersProps {
   clinics: Clinic[];
@@ -62,24 +62,8 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
     });
   };
 
-  const handleBookingStartDateChange = (date: string) => {
-    onFiltersChange({
-      ...filters,
-      bookingStartDate: date,
-      pendingChanges: true
-    });
-  };
-
-  const handleBookingEndDateChange = (date: string) => {
-    onFiltersChange({
-      ...filters,
-      bookingEndDate: date,
-      pendingChanges: true
-    });
-  };
-
   return (
-    <div className="space-y-6">
+    <Card className="bg-theme-dark-card border-gray-800 shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-white text-lg font-semibold">Filters</CardTitle>
@@ -92,7 +76,7 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
         </div>
       </CardHeader>
       <CardContent className="pb-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300">Clinics</label>
             <MultiSelectDropdown
@@ -132,15 +116,8 @@ export function DashboardFilters({ clinics, filters, onFiltersChange }: Dashboar
               </SelectContent>
             </Select>
           </div>
-
-          <BookingTimeFilter
-            startDate={filters.bookingStartDate}
-            endDate={filters.bookingEndDate}
-            onStartDateChange={handleBookingStartDateChange}
-            onEndDateChange={handleBookingEndDateChange}
-          />
         </div>
       </CardContent>
-    </div>
+    </Card>
   );
 }
