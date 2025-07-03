@@ -61,7 +61,8 @@ export const useBookings = (filters: DashboardFilters) => {
       let query = supabase
         .from('bookings')
         .select('*')
-        .order('booking_time', { ascending: false });
+        .order('booking_time', { ascending: false })
+        .limit(100000); // Add explicit high limit to get all bookings
 
       // Filter by clinic IDs based on user role
       if (!isSuperAdmin) {
