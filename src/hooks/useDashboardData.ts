@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -72,7 +71,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
   try {
     // Fetch clinics (no date filtering needed)
     console.log('Fetching clinics...');
-    let clinicsQuery = supabase.from('clinics').select('*').range(0, 9999);
+    let clinicsQuery = supabase.from('clinics').select('*').range(0, 999999); // Increased range
     
     if (!isSuperAdmin && userId) {
       clinicsQuery = clinicsQuery.eq('owner_id', userId);
@@ -94,7 +93,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('bookings')
       .select('*')
       .order('booking_time', { ascending: false })
-      .range(0, 99999);
+      .range(0, 999999); // Increased range
 
     // Apply clinic filter only if clinics are selected AND not super admin, OR if regular user
     if (!isSuperAdmin) {
@@ -133,7 +132,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('frequently_asked_questions')
       .select('*')
       .order('asked_count', { ascending: false })
-      .range(0, 49999);
+      .range(0, 999999); // Increased range
 
     // Apply same logic for FAQs
     if (!isSuperAdmin) {
@@ -176,7 +175,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
           description
         )
       `)
-      .range(0, 49999);
+      .range(0, 999999); // Increased range
 
     // Apply same logic for products
     if (!isSuperAdmin) {
@@ -212,7 +211,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let leadsQuery = supabase
       .from('leads')
       .select('*')
-      .range(0, 99999);
+      .range(0, 999999); // Increased range
 
     // Apply same logic for leads
     if (!isSuperAdmin) {
@@ -245,7 +244,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let salesQuery = supabase
       .from('sales')
       .select('*')
-      .range(0, 49999);
+      .range(0, 999999); // Increased range
 
     // Apply same logic for sales
     if (!isSuperAdmin) {
@@ -277,7 +276,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let costsQuery = supabase
       .from('costs')
       .select('*')
-      .range(0, 49999);
+      .range(0, 999999); // Increased range
 
     // Apply same logic for costs
     if (!isSuperAdmin) {
@@ -309,7 +308,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let conversationsQuery = supabase
       .from('conversations')
       .select('*')
-      .range(0, 99999);
+      .range(0, 999999); // Increased range
 
     // Apply same logic for conversations
     if (!isSuperAdmin) {
@@ -341,7 +340,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     let appointmentsQuery = supabase
       .from('appointments')
       .select('*')
-      .range(0, 49999);
+      .range(0, 999999); // Increased range
 
     // Apply same logic for appointments
     if (!isSuperAdmin) {
@@ -406,6 +405,6 @@ export const useDashboardData = (filters: DashboardFilters) => {
     },
     enabled: isSuperAdmin || (filters.appliedFilters?.clinicIds.length || 0) > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes,
   });
 };
