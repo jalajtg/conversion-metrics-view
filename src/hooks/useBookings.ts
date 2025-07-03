@@ -16,18 +16,21 @@ interface Booking {
 // Helper to build date ranges for selected months/year
 const buildDateFilter = (selectedMonths: number[], year: number) => {
   if (!year) return [];
-  // If all 12 months are selected, just use the year range
-  if (selectedMonths && selectedMonths.length === 12) {
-    const start = startOfMonth(new Date(year, 0));
-    const end = endOfMonth(new Date(year, 11));
-    return [{ start: start.toISOString(), end: end.toISOString() }];
-  }
+  
   // If no months are selected, filter by the whole year
   if (!selectedMonths || selectedMonths.length === 0) {
     const start = startOfMonth(new Date(year, 0));
     const end = endOfMonth(new Date(year, 11));
     return [{ start: start.toISOString(), end: end.toISOString() }];
   }
+  
+  // If all 12 months are selected, just use the year range
+  if (selectedMonths.length === 12) {
+    const start = startOfMonth(new Date(year, 0));
+    const end = endOfMonth(new Date(year, 11));
+    return [{ start: start.toISOString(), end: end.toISOString() }];
+  }
+  
   // Otherwise, filter by selected months
   return selectedMonths.map(month => {
     const start = startOfMonth(new Date(year, month - 1));
@@ -49,6 +52,8 @@ export const useBookings = (filters: DashboardFilters) => {
   return useQuery({
     queryKey: ["bookings", filters],
     queryFn: async (): Promise<Booking[]> => {
+      console.log('Fetching bookings with filters:', filters);
+      
       let query = supabase
         .from('bookings')
         .select('*')
@@ -61,6 +66,8 @@ export const useBookings = (filters: DashboardFilters) => {
 
       // Build date conditions
       const dateConditions = buildDateFilter(filters.selectedMonths, filters.year);
+      console.log('Date conditions for bookings:', dateConditions);
+      
       if (filters.year && dateConditions.length > 0) {
         if (dateConditions.length === 1) {
           // Only one range (whole year or one month): use gte/lte
@@ -82,6 +89,7 @@ export const useBookings = (filters: DashboardFilters) => {
         throw error;
       }
 
+      console.log('Bookings fetched:', data?.length || 0);
       return data || [];
     },
     enabled: filters.clinicIds.length > 0,

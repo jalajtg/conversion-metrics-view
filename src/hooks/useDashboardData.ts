@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -18,8 +19,14 @@ interface DashboardData {
 
 const buildDateFilter = (selectedMonths: number[], year: number) => {
   if (!year) return [];
-  // If all 12 months are selected, or no months are selected, use the year range
-  if (!selectedMonths || selectedMonths.length === 0 || selectedMonths.length === 12) {
+  // If no months are selected, use the whole year
+  if (!selectedMonths || selectedMonths.length === 0) {
+    const start = startOfMonth(new Date(year, 0));
+    const end = endOfMonth(new Date(year, 11));
+    return [{ start: start.toISOString(), end: end.toISOString() }];
+  }
+  // If all 12 months are selected, use the year range
+  if (selectedMonths.length === 12) {
     const start = startOfMonth(new Date(year, 0));
     const end = endOfMonth(new Date(year, 11));
     return [{ start: start.toISOString(), end: end.toISOString() }];
@@ -98,7 +105,6 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
         bookingsQuery = bookingsQuery.or(dateFilter);
       }
     }
-    console.log('Fetching bookings...', bookingsQuery);
 
     const { data: bookingsData, error: bookingsError } = await bookingsQuery;
     if (bookingsError) throw bookingsError;
@@ -114,8 +120,13 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .order('asked_count', { ascending: false });
 
     if (dateConditions && dateConditions.length > 0) {
-      const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
-      faqsQuery = faqsQuery.or(dateFilter);
+      if (dateConditions.length === 1) {
+        const { start, end } = dateConditions[0];
+        faqsQuery = faqsQuery.gte('created_at', start).lte('created_at', end);
+      } else {
+        const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
+        faqsQuery = faqsQuery.or(dateFilter);
+      }
     }
 
     const { data: faqsData, error: faqsError } = await faqsQuery;
@@ -140,8 +151,8 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       `)
       .in('clinic_id', filters.clinicIds);
 
-    // Filter by selected months for products
-    if (filters.selectedMonths && filters.selectedMonths.length > 0) {
+    // Filter by selected months for products - this is key for month filtering
+    if (filters.selectedMonths && filters.selectedMonths.length > 0 && filters.selectedMonths.length < 12) {
       productsQuery = productsQuery.in('month', filters.selectedMonths);
     }
 
@@ -158,85 +169,113 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       month: item.month
     }));
 
-    // Fetch leads with optimized query
-    console.log('Fetching leads...');
-    let leadsQuery = supabase
-      .from('leads')
-      .select('*')
-      .in('clinic_id', filters.clinicIds);
+    // Only fetch other data if we have products
+    if (dashboardData.products.length > 0) {
+      // Fetch leads with optimized query
+      console.log('Fetching leads...');
+      let leadsQuery = supabase
+        .from('leads')
+        .select('*')
+        .in('clinic_id', filters.clinicIds);
 
-    if (dateConditions && dateConditions.length > 0) {
-      const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
-      leadsQuery = leadsQuery.or(dateFilter);
+      if (dateConditions && dateConditions.length > 0) {
+        if (dateConditions.length === 1) {
+          const { start, end } = dateConditions[0];
+          leadsQuery = leadsQuery.gte('created_at', start).lte('created_at', end);
+        } else {
+          const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
+          leadsQuery = leadsQuery.or(dateFilter);
+        }
+      }
+
+      const { data: leadsData, error: leadsError } = await leadsQuery;
+      if (leadsError) throw leadsError;
+      dashboardData.leads = leadsData || [];
+
+      // Fetch sales with optimized query
+      console.log('Fetching sales...');
+      let salesQuery = supabase
+        .from('sales')
+        .select('*')
+        .in('clinic_id', filters.clinicIds);
+
+      if (dateConditions && dateConditions.length > 0) {
+        if (dateConditions.length === 1) {
+          const { start, end } = dateConditions[0];
+          salesQuery = salesQuery.gte('created_at', start).lte('created_at', end);
+        } else {
+          const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
+          salesQuery = salesQuery.or(dateFilter);
+        }
+      }
+
+      const { data: salesData, error: salesError } = await salesQuery;
+      if (salesError) throw salesError;
+      dashboardData.sales = salesData || [];
+
+      // Fetch costs with optimized query
+      console.log('Fetching costs...');
+      let costsQuery = supabase
+        .from('costs')
+        .select('*')
+        .in('clinic_id', filters.clinicIds);
+
+      if (dateConditions && dateConditions.length > 0) {
+        if (dateConditions.length === 1) {
+          const { start, end } = dateConditions[0];
+          costsQuery = costsQuery.gte('created_at', start).lte('created_at', end);
+        } else {
+          const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
+          costsQuery = costsQuery.or(dateFilter);
+        }
+      }
+
+      const { data: costsData, error: costsError } = await costsQuery;
+      if (costsError) throw costsError;
+      dashboardData.costs = costsData || [];
+
+      // Fetch conversations with optimized query
+      console.log('Fetching conversations...');
+      let conversationsQuery = supabase
+        .from('conversations')
+        .select('*')
+        .in('clinic_id', filters.clinicIds);
+
+      if (dateConditions && dateConditions.length > 0) {
+        if (dateConditions.length === 1) {
+          const { start, end } = dateConditions[0];
+          conversationsQuery = conversationsQuery.gte('created_at', start).lte('created_at', end);
+        } else {
+          const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
+          conversationsQuery = conversationsQuery.or(dateFilter);
+        }
+      }
+
+      const { data: conversationsData, error: conversationsError } = await conversationsQuery;
+      if (conversationsError) throw conversationsError;
+      dashboardData.conversations = conversationsData || [];
+
+      // Fetch appointments with optimized query
+      console.log('Fetching appointments...');
+      let appointmentsQuery = supabase
+        .from('appointments')
+        .select('*')
+        .in('clinic_id', filters.clinicIds);
+
+      if (dateConditions && dateConditions.length > 0) {
+        if (dateConditions.length === 1) {
+          const { start, end } = dateConditions[0];
+          appointmentsQuery = appointmentsQuery.gte('scheduled_at', start).lte('scheduled_at', end);
+        } else {
+          const dateFilter = buildPostgRESTDateFilter(dateConditions, 'scheduled_at');
+          appointmentsQuery = appointmentsQuery.or(dateFilter);
+        }
+      }
+
+      const { data: appointmentsData, error: appointmentsError } = await appointmentsQuery;
+      if (appointmentsError) throw appointmentsError;
+      dashboardData.appointments = appointmentsData || [];
     }
-
-    const { data: leadsData, error: leadsError } = await leadsQuery;
-    if (leadsError) throw leadsError;
-    dashboardData.leads = leadsData || [];
-
-    // Fetch sales with optimized query
-    console.log('Fetching sales...');
-    let salesQuery = supabase
-      .from('sales')
-      .select('*')
-      .in('clinic_id', filters.clinicIds);
-
-    if (dateConditions && dateConditions.length > 0) {
-      const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
-      salesQuery = salesQuery.or(dateFilter);
-    }
-
-    const { data: salesData, error: salesError } = await salesQuery;
-    if (salesError) throw salesError;
-    dashboardData.sales = salesData || [];
-
-    // Fetch costs with optimized query
-    console.log('Fetching costs...');
-    let costsQuery = supabase
-      .from('costs')
-      .select('*')
-      .in('clinic_id', filters.clinicIds);
-
-    if (dateConditions && dateConditions.length > 0) {
-      const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
-      costsQuery = costsQuery.or(dateFilter);
-    }
-
-    const { data: costsData, error: costsError } = await costsQuery;
-    if (costsError) throw costsError;
-    dashboardData.costs = costsData || [];
-
-    // Fetch conversations with optimized query
-    console.log('Fetching conversations...');
-    let conversationsQuery = supabase
-      .from('conversations')
-      .select('*')
-      .in('clinic_id', filters.clinicIds);
-
-    if (dateConditions && dateConditions.length > 0) {
-      const dateFilter = buildPostgRESTDateFilter(dateConditions, 'created_at');
-      conversationsQuery = conversationsQuery.or(dateFilter);
-    }
-
-    const { data: conversationsData, error: conversationsError } = await conversationsQuery;
-    if (conversationsError) throw conversationsError;
-    dashboardData.conversations = conversationsData || [];
-
-    // Fetch appointments with optimized query
-    console.log('Fetching appointments...');
-    let appointmentsQuery = supabase
-      .from('appointments')
-      .select('*')
-      .in('clinic_id', filters.clinicIds);
-
-    if (dateConditions && dateConditions.length > 0) {
-      const dateFilter = buildPostgRESTDateFilter(dateConditions, 'scheduled_at');
-      appointmentsQuery = appointmentsQuery.or(dateFilter);
-    }
-
-    const { data: appointmentsData, error: appointmentsError } = await appointmentsQuery;
-    if (appointmentsError) throw appointmentsError;
-    dashboardData.appointments = appointmentsData || [];
 
   } catch (error) {
     console.error('Error fetching dashboard data:', error);

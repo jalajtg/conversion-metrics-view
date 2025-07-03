@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Product, 
@@ -11,7 +12,12 @@ import {
 } from "@/types/dashboard";
 
 const getDateRanges = (selectedMonths: number[], year: number) => {
-  if (!selectedMonths || selectedMonths.length === 0) return [];
+  if (!selectedMonths || selectedMonths.length === 0) {
+    // If no months selected, use whole year
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31, 23, 59, 59);
+    return [{ startDate: startDate.toISOString(), endDate: endDate.toISOString() }];
+  }
   
   return selectedMonths.map(month => {
     const startDate = new Date(year, month - 1, 1);
@@ -22,6 +28,8 @@ const getDateRanges = (selectedMonths: number[], year: number) => {
 
 export const fetchProducts = async (clinicIds: string[], filters: DashboardFilters): Promise<Product[]> => {
   if (clinicIds.length === 0) return [];
+  
+  console.log('Fetching products with filters:', filters);
   
   let query = supabase
     .from("clinic_product_categories")
@@ -39,9 +47,10 @@ export const fetchProducts = async (clinicIds: string[], filters: DashboardFilte
     `)
     .in("clinic_id", clinicIds);
 
-  // Filter by selected months if provided
-  if (filters.selectedMonths && filters.selectedMonths.length > 0) {
+  // Filter by selected months if provided and not all months
+  if (filters.selectedMonths && filters.selectedMonths.length > 0 && filters.selectedMonths.length < 12) {
     query = query.in("month", filters.selectedMonths);
+    console.log('Filtering by months:', filters.selectedMonths);
   }
   
   const { data, error } = await query;
@@ -50,6 +59,8 @@ export const fetchProducts = async (clinicIds: string[], filters: DashboardFilte
     console.error("Error fetching clinic product categories:", error);
     return [];
   }
+  
+  console.log('Products fetched:', data?.length || 0);
   
   // Transform the data to match the Product interface
   return (data || []).map(item => ({
@@ -64,21 +75,25 @@ export const fetchProducts = async (clinicIds: string[], filters: DashboardFilte
 };
 
 export const fetchLeadsByProduct = async (productId: string, filters: DashboardFilters): Promise<Lead[]> => {
-  if (!filters.selectedMonths || filters.selectedMonths.length === 0) return [];
-  
   const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
   if (dateRanges.length === 0) return [];
   
   // Build query with multiple date ranges
   let query = supabase.from("leads").select("*").eq("product_id", productId);
   
-  // Apply OR conditions for multiple date ranges
-  const dateConditions = dateRanges.map(range => 
-    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
-  ).join(',');
-  
-  if (dateConditions) {
-    query = query.or(dateConditions);
+  if (dateRanges.length === 1) {
+    // Single date range
+    const { startDate, endDate } = dateRanges[0];
+    query = query.gte('created_at', startDate).lte('created_at', endDate);
+  } else {
+    // Multiple date ranges - use OR conditions
+    const dateConditions = dateRanges.map(range => 
+      `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+    ).join(',');
+    
+    if (dateConditions) {
+      query = query.or(dateConditions);
+    }
   }
   
   const { data, error } = await query;
@@ -92,19 +107,24 @@ export const fetchLeadsByProduct = async (productId: string, filters: DashboardF
 };
 
 export const fetchConversationsByLeads = async (leadIds: string[], filters: DashboardFilters): Promise<Conversation[]> => {
-  if (leadIds.length === 0 || !filters.selectedMonths || filters.selectedMonths.length === 0) return [];
+  if (leadIds.length === 0) return [];
   
   const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
   if (dateRanges.length === 0) return [];
   
   let query = supabase.from("conversations").select("*").in("lead_id", leadIds);
   
-  const dateConditions = dateRanges.map(range => 
-    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
-  ).join(',');
-  
-  if (dateConditions) {
-    query = query.or(dateConditions);
+  if (dateRanges.length === 1) {
+    const { startDate, endDate } = dateRanges[0];
+    query = query.gte('created_at', startDate).lte('created_at', endDate);
+  } else {
+    const dateConditions = dateRanges.map(range => 
+      `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+    ).join(',');
+    
+    if (dateConditions) {
+      query = query.or(dateConditions);
+    }
   }
   
   const { data, error } = await query;
@@ -118,19 +138,24 @@ export const fetchConversationsByLeads = async (leadIds: string[], filters: Dash
 };
 
 export const fetchAppointmentsByLeads = async (leadIds: string[], filters: DashboardFilters): Promise<Appointment[]> => {
-  if (leadIds.length === 0 || !filters.selectedMonths || filters.selectedMonths.length === 0) return [];
+  if (leadIds.length === 0) return [];
   
   const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
   if (dateRanges.length === 0) return [];
   
   let query = supabase.from("appointments").select("*").in("lead_id", leadIds);
   
-  const dateConditions = dateRanges.map(range => 
-    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
-  ).join(',');
-  
-  if (dateConditions) {
-    query = query.or(dateConditions);
+  if (dateRanges.length === 1) {
+    const { startDate, endDate } = dateRanges[0];
+    query = query.gte('created_at', startDate).lte('created_at', endDate);
+  } else {
+    const dateConditions = dateRanges.map(range => 
+      `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+    ).join(',');
+    
+    if (dateConditions) {
+      query = query.or(dateConditions);
+    }
   }
   
   const { data, error } = await query;
@@ -144,19 +169,22 @@ export const fetchAppointmentsByLeads = async (leadIds: string[], filters: Dashb
 };
 
 export const fetchSalesByProduct = async (productId: string, filters: DashboardFilters): Promise<Sale[]> => {
-  if (!filters.selectedMonths || filters.selectedMonths.length === 0) return [];
-  
   const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
   if (dateRanges.length === 0) return [];
   
   let query = supabase.from("sales").select("*").eq("product_id", productId);
   
-  const dateConditions = dateRanges.map(range => 
-    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
-  ).join(',');
-  
-  if (dateConditions) {
-    query = query.or(dateConditions);
+  if (dateRanges.length === 1) {
+    const { startDate, endDate } = dateRanges[0];
+    query = query.gte('created_at', startDate).lte('created_at', endDate);
+  } else {
+    const dateConditions = dateRanges.map(range => 
+      `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+    ).join(',');
+    
+    if (dateConditions) {
+      query = query.or(dateConditions);
+    }
   }
   
   const { data, error } = await query;
@@ -170,19 +198,22 @@ export const fetchSalesByProduct = async (productId: string, filters: DashboardF
 };
 
 export const fetchCostsByProduct = async (productId: string, filters: DashboardFilters): Promise<Cost[]> => {
-  if (!filters.selectedMonths || filters.selectedMonths.length === 0) return [];
-  
   const dateRanges = getDateRanges(filters.selectedMonths, filters.year);
   if (dateRanges.length === 0) return [];
   
   let query = supabase.from("costs").select("*").eq("product_id", productId);
   
-  const dateConditions = dateRanges.map(range => 
-    `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
-  ).join(',');
-  
-  if (dateConditions) {
-    query = query.or(dateConditions);
+  if (dateRanges.length === 1) {
+    const { startDate, endDate } = dateRanges[0];
+    query = query.gte('created_at', startDate).lte('created_at', endDate);
+  } else {
+    const dateConditions = dateRanges.map(range => 
+      `and(created_at.gte.${range.startDate},created_at.lte.${range.endDate})`
+    ).join(',');
+    
+    if (dateConditions) {
+      query = query.or(dateConditions);
+    }
   }
   
   const { data, error } = await query;
@@ -196,6 +227,8 @@ export const fetchCostsByProduct = async (productId: string, filters: DashboardF
 };
 
 export const calculateProductMetrics = async (product: Product, filters: DashboardFilters): Promise<ProductMetrics> => {
+  console.log('Calculating metrics for product:', product.name, 'month:', product.month);
+  
   // Get all leads for this product
   const leads = await fetchLeadsByProduct(product.id, filters);
   const leadIds = leads.map(lead => lead.id);
@@ -218,6 +251,17 @@ export const calculateProductMetrics = async (product: Product, filters: Dashboa
   const costPerBooking = bookings > 0 ? totalCost / bookings : 0;
   const costPerLead = leadCount > 0 ? totalCost / leadCount : 0;
   
+  console.log('Product metrics calculated:', {
+    product: product.name,
+    leadCount,
+    conversationCount,
+    paidAmount,
+    verbalAppointments,
+    bookings,
+    costPerBooking,
+    costPerLead
+  });
+  
   return {
     product,
     leadCount,
@@ -231,7 +275,19 @@ export const calculateProductMetrics = async (product: Product, filters: Dashboa
 };
 
 export const fetchAllProductMetrics = async (filters: DashboardFilters): Promise<ProductMetrics[]> => {
+  console.log('Fetching all product metrics with filters:', filters);
+  
   const products = await fetchProducts(filters.clinicIds, filters);
+  console.log('Products found:', products.length);
+  
+  if (products.length === 0) {
+    console.log('No products found for the given filters');
+    return [];
+  }
+  
   const metricsPromises = products.map(product => calculateProductMetrics(product, filters));
-  return Promise.all(metricsPromises);
+  const metrics = await Promise.all(metricsPromises);
+  
+  console.log('Total metrics calculated:', metrics.length);
+  return metrics;
 };
