@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Product, 
@@ -20,17 +21,16 @@ const getDateRanges = (selectedMonths: number[], year: number) => {
   });
 };
 
-export const fetchProducts = async (clinicIds: string[], filters: DashboardFilters): Promise<Product[]> => {
+export const fetchProducts = async (clinicIds: string[]): Promise<Product[]> => {
   if (clinicIds.length === 0) return [];
   
-  let query = supabase
+  const { data, error } = await supabase
     .from("clinic_product_categories")
     .select(`
       id,
       price,
       clinic_id,
       created_at,
-      month,
       product_category:product_category_id (
         id,
         name,
@@ -38,13 +38,6 @@ export const fetchProducts = async (clinicIds: string[], filters: DashboardFilte
       )
     `)
     .in("clinic_id", clinicIds);
-
-  // Filter by selected months if provided
-  if (filters.selectedMonths && filters.selectedMonths.length > 0) {
-    query = query.in("month", filters.selectedMonths);
-  }
-  
-  const { data, error } = await query;
   
   if (error) {
     console.error("Error fetching clinic product categories:", error);
@@ -58,8 +51,7 @@ export const fetchProducts = async (clinicIds: string[], filters: DashboardFilte
     description: item.product_category?.description || '',
     price: Number(item.price),
     clinic_id: item.clinic_id,
-    created_at: item.created_at,
-    month: item.month
+    created_at: item.created_at
   }));
 };
 
@@ -231,7 +223,7 @@ export const calculateProductMetrics = async (product: Product, filters: Dashboa
 };
 
 export const fetchAllProductMetrics = async (filters: DashboardFilters): Promise<ProductMetrics[]> => {
-  const products = await fetchProducts(filters.clinicIds, filters);
+  const products = await fetchProducts(filters.clinicIds);
   const metricsPromises = products.map(product => calculateProductMetrics(product, filters));
   return Promise.all(metricsPromises);
 };
