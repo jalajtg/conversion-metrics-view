@@ -7,27 +7,12 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
   return useQuery({
     queryKey: ['super-admin-metrics', filters],
     queryFn: async (): Promise<SuperAdminMetrics> => {
-      // Base date filter
-      let dateFilter = '';
-      if (filters.startDate && filters.endDate) {
-        dateFilter = `created_at >= '${filters.startDate}' AND created_at <= '${filters.endDate}'`;
-      }
-
-      // Clinic filter
-      let clinicFilter = '';
-      if (filters.clinicIds.length > 0) {
-        clinicFilter = `clinic_id IN (${filters.clinicIds.map(id => `'${id}'`).join(',')})`;
-      }
-
-      // Combine filters
-      const whereClause = [dateFilter, clinicFilter].filter(Boolean).join(' AND ');
-      const whereCondition = whereClause ? `WHERE ${whereClause}` : '';
-
-      // Get total clinics
+      console.log('Fetching super admin metrics with filters:', filters);
+      
+      // Get all clinics first
       const { data: clinicsData, error: clinicsError } = await supabase
         .from('clinics')
-        .select('id, name')
-        .eq('owner_id', filters.clinicIds.length > 0 ? null : undefined);
+        .select('id, name');
 
       if (clinicsError) throw clinicsError;
 
@@ -39,19 +24,28 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       const { data: productsData, error: productsError } = await productsQuery;
       if (productsError) throw productsError;
 
-      // Get bookings with date and clinic filters
+      // Get bookings with date and clinic filters - FIXED FOR SUPER ADMIN
       let bookingsQuery = supabase.from('bookings').select('id, clinic_id, created_at');
+      
+      // Only apply clinic filter if specific clinics are selected
       if (filters.clinicIds.length > 0) {
         bookingsQuery = bookingsQuery.in('clinic_id', filters.clinicIds);
       }
+      
       if (filters.startDate) {
         bookingsQuery = bookingsQuery.gte('created_at', filters.startDate);
       }
       if (filters.endDate) {
         bookingsQuery = bookingsQuery.lte('created_at', filters.endDate);
       }
+      
       const { data: bookingsData, error: bookingsError } = await bookingsQuery;
-      if (bookingsError) throw bookingsError;
+      if (bookingsError) {
+        console.error('Error fetching bookings:', bookingsError);
+        throw bookingsError;
+      }
+
+      console.log('Super admin bookings data:', bookingsData?.length || 0, 'bookings found');
 
       // Get leads with date and clinic filters
       let leadsQuery = supabase.from('leads').select('id, clinic_id, created_at');
@@ -120,6 +114,17 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       
       const costPerBooking = totalBookings > 0 ? totalCosts / totalBookings : 0;
       const costPerLead = totalLeads > 0 ? totalCosts / totalLeads : 0;
+
+      console.log('Super admin metrics calculated:', {
+        totalClinics,
+        totalProducts,
+        totalBookings,
+        totalLeads,
+        totalConversations,
+        totalRevenue,
+        costPerBooking,
+        costPerLead
+      });
 
       // Calculate clinic details
       const clinicDetails = clinicsData?.map(clinic => {

@@ -209,7 +209,9 @@ export function Dashboard() {
         
         {/* Main Content */}
         <div className="space-y-6 lg:space-y-8">
-          {!filters.appliedFilters || filters.appliedFilters.clinicIds.length === 0 ? (
+          {/* For super admin, show data even if no clinics selected */}
+          {/* For regular users, require clinic selection */}
+          {!isSuperAdmin && (!filters.appliedFilters || filters.appliedFilters.clinicIds.length === 0) ? (
             <div className="bg-theme-dark-lighter border border-theme-blue/20 rounded-xl p-6 lg:p-8 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                 <BarChart className="h-8 w-8 text-theme-blue" />
