@@ -11,14 +11,8 @@ interface TotalMetricsSectionProps {
 export function TotalMetricsSection({
   unifiedData
 }: TotalMetricsSectionProps) {
-  // Add debugging to see what data we're receiving
-  console.log('TotalMetricsSection - unifiedData:', unifiedData);
-  console.log('TotalMetricsSection - leads count:', unifiedData?.leads?.length);
-  console.log('TotalMetricsSection - bookings count:', unifiedData?.bookings?.length);
-
   // Show metrics if we have any data at all, not just products
   if (!unifiedData) {
-    console.log('TotalMetricsSection - No unifiedData available');
     return null;
   }
 
@@ -43,19 +37,10 @@ export function TotalMetricsSection({
   const totalCostPerBooking = totalBookings > 0 ? totalPaidAmount / totalBookings : null;
   const totalCostPerLead = totalLeads > 0 ? totalPaidAmount / totalLeads : null;
 
-  console.log('TotalMetricsSection - Calculated totals:', {
-    totalLeads,
-    totalBookings,
-    totalConversations,
-    totalEngagedConversations,
-    totalPaidAmount
-  });
-
   // Show the section if we have any meaningful data
   const hasData = totalLeads > 0 || totalBookings > 0 || totalConversations > 0 || totalPaidAmount > 0;
   
   if (!hasData) {
-    console.log('TotalMetricsSection - No meaningful data to display');
     return null;
   }
 
