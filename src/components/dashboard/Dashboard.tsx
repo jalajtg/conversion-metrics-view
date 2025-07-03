@@ -219,8 +219,8 @@ export function Dashboard() {
             </div>
           ) : (
             <>
-              {/* Total Metrics Overview Section */}
-              {dashboardData?.products && dashboardData.products.length > 0 && (
+              {/* Total Metrics Overview Section - Show if we have any data */}
+              {dashboardData && (
                 <TotalMetricsSection unifiedData={dashboardData} />
               )}
 
@@ -231,8 +231,8 @@ export function Dashboard() {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-theme-blue/10 mb-4">
                       <BarChart className="h-8 w-8 text-theme-blue" />
                     </div>
-                    <h3 className="text-lg lg:text-xl font-medium text-white mb-2">No data available</h3>
-                    <p className="text-gray-400 text-sm lg:text-base max-w-md mx-auto">Start adding products, leads, and sales to see your metrics here.</p>
+                    <h3 className="text-lg lg:text-xl font-medium text-white mb-2">No products available</h3>
+                    <p className="text-gray-400 text-sm lg:text-base max-w-md mx-auto">Add products to see detailed product metrics here.</p>
                   </div>
                 ) : (
                   <ProductSection key="unified-products" metrics={null} unifiedData={dashboardData} />

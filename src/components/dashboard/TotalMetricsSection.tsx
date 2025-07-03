@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
@@ -10,35 +11,43 @@ interface TotalMetricsSectionProps {
 export function TotalMetricsSection({
   unifiedData
 }: TotalMetricsSectionProps) {
-  if (!unifiedData || !unifiedData.products || unifiedData.products.length === 0) {
+  // Show metrics if we have any data at all, not just products
+  if (!unifiedData) {
     return null;
   }
 
   const {
-    products,
-    leads,
-    sales,
-    costs,
-    bookings
+    products = [],
+    leads = [],
+    sales = [],
+    costs = [],
+    bookings = [],
+    conversations = []
   } = unifiedData;
 
-  // Calculate totals across all products
-  const totalLeads = leads?.length || 0;
+  // Calculate totals across all available data
+  const totalLeads = leads.length || 0;
+  const totalBookings = bookings.length || 0;
+  const totalConversations = conversations.length || 0;
 
   // Count engaged conversations from leads where engaged: true
-  const totalEngagedConversations = leads?.filter((lead: any) => lead.engaged === true).length || 0;
+  const totalEngagedConversations = leads.filter((lead: any) => lead.engaged === true).length || 0;
 
-  // Count bookings from leads where booked: true
-  const totalBookings = bookings.length || 0;
+  // Calculate total paid amount from sales or products
+  const totalPaidAmount = sales.length > 0 
+    ? sales.reduce((total: number, sale: any) => total + (sale.amount || 0), 0)
+    : products.reduce((total: number, product: any) => total + (product.price || 0), 0);
 
-  // Calculate total paid amount as sum of all product prices
-  const totalPaidAmount = products.reduce((total: number, product: any) => {
-    return total + product.price;
-  }, 0);
+  const totalCosts = costs.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0) || 0;
+  const totalCostPerBooking = totalBookings > 0 ? totalCosts / totalBookings : 0;
+  const totalCostPerLead = totalLeads > 0 ? totalCosts / totalLeads : 0;
 
-  const totalCosts = costs?.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0) || 0;
-  const totalCostPerBooking = totalBookings > 0 ? totalPaidAmount / totalBookings : 0;
-  const totalCostPerLead = totalLeads > 0 ? totalPaidAmount / totalLeads : 0;
+  // Show the section if we have any meaningful data
+  const hasData = totalLeads > 0 || totalBookings > 0 || totalConversations > 0 || totalPaidAmount > 0 || totalCosts > 0;
+  
+  if (!hasData) {
+    return null;
+  }
 
   return (
     <Card className="bg-theme-dark-card border border-theme-blue/20 shadow-xl">
@@ -50,7 +59,7 @@ export function TotalMetricsSection({
           <div className="flex-1">
             <span className="font-semibold text-lg">Total Metrics Overview</span>
             <p className="text-sm text-gray-400 font-normal mt-1">
-              Combined metrics across {products.length} product{products.length !== 1 ? 's' : ''}
+              Combined metrics across all available data
             </p>
           </div>
         </CardTitle>
