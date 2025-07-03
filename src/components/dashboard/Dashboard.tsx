@@ -125,31 +125,48 @@ export function Dashboard() {
     createDummyData();
   }, [clinics, clinicsLoading, dummyDataCreated, refetchClinics, isSuperAdmin]);
 
-  // Auto-select all clinics when they're loaded for the first time
+  // Auto-select all clinics when they're loaded for the first time (disabled for super admin to show all data by default)
   useEffect(() => {
     if (clinics && clinics.length > 0 && !hasAutoSelected) {
       const savedFilters = sessionStorage.getItem(DASHBOARD_FILTERS_KEY);
       
       if (!savedFilters) {
-        // No saved filters, auto-select all clinics
-        console.log("Auto-selecting all clinics");
-        const allClinicIds = clinics.map(clinic => clinic.id);
-        const newFilters = {
-          clinicIds: allClinicIds,
-          selectedMonths: [currentMonth],
-          year: currentYear,
-          pendingChanges: false,
-          appliedFilters: {
+        if (!isSuperAdmin) {
+          // Regular users: auto-select all clinics
+          console.log("Auto-selecting all clinics for regular user");
+          const allClinicIds = clinics.map(clinic => clinic.id);
+          const newFilters = {
             clinicIds: allClinicIds,
             selectedMonths: [currentMonth],
-            year: currentYear
-          }
-        };
-        handleFiltersChange(newFilters);
+            year: currentYear,
+            pendingChanges: false,
+            appliedFilters: {
+              clinicIds: allClinicIds,
+              selectedMonths: [currentMonth],
+              year: currentYear
+            }
+          };
+          handleFiltersChange(newFilters);
+        } else {
+          // Super admin: don't auto-select clinics to show all data by default
+          console.log("Super admin - showing all data by default");
+          const newFilters = {
+            clinicIds: [],
+            selectedMonths: [currentMonth],
+            year: currentYear,
+            pendingChanges: false,
+            appliedFilters: {
+              clinicIds: [],
+              selectedMonths: [currentMonth],
+              year: currentYear
+            }
+          };
+          handleFiltersChange(newFilters);
+        }
       }
       setHasAutoSelected(true);
     }
-  }, [clinics, hasAutoSelected, currentMonth, currentYear]);
+  }, [clinics, hasAutoSelected, currentMonth, currentYear, isSuperAdmin]);
 
   useEffect(() => {
     if (clinicsError) {

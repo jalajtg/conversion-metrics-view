@@ -82,7 +82,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     if (clinicsError) throw clinicsError;
     dashboardData.clinics = clinicsData || [];
 
-    // For super admin, if no clinics are selected, fetch all bookings
+    // For super admin, if no clinics are selected, fetch all data
     // For regular users, return early if no clinics selected
     if (!isSuperAdmin && filters.clinicIds.length === 0) {
       return dashboardData;
@@ -95,9 +95,18 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .select('*')
       .order('booking_time', { ascending: false });
 
-    // Apply clinic filter only if clinics are selected OR if not super admin
-    if (!isSuperAdmin || (isSuperAdmin && filters.clinicIds.length > 0)) {
-      bookingsQuery = bookingsQuery.in('clinic_id', filters.clinicIds);
+    // Apply clinic filter only if clinics are selected AND not super admin, OR if regular user
+    if (!isSuperAdmin) {
+      // Regular users must filter by their selected clinics
+      if (filters.clinicIds.length > 0) {
+        bookingsQuery = bookingsQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      // Super admin: only filter by clinics if specific clinics are selected
+      if (filters.clinicIds.length > 0) {
+        bookingsQuery = bookingsQuery.in('clinic_id', filters.clinicIds);
+      }
+      // If no clinics selected as super admin, fetch ALL bookings
     }
 
     if (dateConditions && dateConditions.length > 0) {
@@ -115,7 +124,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     const { data: bookingsData, error: bookingsError } = await bookingsQuery;
     if (bookingsError) throw bookingsError;
     dashboardData.bookings = bookingsData || [];
-    console.log('Bookings data:', bookingsData);
+    console.log('Bookings data:', bookingsData?.length, 'bookings found');
 
     // Fetch FAQs with optimized query
     console.log('Fetching FAQs...');
@@ -124,9 +133,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .select('*')
       .order('asked_count', { ascending: false });
 
-    // Apply clinic filter only if clinics are selected OR if not super admin
-    if (!isSuperAdmin || (isSuperAdmin && filters.clinicIds.length > 0)) {
-      faqsQuery = faqsQuery.in('clinic_id', filters.clinicIds);
+    // Apply same logic for FAQs
+    if (!isSuperAdmin) {
+      if (filters.clinicIds.length > 0) {
+        faqsQuery = faqsQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      if (filters.clinicIds.length > 0) {
+        faqsQuery = faqsQuery.in('clinic_id', filters.clinicIds);
+      }
     }
 
     if (dateConditions && dateConditions.length > 0) {
@@ -160,9 +175,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
         )
       `);
 
-    // Apply clinic filter only if clinics are selected OR if not super admin
-    if (!isSuperAdmin || (isSuperAdmin && filters.clinicIds.length > 0)) {
-      productsQuery = productsQuery.in('clinic_id', filters.clinicIds);
+    // Apply same logic for products
+    if (!isSuperAdmin) {
+      if (filters.clinicIds.length > 0) {
+        productsQuery = productsQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      if (filters.clinicIds.length > 0) {
+        productsQuery = productsQuery.in('clinic_id', filters.clinicIds);
+      }
     }
 
     // Filter by selected months for products - this is key for month filtering
@@ -172,7 +193,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
 
     const { data: productsData, error: productsError } = await productsQuery;
     if (productsError) throw productsError;
-    console.log('Products data:', productsData);
+    console.log('Products data:', productsData?.length);
     dashboardData.products = (productsData || []).map((item: any) => ({
       id: item.id,
       name: item.product_category?.name || 'Unknown Product',
@@ -189,9 +210,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('leads')
       .select('*');
 
-    // Apply clinic filter only if clinics are selected OR if not super admin
-    if (!isSuperAdmin || (isSuperAdmin && filters.clinicIds.length > 0)) {
-      leadsQuery = leadsQuery.in('clinic_id', filters.clinicIds);
+    // Apply same logic for leads
+    if (!isSuperAdmin) {
+      if (filters.clinicIds.length > 0) {
+        leadsQuery = leadsQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      if (filters.clinicIds.length > 0) {
+        leadsQuery = leadsQuery.in('clinic_id', filters.clinicIds);
+      }
     }
 
     if (dateConditions && dateConditions.length > 0) {
@@ -207,6 +234,7 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     const { data: leadsData, error: leadsError } = await leadsQuery;
     if (leadsError) throw leadsError;
     dashboardData.leads = leadsData || [];
+    console.log('Leads data:', leadsData?.length, 'leads found');
 
     // Fetch sales with optimized query
     console.log('Fetching sales...');
@@ -214,9 +242,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('sales')
       .select('*');
 
-    // Apply clinic filter only if clinics are selected OR if not super admin
-    if (!isSuperAdmin || (isSuperAdmin && filters.clinicIds.length > 0)) {
-      salesQuery = salesQuery.in('clinic_id', filters.clinicIds);
+    // Apply same logic for sales
+    if (!isSuperAdmin) {
+      if (filters.clinicIds.length > 0) {
+        salesQuery = salesQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      if (filters.clinicIds.length > 0) {
+        salesQuery = salesQuery.in('clinic_id', filters.clinicIds);
+      }
     }
 
     if (dateConditions && dateConditions.length > 0) {
@@ -239,9 +273,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('costs')
       .select('*');
 
-    // Apply clinic filter only if clinics are selected OR if not super admin
-    if (!isSuperAdmin || (isSuperAdmin && filters.clinicIds.length > 0)) {
-      costsQuery = costsQuery.in('clinic_id', filters.clinicIds);
+    // Apply same logic for costs
+    if (!isSuperAdmin) {
+      if (filters.clinicIds.length > 0) {
+        costsQuery = costsQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      if (filters.clinicIds.length > 0) {
+        costsQuery = costsQuery.in('clinic_id', filters.clinicIds);
+      }
     }
 
     if (dateConditions && dateConditions.length > 0) {
@@ -264,9 +304,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('conversations')
       .select('*');
 
-    // Apply clinic filter only if clinics are selected OR if not super admin
-    if (!isSuperAdmin || (isSuperAdmin && filters.clinicIds.length > 0)) {
-      conversationsQuery = conversationsQuery.in('clinic_id', filters.clinicIds);
+    // Apply same logic for conversations
+    if (!isSuperAdmin) {
+      if (filters.clinicIds.length > 0) {
+        conversationsQuery = conversationsQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      if (filters.clinicIds.length > 0) {
+        conversationsQuery = conversationsQuery.in('clinic_id', filters.clinicIds);
+      }
     }
 
     if (dateConditions && dateConditions.length > 0) {
@@ -289,9 +335,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       .from('appointments')
       .select('*');
 
-    // Apply clinic filter only if clinics are selected OR if not super admin
-    if (!isSuperAdmin || (isSuperAdmin && filters.clinicIds.length > 0)) {
-      appointmentsQuery = appointmentsQuery.in('clinic_id', filters.clinicIds);
+    // Apply same logic for appointments
+    if (!isSuperAdmin) {
+      if (filters.clinicIds.length > 0) {
+        appointmentsQuery = appointmentsQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      if (filters.clinicIds.length > 0) {
+        appointmentsQuery = appointmentsQuery.in('clinic_id', filters.clinicIds);
+      }
     }
 
     if (dateConditions && dateConditions.length > 0) {

@@ -1,5 +1,7 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
 import type { DashboardFilters } from "@/types/dashboard";
 import { startOfMonth, endOfMonth } from 'date-fns';
 
@@ -49,19 +51,30 @@ const buildPostgRESTDateFilter = (dateConditions: any[], dateField: string = 'bo
 };
 
 export const useBookings = (filters: DashboardFilters) => {
+  const { isSuperAdmin } = useUserRole();
+  
   return useQuery({
-    queryKey: ["bookings", filters],
+    queryKey: ["bookings", filters, isSuperAdmin],
     queryFn: async (): Promise<Booking[]> => {
-      console.log('Fetching bookings with filters:', filters);
+      console.log('Fetching bookings with filters:', filters, 'isSuperAdmin:', isSuperAdmin);
       
       let query = supabase
         .from('bookings')
         .select('*')
         .order('booking_time', { ascending: false });
 
-      // Filter by clinic IDs if specified
-      if (filters.clinicIds && filters.clinicIds.length > 0) {
-        query = query.in('clinic_id', filters.clinicIds);
+      // Filter by clinic IDs based on user role
+      if (!isSuperAdmin) {
+        // Regular users must filter by selected clinics
+        if (filters.clinicIds && filters.clinicIds.length > 0) {
+          query = query.in('clinic_id', filters.clinicIds);
+        }
+      } else {
+        // Super admin: only filter if specific clinics are selected
+        if (filters.clinicIds && filters.clinicIds.length > 0) {
+          query = query.in('clinic_id', filters.clinicIds);
+        }
+        // If no clinics selected as super admin, fetch ALL bookings (no clinic filter)
       }
 
       // Build date conditions
@@ -92,6 +105,6 @@ export const useBookings = (filters: DashboardFilters) => {
       console.log('Bookings fetched:', data?.length || 0);
       return data || [];
     },
-    enabled: filters.clinicIds.length > 0,
+    enabled: isSuperAdmin || filters.clinicIds.length > 0,
   });
 };

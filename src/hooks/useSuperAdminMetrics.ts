@@ -47,7 +47,7 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
 
       console.log('Super admin bookings data:', bookingsData?.length || 0, 'bookings found');
 
-      // Get leads with date and clinic filters
+      // Get leads with date and clinic filters - FIXED FOR SUPER ADMIN
       let leadsQuery = supabase.from('leads').select('id, clinic_id, created_at');
       if (filters.clinicIds.length > 0) {
         leadsQuery = leadsQuery.in('clinic_id', filters.clinicIds);
@@ -60,6 +60,8 @@ export function useSuperAdminMetrics(filters: SuperAdminFilters) {
       }
       const { data: leadsData, error: leadsError } = await leadsQuery;
       if (leadsError) throw leadsError;
+
+      console.log('Super admin leads data:', leadsData?.length || 0, 'leads found');
 
       // Get conversations with date and clinic filters
       let conversationsQuery = supabase.from('conversations').select('id, clinic_id, created_at');
