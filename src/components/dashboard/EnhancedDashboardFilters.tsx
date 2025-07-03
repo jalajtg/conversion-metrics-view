@@ -13,13 +13,15 @@ interface EnhancedDashboardFiltersProps {
   filters: DashboardFilters;
   onFiltersChange: (filters: DashboardFilters) => void;
   onApplyFilters: () => void;
+  isSuperAdmin?: boolean;
 }
 
 export function EnhancedDashboardFilters({ 
   clinics, 
   filters, 
   onFiltersChange, 
-  onApplyFilters 
+  onApplyFilters,
+  isSuperAdmin = false
 }: EnhancedDashboardFiltersProps) {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();

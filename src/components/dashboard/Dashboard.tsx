@@ -49,10 +49,28 @@ export function Dashboard() {
   console.log('Dashboard - Unified data:', unifiedData);
   console.log('Dashboard - Is super admin:', isSuperAdmin);
   console.log('Dashboard - Selected clinics count:', filters.clinicIds.length);
+  console.log('Dashboard - Unified data details:', {
+    leads: unifiedData?.leads?.length,
+    bookings: unifiedData?.bookings?.length,
+    products: unifiedData?.products?.length,
+    faqs: unifiedData?.faqs?.length
+  });
 
   const handleFiltersChange = (newFilters: DashboardFilters) => {
     console.log('Dashboard - Filters changed:', newFilters);
     setFilters(newFilters);
+  };
+
+  const handleApplyFilters = () => {
+    setFilters(prev => ({
+      ...prev,
+      appliedFilters: {
+        clinicIds: prev.clinicIds,
+        selectedMonths: prev.selectedMonths,
+        year: prev.year,
+      },
+      pendingChanges: false
+    }));
   };
 
   if (clinicsLoading) {
@@ -80,6 +98,7 @@ export function Dashboard() {
             clinics={clinics}
             filters={filters}
             onFiltersChange={handleFiltersChange}
+            onApplyFilters={handleApplyFilters}
             isSuperAdmin={isSuperAdmin}
           />
         </div>
@@ -98,10 +117,10 @@ export function Dashboard() {
               <ProductSection unifiedData={unifiedData} />
 
               {/* FAQ Section */}
-              <FAQSection unifiedData={unifiedData} />
+              <FAQSection filters={filters} unifiedData={unifiedData} />
 
               {/* Bookings Section */}
-              <BookingsSection unifiedData={unifiedData} />
+              <BookingsSection filters={filters} unifiedData={unifiedData} />
             </>
           )}
         </div>
