@@ -33,7 +33,7 @@ export function TotalMetricsSection({
   // Count engaged conversations from leads where engaged: true
   const totalEngagedConversations = leads.filter((lead: any) => lead.engaged === true).length || 0;
 
- const totalPaidAmount = products.reduce((total: number, product: any) => total + (product.price || 0), 0);
+  const totalPaidAmount = products.reduce((total: number, product: any) => total + (product.price || 0), 0);
   const totalCostPerBooking = totalBookings > 0 ? totalPaidAmount / totalBookings : null;
   const totalCostPerLead = totalLeads > 0 ? totalPaidAmount / totalLeads : null;
 
@@ -98,16 +98,14 @@ export function TotalMetricsSection({
             />
             <MetricCard 
               title="Cost per Booking" 
-             // value={`$${totalCostPerBooking.toFixed(2)}`} 
-               value={totalCostPerBooking !== null ? `$${totalCostPerBooking.toFixed(2)}` : 'N/A'} 
+              value={totalCostPerBooking !== null ? `$${totalCostPerBooking.toFixed(2)}` : 'N/A'} 
               icon={<Calculator className="h-4 w-4" />} 
               isHovered={true}
               className="shadow-md hover:shadow-lg transition-shadow duration-300"
             />
             <MetricCard 
               title="Cost per Lead" 
-              {/* value={`$${totalCostPerLead.toFixed(2)}`}  */}
-             value={totalCostPerLead !== null ? `$${totalCostPerLead.toFixed(2)}` : 'N/A'} 
+              value={totalCostPerLead !== null ? `$${totalCostPerLead.toFixed(2)}` : 'N/A'} 
               icon={<Calculator className="h-4 w-4" />} 
               isHovered={true}
               className="shadow-md hover:shadow-lg transition-shadow duration-300"
