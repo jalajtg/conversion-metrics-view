@@ -52,7 +52,6 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Root route - directly show dashboard for authenticated users */}
       <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Index />} />
       <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/dashboard" replace />} />
       
