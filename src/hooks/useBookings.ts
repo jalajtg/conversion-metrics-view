@@ -45,6 +45,21 @@ const buildPostgRESTDateFilter = (dateConditions: any[], dateField: string = 'bo
   return `or(${orConditions})`;
 };
 
+// Helper to build date ranges for booking time filtering
+const buildBookingDateFilter = (startDate?: string, endDate?: string) => {
+  const conditions = [];
+  
+  if (startDate) {
+    conditions.push(`booking_time.gte.${startDate}T00:00:00.000Z`);
+  }
+  
+  if (endDate) {
+    conditions.push(`booking_time.lte.${endDate}T23:59:59.999Z`);
+  }
+  
+  return conditions;
+};
+
 export const useBookings = (filters: DashboardFilters) => {
   return useQuery({
     queryKey: ["bookings", filters],
@@ -59,18 +74,43 @@ export const useBookings = (filters: DashboardFilters) => {
         query = query.in('clinic_id', filters.clinicIds);
       }
 
-      // Build date conditions
-      const dateConditions = buildDateFilter(filters.selectedMonths, filters.year);
-      if (filters.year && dateConditions.length > 0) {
-        if (dateConditions.length === 1) {
-          // Only one range (whole year or one month): use gte/lte
-          const { start, end } = dateConditions[0];
-          query = query.gte('booking_time', start).lte('booking_time', end);
-        } else {
-          // Multiple months: use or
-          const dateFilter = buildPostgRESTDateFilter(dateConditions, 'booking_time');
-          if (dateFilter) {
-            query = query.or(dateFilter);
+      // Build booking time date conditions
+      if (filters.bookingStartDate || filters.bookingEndDate) {
+        const bookingDateConditions = buildBookingDateFilter(filters.bookingStartDate, filters.bookingEndDate);
+        
+        if (bookingDateConditions.length > 0) {
+          if (bookingDateConditions.length === 1) {
+            // Single condition
+            const condition = bookingDateConditions[0];
+            if (condition.includes('.gte.')) {
+              const dateValue = condition.split('.gte.')[1];
+              query = query.gte('booking_time', dateValue);
+            } else if (condition.includes('.lte.')) {
+              const dateValue = condition.split('.lte.')[1];
+              query = query.lte('booking_time', dateValue);
+            }
+          } else {
+            // Multiple conditions - apply both start and end date
+            if (filters.bookingStartDate) {
+              query = query.gte('booking_time', `${filters.bookingStartDate}T00:00:00.000Z`);
+            }
+            if (filters.bookingEndDate) {
+              query = query.lte('booking_time', `${filters.bookingEndDate}T23:59:59.999Z`);
+            }
+          }
+        }
+      } else {
+        // Original date filtering logic for selected months and year
+        const dateConditions = buildDateFilter(filters.selectedMonths, filters.year);
+        if (filters.year && dateConditions.length > 0) {
+          if (dateConditions.length === 1) {
+            const { start, end } = dateConditions[0];
+            query = query.gte('booking_time', start).lte('booking_time', end);
+          } else {
+            const dateFilter = buildPostgRESTDateFilter(dateConditions, 'booking_time');
+            if (dateFilter) {
+              query = query.or(dateFilter);
+            }
           }
         }
       }
