@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MultiSelectDropdown } from "@/components/ui/multi-select-dropdown";
 import { Input } from "@/components/ui/input";
-import { useClinics } from '@/hooks/useClinics';
+import { useAllClinics } from '@/hooks/useAllClinics';
 import type { SuperAdminFilters } from '@/types/admin';
 
 interface SuperAdminFiltersProps {
@@ -12,7 +11,7 @@ interface SuperAdminFiltersProps {
 }
 
 export function SuperAdminFilters({ filters, onFiltersChange }: SuperAdminFiltersProps) {
-  const { data: clinics } = useClinics();
+  const { data: clinics } = useAllClinics();
 
   const clinicOptions = clinics?.map(clinic => ({
     value: clinic.id,

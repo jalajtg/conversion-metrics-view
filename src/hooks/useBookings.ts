@@ -1,10 +1,8 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import type { DashboardFilters } from "@/types/dashboard";
 import { startOfMonth, endOfMonth } from 'date-fns';
-
 interface Booking {
   id: string;
   clinic_id: string | null;
@@ -14,7 +12,6 @@ interface Booking {
   booking_time: string;
   created_at: string;
 }
-
 // Helper to build date ranges for selected months/year
 const buildDateFilter = (selectedMonths: number[], year: number) => {
   if (!year) return [];
@@ -93,9 +90,8 @@ export const useBookings = (filters: DashboardFilters) => {
           if (dateFilter) {
             query = query.or(dateFilter);
           }
-        }
+        } 
       }
-
       const { data, error } = await query;
 
       if (error) {
