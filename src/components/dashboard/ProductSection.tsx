@@ -54,8 +54,10 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
       // Count engaged conversations directly from leads where engaged: true
       const engagedConversationsCount = productLeads.filter((lead: any) => lead.engaged === true).length;
       
-      // Count bookings from leads where booked: true
-      const productBookings = bookings.filter((booking: any) => booking.product_id === product.id).length;
+      // Count bookings from both the bookings table and leads where booked: true
+      const bookingsFromTable = bookings.filter((booking: any) => booking.product_id === product.id).length;
+      const bookingsFromLeads = productLeads.filter((lead: any) => lead.booked === true).length;
+      const productBookings = bookingsFromTable + bookingsFromLeads;
 
       // Paid amount is simply the product price
       const paidAmount = product.price;
@@ -71,7 +73,7 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
         paidAmount,
         verbalAppointments,
         bookings: productBookings,
-        costPerBooking: bookings > 0 ? paidAmount / bookings : 0,
+        costPerBooking: productBookings > 0 ? paidAmount / productBookings : 0,
         costPerLead: productLeads.length > 0 ? paidAmount / productLeads.length : 0,
       };
 

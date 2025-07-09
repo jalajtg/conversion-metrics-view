@@ -28,7 +28,11 @@ export function TotalMetricsSection({
   // Calculate totals across all available data (only count actual leads where lead = TRUE)
   const actualLeads = leads.filter((lead: any) => lead.lead === true) || [];
   const totalLeads = actualLeads.length || 0;
-  const totalBookings = bookings.length || 0;
+  
+  // Count bookings from both the bookings table and leads where booked = true
+  const bookingsFromLeads = actualLeads.filter((lead: any) => lead.booked === true).length || 0;
+  const totalBookings = (bookings.length || 0) + bookingsFromLeads;
+  
   const totalConversations = conversations.length || 0;
 
   // Count engaged conversations from leads where engaged: true
