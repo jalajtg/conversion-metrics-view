@@ -151,13 +151,36 @@ serve(async (req) => {
 
       for (const record of batch) {
         try {
-          // Validate clinic_id exists
+          // Validate clinic_id - it should be a valid UUID format
           if (!record.clinic_id) {
             result.errors.push(`Missing clinic_id for ${record.client_name}`);
             result.details.push({
               name: record.client_name,
               status: 'error',
               message: 'Missing clinic_id'
+            });
+            continue;
+          }
+
+          // Validate clinic_id is a valid UUID format
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+          if (!uuidRegex.test(record.clinic_id)) {
+            result.errors.push(`Invalid clinic_id format for ${record.client_name}: ${record.clinic_id}`);
+            result.details.push({
+              name: record.client_name,
+              status: 'error',
+              message: `Invalid clinic_id format: ${record.clinic_id}`
+            });
+            continue;
+          }
+
+          // Validate product_id if provided
+          if (record.product_id && !uuidRegex.test(record.product_id)) {
+            result.errors.push(`Invalid product_id format for ${record.client_name}: ${record.product_id}`);
+            result.details.push({
+              name: record.client_name,
+              status: 'error',
+              message: `Invalid product_id format: ${record.product_id}`
             });
             continue;
           }
