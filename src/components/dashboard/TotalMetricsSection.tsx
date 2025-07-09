@@ -25,13 +25,14 @@ export function TotalMetricsSection({
     conversations = []
   } = unifiedData;
 
-  // Calculate totals across all available data
-  const totalLeads = leads.length || 0;
+  // Calculate totals across all available data (only count actual leads where lead = TRUE)
+  const actualLeads = leads.filter((lead: any) => lead.lead === true) || [];
+  const totalLeads = actualLeads.length || 0;
   const totalBookings = bookings.length || 0;
   const totalConversations = conversations.length || 0;
 
   // Count engaged conversations from leads where engaged: true
-  const totalEngagedConversations = leads.filter((lead: any) => lead.engaged === true).length || 0;
+  const totalEngagedConversations = actualLeads.filter((lead: any) => lead.engaged === true).length || 0;
 
   const totalPaidAmount = products.reduce((total: number, product: any) => total + (product.price || 0), 0);
   const totalCostPerBooking = totalBookings > 0 ? totalPaidAmount / totalBookings : null;
