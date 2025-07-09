@@ -117,8 +117,9 @@ serve(async (req) => {
     // Batch size for processing
     const BATCH_SIZE = 100;
     
-    // Get all existing leads with old_user_id or email for comparison
+    // Get all existing leads for deduplication
     const existingLeadsMap = new Map<string, string>();
+    const existingEmailMap = new Map<string, string>();
     
     try {
       const { data: existingLeads, error: fetchError } = await supabaseClient
@@ -127,18 +128,34 @@ serve(async (req) => {
         
       if (fetchError) {
         console.error('Error fetching existing leads:', fetchError);
+        return new Response(JSON.stringify({ 
+          error: 'Failed to fetch existing leads for deduplication',
+          details: fetchError.message 
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       } else {
+        console.log(`Found ${existingLeads?.length || 0} existing leads for deduplication`);
         existingLeads?.forEach(lead => {
           if (lead.old_user_id) {
-            existingLeadsMap.set(`old_id:${lead.old_user_id}`, lead.id);
+            existingLeadsMap.set(lead.old_user_id, lead.id);
           }
-          if (lead.email) {
-            existingLeadsMap.set(`email:${lead.email}`, lead.id);
+          if (lead.email && lead.email.trim()) {
+            existingEmailMap.set(lead.email.toLowerCase().trim(), lead.id);
           }
         });
+        console.log(`Built deduplication maps: ${existingLeadsMap.size} old_user_ids, ${existingEmailMap.size} emails`);
       }
     } catch (error) {
       console.error('Error building existing leads map:', error);
+      return new Response(JSON.stringify({ 
+        error: 'Failed to build deduplication map',
+        details: error.message 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     // Process records in batches
@@ -201,13 +218,23 @@ serve(async (req) => {
             created_at: record.created_at
           };
 
-          // Check if lead exists by old_user_id or email
+          // Check if lead exists by old_user_id (primary) or email (fallback)
           let existingLeadId = null;
-          if (record.old_user_id) {
-            existingLeadId = existingLeadsMap.get(`old_id:${record.old_user_id}`);
+          
+          // Priority 1: Check by old_user_id if provided
+          if (record.old_user_id && record.old_user_id.trim()) {
+            existingLeadId = existingLeadsMap.get(record.old_user_id.trim());
+            if (existingLeadId) {
+              console.log(`Found existing lead by old_user_id: ${record.old_user_id} -> ${existingLeadId}`);
+            }
           }
-          if (!existingLeadId && record.email) {
-            existingLeadId = existingLeadsMap.get(`email:${record.email}`);
+          
+          // Priority 2: Check by email if old_user_id didn't match and email is provided
+          if (!existingLeadId && record.email && record.email.trim()) {
+            existingLeadId = existingEmailMap.get(record.email.toLowerCase().trim());
+            if (existingLeadId) {
+              console.log(`Found existing lead by email: ${record.email} -> ${existingLeadId}`);
+            }
           }
 
           if (existingLeadId) {
