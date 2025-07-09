@@ -25,8 +25,11 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
     console.log('Products:', products, leads, sales, costs, bookings);
 
     const productSections = products.map((product: any, index: number) => {
-      // Filter leads by matching direct ID, old product IDs, and automation codes
+      // Filter leads by matching direct ID, old product IDs, and automation codes (only count leads where lead = TRUE)
       const productLeads = leads?.filter((lead: any) => {
+        // Only count actual leads (where lead = TRUE)
+        if (!lead.lead) return false;
+        
         // First try direct ID match (for any updated records)
         if (lead.product_id === product.id) return true;
         
