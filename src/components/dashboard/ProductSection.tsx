@@ -59,8 +59,12 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
       const bookingsFromLeads = productLeads.filter((lead: any) => lead.booked === true).length;
       const productBookings = bookingsFromTable + bookingsFromLeads;
 
-      // Paid amount is simply the product price
-      const paidAmount = product.price;
+      // Calculate price relative to current day in month
+      const currentDate = new Date();
+      const currentDay = currentDate.getDate();
+      const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+      const dayRatio = currentDay / daysInMonth;
+      const paidAmount = product.price * dayRatio;
       
       const totalCosts = productCosts.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0);
       

@@ -38,7 +38,12 @@ export function TotalMetricsSection({
   // Count engaged conversations from leads where engaged: true
   const totalEngagedConversations = actualLeads.filter((lead: any) => lead.engaged === true).length || 0;
 
-  const totalPaidAmount = products.reduce((total: number, product: any) => total + (product.price || 0), 0);
+  // Calculate total paid amount relative to current day in month
+  const currentDate = new Date();
+  const currentDay = currentDate.getDate();
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  const dayRatio = currentDay / daysInMonth;
+  const totalPaidAmount = products.reduce((total: number, product: any) => total + ((product.price || 0) * dayRatio), 0);
   const totalCostPerBooking = totalBookings > 0 ? totalPaidAmount / totalBookings : null;
   const totalCostPerLead = totalLeads > 0 ? totalPaidAmount / totalLeads : null;
 
