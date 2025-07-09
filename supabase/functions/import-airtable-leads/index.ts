@@ -116,165 +116,186 @@ serve(async (req) => {
 
     const leadRecords = airtableData as LeadRecord[];
     
-    // Process each record with bulletproof UPSERT
-    for (const record of leadRecords) {
-      try {
-        // Validate required data
-        if (!record.client_name?.trim()) {
-          result.errors.push('Missing client_name');
-          result.details.push({
-            name: record.client_name || 'Unknown',
-            status: 'error',
-            message: 'Missing client_name'
-          });
-          continue;
-        }
+    // Process records in batches to avoid timeouts
+    const BATCH_SIZE = 50;
+    const batches = [];
+    
+    for (let i = 0; i < leadRecords.length; i += BATCH_SIZE) {
+      batches.push(leadRecords.slice(i, i + BATCH_SIZE));
+    }
+    
+    console.log(`Processing ${leadRecords.length} records in ${batches.length} batches of ${BATCH_SIZE}`);
 
-        // Validate UUIDs if provided
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        
-        if (record.clinic_id && !uuidRegex.test(record.clinic_id)) {
-          result.errors.push(`Invalid clinic_id format for ${record.client_name}`);
-          result.details.push({
-            name: record.client_name,
-            status: 'error',
-            message: 'Invalid clinic_id format'
-          });
-          continue;
-        }
+    // Process each batch
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex];
+      console.log(`Processing batch ${batchIndex + 1}/${batches.length}`);
+      
+      // Process batch records in parallel
+      const batchPromises = batch.map(async (record) => {
+        try {
+          // Validate required data
+          if (!record.client_name?.trim()) {
+            return {
+              error: 'Missing client_name',
+              name: record.client_name || 'Unknown',
+              status: 'error' as const,
+              message: 'Missing client_name'
+            };
+          }
 
-        if (record.product_id && !uuidRegex.test(record.product_id)) {
-          result.errors.push(`Invalid product_id format for ${record.client_name}`);
-          result.details.push({
-            name: record.client_name,
-            status: 'error',
-            message: 'Invalid product_id format'
-          });
-          continue;
-        }
-
-        // Prepare lead data
-        const leadData = {
-          product_id: record.product_id || null,
-          client_name: record.client_name.trim(),
-          email: record.email?.trim() || null,
-          phone: record.phone?.trim() || null,
-          clinic_id: record.clinic_id || null,
-          engaged: record.engaged ?? false,
-          lead: record.lead ?? false,
-          booked: record.booked ?? false,
-          booking: record.booking || null,
-          old_user_id: record.old_user_id?.trim() || null,
-          automation: record.automation || null,
-          created_at: record.created_at
-        };
-
-        // BULLETPROOF UPSERT LOGIC
-        let upsertResult;
-        
-        if (leadData.old_user_id) {
-          // Priority 1: UPSERT by old_user_id (guaranteed unique now)
-          console.log(`Upserting by old_user_id: ${leadData.old_user_id}`);
+          // Validate UUIDs if provided
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
           
-          upsertResult = await supabaseClient
-            .from('leads')
-            .upsert(leadData, { 
-              onConflict: 'old_user_id',
-              ignoreDuplicates: false 
-            })
-            .select('id');
+          if (record.clinic_id && !uuidRegex.test(record.clinic_id)) {
+            return {
+              error: `Invalid clinic_id format for ${record.client_name}`,
+              name: record.client_name,
+              status: 'error' as const,
+              message: 'Invalid clinic_id format'
+            };
+          }
+
+          if (record.product_id && !uuidRegex.test(record.product_id)) {
+            return {
+              error: `Invalid product_id format for ${record.client_name}`,
+              name: record.client_name,
+              status: 'error' as const,
+              message: 'Invalid product_id format'
+            };
+          }
+
+          // Prepare lead data
+          const leadData = {
+            product_id: record.product_id || null,
+            client_name: record.client_name.trim(),
+            email: record.email?.trim() || null,
+            phone: record.phone?.trim() || null,
+            clinic_id: record.clinic_id || null,
+            engaged: record.engaged ?? false,
+            lead: record.lead ?? false,
+            booked: record.booked ?? false,
+            booking: record.booking || null,
+            old_user_id: record.old_user_id?.trim() || null,
+            automation: record.automation || null,
+            created_at: record.created_at
+          };
+
+          // BULLETPROOF UPSERT LOGIC
+          let upsertResult;
+          let wasUpdate = false;
+          
+          if (leadData.old_user_id) {
+            // Priority 1: UPSERT by old_user_id (guaranteed unique now)
+            upsertResult = await supabaseClient
+              .from('leads')
+              .upsert(leadData, { 
+                onConflict: 'old_user_id',
+                ignoreDuplicates: false 
+              })
+              .select('id');
+            wasUpdate = true; // Assume update for old_user_id conflicts
+              
+          } else {
+            // Priority 2-4: Check for existing by email, phone, then name
+            let existingLead = null;
             
-        } else {
-          // Priority 2-4: Check for existing by email, phone, then name
-          let existingLead = null;
-          
-          if (leadData.email) {
-            console.log(`Checking existing by email: ${leadData.email}`);
-            const { data } = await supabaseClient
-              .from('leads')
-              .select('id')
-              .eq('email', leadData.email)
-              .limit(1)
-              .single();
-            existingLead = data;
+            if (leadData.email) {
+              const { data } = await supabaseClient
+                .from('leads')
+                .select('id')
+                .eq('email', leadData.email)
+                .limit(1)
+                .maybeSingle();
+              existingLead = data;
+            }
+            
+            if (!existingLead && leadData.phone) {
+              const { data } = await supabaseClient
+                .from('leads')
+                .select('id')
+                .eq('phone', leadData.phone)
+                .limit(1)
+                .maybeSingle();
+              existingLead = data;
+            }
+            
+            if (!existingLead && leadData.client_name) {
+              const { data } = await supabaseClient
+                .from('leads')
+                .select('id')
+                .eq('client_name', leadData.client_name)
+                .limit(1)
+                .maybeSingle();
+              existingLead = data;
+            }
+            
+            if (existingLead) {
+              // Update existing record
+              upsertResult = await supabaseClient
+                .from('leads')
+                .update(leadData)
+                .eq('id', existingLead.id)
+                .select('id');
+              wasUpdate = true;
+            } else {
+              // Insert new record
+              upsertResult = await supabaseClient
+                .from('leads')
+                .insert(leadData)
+                .select('id');
+              wasUpdate = false;
+            }
           }
-          
-          if (!existingLead && leadData.phone) {
-            console.log(`Checking existing by phone: ${leadData.phone}`);
-            const { data } = await supabaseClient
-              .from('leads')
-              .select('id')
-              .eq('phone', leadData.phone)
-              .limit(1)
-              .single();
-            existingLead = data;
-          }
-          
-          if (!existingLead && leadData.client_name) {
-            console.log(`Checking existing by name: ${leadData.client_name}`);
-            const { data } = await supabaseClient
-              .from('leads')
-              .select('id')
-              .eq('client_name', leadData.client_name)
-              .limit(1)
-              .single();
-            existingLead = data;
-          }
-          
-          if (existingLead) {
-            // Update existing record
-            console.log(`Updating existing lead: ${existingLead.id}`);
-            upsertResult = await supabaseClient
-              .from('leads')
-              .update(leadData)
-              .eq('id', existingLead.id)
-              .select('id');
-          } else {
-            // Insert new record
-            console.log(`Inserting new lead: ${leadData.client_name}`);
-            upsertResult = await supabaseClient
-              .from('leads')
-              .insert(leadData)
-              .select('id');
-          }
-        }
 
-        // Handle result
-        if (upsertResult.error) {
-          console.error(`Upsert error for ${record.client_name}:`, upsertResult.error);
-          result.errors.push(`Failed to process ${record.client_name}: ${upsertResult.error.message}`);
-          result.details.push({
-            name: record.client_name,
-            status: 'error',
-            message: upsertResult.error.message
-          });
-        } else {
-          // Determine if it was insert or update based on the operation
-          const wasUpdate = leadData.old_user_id ? 'updated' : (existingLead ? 'updated' : 'created');
-          
-          if (wasUpdate === 'updated') {
-            result.updatedLeads++;
+          // Handle result
+          if (upsertResult.error) {
+            return {
+              error: `Failed to process ${record.client_name}: ${upsertResult.error.message}`,
+              name: record.client_name,
+              status: 'error' as const,
+              message: upsertResult.error.message
+            };
           } else {
-            result.newLeads++;
+            return {
+              name: record.client_name,
+              status: wasUpdate ? 'updated' as const : 'created' as const
+            };
           }
-          
-          result.details.push({
-            name: record.client_name,
-            status: wasUpdate
-          });
-          
-          console.log(`Successfully ${wasUpdate} lead: ${record.client_name}`);
-        }
 
-      } catch (error) {
-        console.error(`Processing error for ${record.client_name}:`, error);
-        result.errors.push(`Error processing ${record.client_name}: ${error.message}`);
+        } catch (error) {
+          return {
+            error: `Error processing ${record.client_name}: ${error.message}`,
+            name: record.client_name,
+            status: 'error' as const,
+            message: error.message
+          };
+        }
+      });
+
+      // Wait for batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      
+      // Process batch results
+      for (const batchResult of batchResults) {
+        if (batchResult.error) {
+          result.errors.push(batchResult.error);
+        }
+        
+        if (batchResult.status === 'updated') {
+          result.updatedLeads++;
+        } else if (batchResult.status === 'created') {
+          result.newLeads++;
+        }
+        
         result.details.push({
-          name: record.client_name,
-          status: 'error',
-          message: error.message
+          name: batchResult.name,
+          status: batchResult.status,
+          message: batchResult.message
         });
       }
+      
+      console.log(`Batch ${batchIndex + 1} completed: ${batchResults.length} records processed`);
     }
 
     result.success = result.errors.length === 0;
