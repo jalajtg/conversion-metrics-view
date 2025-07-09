@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.dedupe-leads]
 verify_jwt = true
+
+[functions.add-booking]
+verify_jwt = false
