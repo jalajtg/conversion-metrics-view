@@ -22,6 +22,7 @@ import Users from '@/pages/Users';
 import ProductReplicationPage from '@/pages/ProductReplication';
 import AddClinicPage from '@/pages/AddClinic';
 import EditClinicPage from '@/pages/EditClinic';
+import ImportLeads from '@/pages/ImportLeads';
 import FAQ from '@/pages/FAQ';
 import NotFound from '@/pages/NotFound';
 
@@ -72,6 +73,7 @@ function AppRoutes() {
           <Route path="edit-clinic/:id" element={<EditClinicPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="product-replication" element={<ProductReplicationPage />} />
+          <Route path="import-leads" element={<ImportLeads />} />
         </Route>
       </Route>
 

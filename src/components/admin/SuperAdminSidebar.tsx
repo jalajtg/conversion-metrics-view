@@ -2,7 +2,7 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { LayoutDashboard, LogOut, Building2, Package, Users } from 'lucide-react';
+import { LayoutDashboard, LogOut, Building2, Package, Users, Upload } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function SuperAdminSidebar() {
@@ -68,6 +68,15 @@ export function SuperAdminSidebar() {
                   <Link to="/super-admin/add-clinic" className={isActive('/super-admin/add-clinic') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
                     <Building2 />
                     <span>Add Clinic</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive('/super-admin/import-leads')} className="hover:bg-theme-dark-card hover:text-theme-blue mx-2">
+                  <Link to="/super-admin/import-leads" className={isActive('/super-admin/import-leads') ? "bg-theme-dark-card text-theme-blue" : "text-white"}>
+                    <Upload />
+                    <span>Import Leads</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
