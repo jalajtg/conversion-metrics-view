@@ -134,15 +134,7 @@ serve(async (req) => {
       // Process batch records in parallel
       const batchPromises = batch.map(async (record) => {
         try {
-          // Validate required data
-          if (!record.client_name?.trim()) {
-            return {
-              error: 'Missing client_name',
-              name: record.client_name || 'Unknown',
-              status: 'error' as const,
-              message: 'Missing client_name'
-            };
-          }
+          // Allow records without client_name - just set to null
 
           // Validate UUIDs if provided
           const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -168,7 +160,7 @@ serve(async (req) => {
           // Prepare lead data
           const leadData = {
             product_id: record.product_id || null,
-            client_name: record.client_name.trim(),
+            client_name: record.client_name?.trim() || null,
             email: record.email?.trim() || null,
             phone: record.phone?.trim() || null,
             clinic_id: record.clinic_id || null,
