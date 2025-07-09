@@ -32,6 +32,8 @@ export default function ImportLeads() {
   const [webhookSecret, setWebhookSecret] = useState('');
   const [zapierUrl, setZapierUrl] = useState('');
   const [testingWebhook, setTestingWebhook] = useState(false);
+  const [deduping, setDeduping] = useState(false);
+  const [dedupeResult, setDedupeResult] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -174,6 +176,34 @@ export default function ImportLeads() {
       });
     } finally {
       setTestingWebhook(false);
+    }
+  };
+
+  const handleDedupe = async () => {
+    setDeduping(true);
+    setDedupeResult(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('dedupe-leads');
+
+      if (error) {
+        throw error;
+      }
+
+      setDedupeResult(data);
+      toast({
+        title: "Deduplication completed",
+        description: `${data.duplicatesRemoved} duplicates removed`,
+      });
+    } catch (error) {
+      console.error('Deduplication error:', error);
+      toast({
+        title: "Deduplication failed",
+        description: error.message || "An error occurred during deduplication",
+        variant: "destructive",
+      });
+    } finally {
+      setDeduping(false);
     }
   };
 
@@ -470,6 +500,86 @@ export default function ImportLeads() {
           </CardContent>
         </Card>
       )}
+
+      {/* Deduplication Section */}
+      <Card className="bg-theme-dark-card border-gray-800">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-orange-400" />
+            Lead Deduplication
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-gray-300 text-sm">
+            Remove duplicate leads from the database. This will keep the most recent and complete record for each duplicate group.
+          </div>
+          
+          <Button 
+            onClick={handleDedupe} 
+            disabled={deduping}
+            className="w-full bg-orange-600 hover:bg-orange-700"
+          >
+            {deduping ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Deduplicating...
+              </>
+            ) : (
+              <>
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Remove Duplicate Leads
+              </>
+            )}
+          </Button>
+
+          {dedupeResult && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-orange-500" />
+                  <span className="text-gray-300">Duplicates Found: </span>
+                  <Badge variant="secondary">{dedupeResult.duplicatesFound}</Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="text-gray-300">Duplicates Removed: </span>
+                  <Badge variant="secondary">{dedupeResult.duplicatesRemoved}</Badge>
+                </div>
+              </div>
+
+              {dedupeResult.errors?.length > 0 && (
+                <Alert className="bg-red-500/10 border-red-500/20">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <AlertDescription className="text-red-300">
+                    {dedupeResult.errors.length} error(s) occurred during deduplication
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {dedupeResult.details?.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-gray-300">Deduplication Details:</Label>
+                  <div className="max-h-40 overflow-y-auto space-y-1">
+                    {dedupeResult.details.map((detail: any, index: number) => (
+                      <div key={index} className="p-2 bg-theme-dark rounded text-xs">
+                        <div className="text-gray-300">
+                          <strong>Key:</strong> {detail.key}
+                        </div>
+                        <div className="text-gray-400">
+                          Found {detail.duplicateCount} duplicates, kept: {detail.keptRecord}
+                        </div>
+                        <div className="text-gray-500">
+                          Removed: {detail.removedRecords?.length || 0} records
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
