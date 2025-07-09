@@ -95,7 +95,7 @@ serve(async (req) => {
       }
     }
     
-    console.log('Starting import process...');
+    console.log('Starting bulletproof import process...');
     
     if (!airtableData || !Array.isArray(airtableData)) {
       return new Response(JSON.stringify({ error: 'Invalid lead data' }), {
@@ -104,7 +104,7 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Processing ${airtableData.length} leads...`);
+    console.log(`Processing ${airtableData.length} leads with UPSERT logic...`);
 
     const result: ImportResult = {
       success: true,
@@ -116,227 +116,170 @@ serve(async (req) => {
 
     const leadRecords = airtableData as LeadRecord[];
     
-    // Batch size for processing
-    const BATCH_SIZE = 100;
-    
-    // Get all existing leads for deduplication
-    const existingLeadsMap = new Map<string, string>();
-    const existingEmailMap = new Map<string, string>();
-    
-    try {
-      console.log('Fetching existing leads for deduplication...');
-      const { data: existingLeads, error: fetchError } = await supabaseClient
-        .from('leads')
-        .select('id, old_user_id, email, client_name');
+    // Process each record with bulletproof UPSERT
+    for (const record of leadRecords) {
+      try {
+        // Validate required data
+        if (!record.client_name?.trim()) {
+          result.errors.push('Missing client_name');
+          result.details.push({
+            name: record.client_name || 'Unknown',
+            status: 'error',
+            message: 'Missing client_name'
+          });
+          continue;
+        }
+
+        // Validate UUIDs if provided
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
         
-      if (fetchError) {
-        console.error('Error fetching existing leads:', fetchError);
-        return new Response(JSON.stringify({ 
-          error: 'Failed to fetch existing leads for deduplication',
-          details: fetchError.message 
-        }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      } else {
-        console.log(`Found ${existingLeads?.length || 0} existing leads for deduplication`);
-        existingLeads?.forEach(lead => {
-          if (lead.old_user_id) {
-            existingLeadsMap.set(lead.old_user_id, lead.id);
-          }
-          if (lead.email && lead.email.trim()) {
-            existingEmailMap.set(lead.email.toLowerCase().trim(), lead.id);
-          }
-        });
-        console.log(`Built deduplication maps: ${existingLeadsMap.size} old_user_ids, ${existingEmailMap.size} emails`);
-      }
-    } catch (error) {
-      console.error('Error building existing leads map:', error);
-      return new Response(JSON.stringify({ 
-        error: 'Failed to build deduplication map',
-        details: error.message 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Process records in batches
-    for (let i = 0; i < leadRecords.length; i += BATCH_SIZE) {
-      const batch = leadRecords.slice(i, i + BATCH_SIZE);
-      const newLeads: any[] = [];
-      
-      console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(leadRecords.length / BATCH_SIZE)}`);
-
-      for (const record of batch) {
-        try {
-          // Validate clinic_id - it should be a valid UUID format
-          if (!record.clinic_id) {
-            result.errors.push(`Missing clinic_id for ${record.client_name}`);
-            result.details.push({
-              name: record.client_name,
-              status: 'error',
-              message: 'Missing clinic_id'
-            });
-            continue;
-          }
-
-          // Validate clinic_id is a valid UUID format
-          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-          if (!uuidRegex.test(record.clinic_id)) {
-            result.errors.push(`Invalid clinic_id format for ${record.client_name}: ${record.clinic_id}`);
-            result.details.push({
-              name: record.client_name,
-              status: 'error',
-              message: `Invalid clinic_id format: ${record.clinic_id}`
-            });
-            continue;
-          }
-
-          // Validate product_id if provided
-          if (record.product_id && !uuidRegex.test(record.product_id)) {
-            result.errors.push(`Invalid product_id format for ${record.client_name}: ${record.product_id}`);
-            result.details.push({
-              name: record.client_name,
-              status: 'error',
-              message: `Invalid product_id format: ${record.product_id}`
-            });
-            continue;
-          }
-
-          // Map the record to Supabase lead format
-          const leadData = {
-            product_id: record.product_id || null,
-            client_name: record.client_name,
-            email: record.email || null,
-            phone: record.phone || null,
-            clinic_id: record.clinic_id,
-            engaged: record.engaged ?? false,
-            lead: record.lead ?? false,
-            booked: record.booked ?? false,
-            booking: record.booking || null,
-            old_user_id: record.old_user_id || null,
-            automation: record.automation || null,
-            created_at: record.created_at
-          };
-
-          // Check if lead exists by old_user_id (primary) or email (fallback)
-          let existingLeadId = null;
-          
-          // Priority 1: Check by old_user_id if provided
-          if (record.old_user_id && record.old_user_id.trim()) {
-            existingLeadId = existingLeadsMap.get(record.old_user_id.trim());
-            if (existingLeadId) {
-              console.log(`Found existing lead by old_user_id: ${record.old_user_id} -> ${existingLeadId}`);
-            }
-          }
-          
-          // Priority 2: Check by email if old_user_id didn't match and email is provided
-          if (!existingLeadId && record.email && record.email.trim()) {
-            existingLeadId = existingEmailMap.get(record.email.toLowerCase().trim());
-            if (existingLeadId) {
-              console.log(`Found existing lead by email: ${record.email} -> ${existingLeadId}`);
-            }
-          }
-
-          if (existingLeadId) {
-            // Update existing lead
-            try {
-              const { error: updateError } = await supabaseClient
-                .from('leads')
-                .update(leadData)
-                .eq('id', existingLeadId);
-
-              if (updateError) {
-                console.error(`Update error for ${record.client_name}:`, updateError);
-                result.errors.push(`Failed to update lead ${record.client_name}: ${updateError.message}`);
-                result.details.push({
-                  name: record.client_name,
-                  status: 'error',
-                  message: `Update failed: ${updateError.message}`
-                });
-              } else {
-                console.log(`Successfully updated lead: ${record.client_name}`);
-                result.updatedLeads++;
-                result.details.push({
-                  name: record.client_name,
-                  status: 'updated'
-                });
-              }
-            } catch (error) {
-              console.error(`Update exception for ${record.client_name}:`, error);
-              result.errors.push(`Update exception for ${record.client_name}: ${error.message}`);
-              result.details.push({
-                name: record.client_name,
-                status: 'error',
-                message: error.message
-              });
-            }
-          } else {
-            // Add to new leads batch
-            console.log(`No existing lead found for ${record.client_name}, will create new`);
-            newLeads.push(leadData);
-          }
-        } catch (error) {
-          result.errors.push(`Error processing ${record.client_name}: ${error.message}`);
+        if (record.clinic_id && !uuidRegex.test(record.clinic_id)) {
+          result.errors.push(`Invalid clinic_id format for ${record.client_name}`);
           result.details.push({
             name: record.client_name,
             status: 'error',
-            message: error.message
+            message: 'Invalid clinic_id format'
           });
+          continue;
         }
-      }
 
-      // Execute batch insert for new leads
-      if (newLeads.length > 0) {
-        try {
-          const { error: insertError } = await supabaseClient
+        if (record.product_id && !uuidRegex.test(record.product_id)) {
+          result.errors.push(`Invalid product_id format for ${record.client_name}`);
+          result.details.push({
+            name: record.client_name,
+            status: 'error',
+            message: 'Invalid product_id format'
+          });
+          continue;
+        }
+
+        // Prepare lead data
+        const leadData = {
+          product_id: record.product_id || null,
+          client_name: record.client_name.trim(),
+          email: record.email?.trim() || null,
+          phone: record.phone?.trim() || null,
+          clinic_id: record.clinic_id || null,
+          engaged: record.engaged ?? false,
+          lead: record.lead ?? false,
+          booked: record.booked ?? false,
+          booking: record.booking || null,
+          old_user_id: record.old_user_id?.trim() || null,
+          automation: record.automation || null,
+          created_at: record.created_at
+        };
+
+        // BULLETPROOF UPSERT LOGIC
+        let upsertResult;
+        
+        if (leadData.old_user_id) {
+          // Priority 1: UPSERT by old_user_id (guaranteed unique now)
+          console.log(`Upserting by old_user_id: ${leadData.old_user_id}`);
+          
+          upsertResult = await supabaseClient
             .from('leads')
-            .insert(newLeads);
-
-          if (insertError) {
-            console.error('Batch insert error:', insertError);
-            newLeads.forEach(lead => {
-              result.errors.push(`Failed to create lead ${lead.client_name}: ${insertError.message}`);
-              result.details.push({
-                name: lead.client_name,
-                status: 'error',
-                message: `Creation failed: ${insertError.message}`
-              });
-            });
-          } else {
-            result.newLeads += newLeads.length;
-            newLeads.forEach(lead => {
-              result.details.push({
-                name: lead.client_name,
-                status: 'created'
-              });
-            });
+            .upsert(leadData, { 
+              onConflict: 'old_user_id',
+              ignoreDuplicates: false 
+            })
+            .select('id');
+            
+        } else {
+          // Priority 2-4: Check for existing by email, phone, then name
+          let existingLead = null;
+          
+          if (leadData.email) {
+            console.log(`Checking existing by email: ${leadData.email}`);
+            const { data } = await supabaseClient
+              .from('leads')
+              .select('id')
+              .eq('email', leadData.email)
+              .limit(1)
+              .single();
+            existingLead = data;
           }
-        } catch (error) {
-          console.error('Batch insert exception:', error);
-          newLeads.forEach(lead => {
-            result.errors.push(`Failed to create lead ${lead.client_name}: ${error.message}`);
-            result.details.push({
-              name: lead.client_name,
-              status: 'error',
-              message: error.message
-            });
-          });
+          
+          if (!existingLead && leadData.phone) {
+            console.log(`Checking existing by phone: ${leadData.phone}`);
+            const { data } = await supabaseClient
+              .from('leads')
+              .select('id')
+              .eq('phone', leadData.phone)
+              .limit(1)
+              .single();
+            existingLead = data;
+          }
+          
+          if (!existingLead && leadData.client_name) {
+            console.log(`Checking existing by name: ${leadData.client_name}`);
+            const { data } = await supabaseClient
+              .from('leads')
+              .select('id')
+              .eq('client_name', leadData.client_name)
+              .limit(1)
+              .single();
+            existingLead = data;
+          }
+          
+          if (existingLead) {
+            // Update existing record
+            console.log(`Updating existing lead: ${existingLead.id}`);
+            upsertResult = await supabaseClient
+              .from('leads')
+              .update(leadData)
+              .eq('id', existingLead.id)
+              .select('id');
+          } else {
+            // Insert new record
+            console.log(`Inserting new lead: ${leadData.client_name}`);
+            upsertResult = await supabaseClient
+              .from('leads')
+              .insert(leadData)
+              .select('id');
+          }
         }
+
+        // Handle result
+        if (upsertResult.error) {
+          console.error(`Upsert error for ${record.client_name}:`, upsertResult.error);
+          result.errors.push(`Failed to process ${record.client_name}: ${upsertResult.error.message}`);
+          result.details.push({
+            name: record.client_name,
+            status: 'error',
+            message: upsertResult.error.message
+          });
+        } else {
+          // Determine if it was insert or update based on the operation
+          const wasUpdate = leadData.old_user_id ? 'updated' : (existingLead ? 'updated' : 'created');
+          
+          if (wasUpdate === 'updated') {
+            result.updatedLeads++;
+          } else {
+            result.newLeads++;
+          }
+          
+          result.details.push({
+            name: record.client_name,
+            status: wasUpdate
+          });
+          
+          console.log(`Successfully ${wasUpdate} lead: ${record.client_name}`);
+        }
+
+      } catch (error) {
+        console.error(`Processing error for ${record.client_name}:`, error);
+        result.errors.push(`Error processing ${record.client_name}: ${error.message}`);
+        result.details.push({
+          name: record.client_name,
+          status: 'error',
+          message: error.message
+        });
       }
     }
 
     result.success = result.errors.length === 0;
 
-    const logMessage = isWebhookCall ? 'Webhook import completed' : 'Manual import completed';
-    console.log(logMessage, {
-      totalProcessed: airtableData.length,
-      newLeads: result.newLeads,
-      updatedLeads: result.updatedLeads,
-      errors: result.errors.length,
-      source: isWebhookCall ? 'webhook' : 'ui'
-    });
+    console.log(`Import completed: ${result.newLeads} new, ${result.updatedLeads} updated, ${result.errors.length} errors`);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
