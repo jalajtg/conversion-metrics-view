@@ -116,8 +116,8 @@ serve(async (req) => {
 
     const leadRecords = airtableData as LeadRecord[];
     
-    // Process records in batches to avoid timeouts
-    const BATCH_SIZE = 50;
+    // Process records in smaller batches to avoid resource limits
+    const BATCH_SIZE = 10; // Reduced from 50 to prevent worker limits
     const batches = [];
     
     for (let i = 0; i < leadRecords.length; i += BATCH_SIZE) {
@@ -296,6 +296,11 @@ serve(async (req) => {
       }
       
       console.log(`Batch ${batchIndex + 1} completed: ${batchResults.length} records processed`);
+      
+      // Add delay between batches to prevent resource exhaustion
+      if (batchIndex < batches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+      }
     }
 
     result.success = result.errors.length === 0;
