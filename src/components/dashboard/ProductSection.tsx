@@ -25,13 +25,20 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
     console.log('Products:', products, leads, sales, costs, bookings);
 
     const productSections = products.map((product: any, index: number) => {
-      // Filter leads by matching both direct ID and old product IDs
+      // Filter leads by matching direct ID, old product IDs, and automation codes
       const productLeads = leads?.filter((lead: any) => {
         // First try direct ID match (for any updated records)
         if (lead.product_id === product.id) return true;
         
         // Then try to match using old product IDs mapping
         if (product.oldProductIds && product.oldProductIds.includes(lead.product_id)) {
+          return true;
+        }
+        
+        // Finally, try to match by automation code and clinic
+        if (lead.automation && product.automationCodes && 
+            product.automationCodes.includes(lead.automation) && 
+            lead.clinic_id === product.clinic_id) {
           return true;
         }
         

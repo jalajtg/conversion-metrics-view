@@ -215,6 +215,15 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
     // Create mapping from old products to new clinic_product_categories
     const oldProductsMap = new Map(oldProductsData?.map(p => [p.id, p]) || []);
     
+    // Create automation to product category mapping
+    const automationToProductCategoryMap: Record<string, string> = {
+      'IB': 'Facebook IB',
+      'CB': 'Facebook DB & CB', 
+      'DB': 'Facebook DB & CB',
+      'WB': 'Web Bot',
+      'EB': 'Email Bot' // Add more mappings as needed
+    };
+    
     dashboardData.products = (productsData || []).map((item: any) => ({
       id: item.id,
       name: item.product_category?.name || 'Unknown Product',
@@ -223,10 +232,14 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       clinic_id: item.clinic_id,
       created_at: item.created_at,
       month: item.month,
-      // Add old product mapping for leads
+      // Add old product mapping for leads (by name matching)
       oldProductIds: oldProductsData?.filter(op => 
         op.name === item.product_category?.name && op.clinic_id === item.clinic_id
-      ).map(op => op.id) || []
+      ).map(op => op.id) || [],
+      // Add automation codes that should map to this product category
+      automationCodes: Object.keys(automationToProductCategoryMap).filter(code => 
+        automationToProductCategoryMap[code] === item.product_category?.name
+      )
     }));
 
     // Fetch leads with optimized query

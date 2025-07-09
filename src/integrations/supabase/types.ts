@@ -155,36 +155,6 @@ export type Database = {
           },
         ]
       }
-      clinic_product_categories_copy: {
-        Row: {
-          clinic_id: string
-          created_at: string
-          id: string
-          month: number
-          price: number
-          product_category_id: string
-          updated_at: string
-        }
-        Insert: {
-          clinic_id: string
-          created_at?: string
-          id?: string
-          month: number
-          price: number
-          product_category_id: string
-          updated_at?: string
-        }
-        Update: {
-          clinic_id?: string
-          created_at?: string
-          id?: string
-          month?: number
-          price?: number
-          product_category_id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       clinics: {
         Row: {
           address: string | null
