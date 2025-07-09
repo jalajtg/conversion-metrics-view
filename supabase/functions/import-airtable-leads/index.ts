@@ -95,6 +95,8 @@ serve(async (req) => {
       }
     }
     
+    console.log('Starting import process...');
+    
     if (!airtableData || !Array.isArray(airtableData)) {
       return new Response(JSON.stringify({ error: 'Invalid lead data' }), {
         status: 400,
@@ -122,6 +124,7 @@ serve(async (req) => {
     const existingEmailMap = new Map<string, string>();
     
     try {
+      console.log('Fetching existing leads for deduplication...');
       const { data: existingLeads, error: fetchError } = await supabaseClient
         .from('leads')
         .select('id, old_user_id, email, client_name');
@@ -162,7 +165,6 @@ serve(async (req) => {
     for (let i = 0; i < leadRecords.length; i += BATCH_SIZE) {
       const batch = leadRecords.slice(i, i + BATCH_SIZE);
       const newLeads: any[] = [];
-      const updateOps: Promise<any>[] = [];
       
       console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(leadRecords.length / BATCH_SIZE)}`);
 
@@ -238,31 +240,41 @@ serve(async (req) => {
           }
 
           if (existingLeadId) {
-            // Queue update operation
-            updateOps.push(
-              supabaseClient
+            // Update existing lead
+            try {
+              const { error: updateError } = await supabaseClient
                 .from('leads')
                 .update(leadData)
-                .eq('id', existingLeadId)
-                .then(({ error }) => {
-                  if (error) {
-                    result.errors.push(`Failed to update lead ${record.client_name}: ${error.message}`);
-                    result.details.push({
-                      name: record.client_name,
-                      status: 'error',
-                      message: `Update failed: ${error.message}`
-                    });
-                  } else {
-                    result.updatedLeads++;
-                    result.details.push({
-                      name: record.client_name,
-                      status: 'updated'
-                    });
-                  }
-                })
-            );
+                .eq('id', existingLeadId);
+
+              if (updateError) {
+                console.error(`Update error for ${record.client_name}:`, updateError);
+                result.errors.push(`Failed to update lead ${record.client_name}: ${updateError.message}`);
+                result.details.push({
+                  name: record.client_name,
+                  status: 'error',
+                  message: `Update failed: ${updateError.message}`
+                });
+              } else {
+                console.log(`Successfully updated lead: ${record.client_name}`);
+                result.updatedLeads++;
+                result.details.push({
+                  name: record.client_name,
+                  status: 'updated'
+                });
+              }
+            } catch (error) {
+              console.error(`Update exception for ${record.client_name}:`, error);
+              result.errors.push(`Update exception for ${record.client_name}: ${error.message}`);
+              result.details.push({
+                name: record.client_name,
+                status: 'error',
+                message: error.message
+              });
+            }
           } else {
             // Add to new leads batch
+            console.log(`No existing lead found for ${record.client_name}, will create new`);
             newLeads.push(leadData);
           }
         } catch (error) {
@@ -312,11 +324,6 @@ serve(async (req) => {
             });
           });
         }
-      }
-
-      // Execute all update operations
-      if (updateOps.length > 0) {
-        await Promise.all(updateOps);
       }
     }
 
