@@ -25,7 +25,19 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
     console.log('Products:', products, leads, sales, costs, bookings);
 
     const productSections = products.map((product: any, index: number) => {
-      const productLeads = leads?.filter((lead: any) => lead.product_id === product.id) || [];
+      // Filter leads by matching both direct ID and old product IDs
+      const productLeads = leads?.filter((lead: any) => {
+        // First try direct ID match (for any updated records)
+        if (lead.product_id === product.id) return true;
+        
+        // Then try to match using old product IDs mapping
+        if (product.oldProductIds && product.oldProductIds.includes(lead.product_id)) {
+          return true;
+        }
+        
+        return false;
+      }) || [];
+      
       const productSales = sales?.filter((sale: any) => sale.product_id === product.id) || [];
       const productCosts = costs?.filter((cost: any) => cost.product_id === product.id) || [];
       

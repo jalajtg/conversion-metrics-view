@@ -177,14 +177,22 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       `)
       .range(0, 999999); // Increased range
 
+    // Also fetch old products table for mapping leads
+    let oldProductsQuery = supabase
+      .from('products')
+      .select('*')
+      .range(0, 999999);
+
     // Apply same logic for products
     if (!isSuperAdmin) {
       if (filters.clinicIds.length > 0) {
         productsQuery = productsQuery.in('clinic_id', filters.clinicIds);
+        oldProductsQuery = oldProductsQuery.in('clinic_id', filters.clinicIds);
       }
     } else {
       if (filters.clinicIds.length > 0) {
         productsQuery = productsQuery.in('clinic_id', filters.clinicIds);
+        oldProductsQuery = oldProductsQuery.in('clinic_id', filters.clinicIds);
       }
     }
 
@@ -193,9 +201,20 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       productsQuery = productsQuery.in('month', filters.selectedMonths);
     }
 
-    const { data: productsData, error: productsError } = await productsQuery;
+    const [{ data: productsData, error: productsError }, { data: oldProductsData, error: oldProductsError }] = await Promise.all([
+      productsQuery,
+      oldProductsQuery
+    ]);
+    
     if (productsError) throw productsError;
+    if (oldProductsError) throw oldProductsError;
+    
     console.log('Products data:', productsData?.length);
+    console.log('Old products data:', oldProductsData?.length);
+    
+    // Create mapping from old products to new clinic_product_categories
+    const oldProductsMap = new Map(oldProductsData?.map(p => [p.id, p]) || []);
+    
     dashboardData.products = (productsData || []).map((item: any) => ({
       id: item.id,
       name: item.product_category?.name || 'Unknown Product',
@@ -203,7 +222,11 @@ const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boole
       price: Number(item.price),
       clinic_id: item.clinic_id,
       created_at: item.created_at,
-      month: item.month
+      month: item.month,
+      // Add old product mapping for leads
+      oldProductIds: oldProductsData?.filter(op => 
+        op.name === item.product_category?.name && op.clinic_id === item.clinic_id
+      ).map(op => op.id) || []
     }));
 
     // Fetch leads with optimized query
