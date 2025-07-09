@@ -40,40 +40,55 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verify user is super admin
+    const { airtableData, webhookSecret } = await req.json();
+
+    // Check if this is a webhook call (has webhookSecret) or UI call (has auth header)
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'No authorization header' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    const isWebhookCall = webhookSecret && !authHeader;
     
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    if (isWebhookCall) {
+      // Verify webhook secret
+      const expectedSecret = Deno.env.get('WEBHOOK_SECRET') || 'your-secure-webhook-secret';
+      if (webhookSecret !== expectedSecret) {
+        return new Response(JSON.stringify({ error: 'Invalid webhook secret' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      console.log('Processing webhook import request');
+    } else {
+      // Original UI authentication flow
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'No authorization header' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+      
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Invalid token' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Check if user is super admin
+      const { data: userRole, error: roleError } = await supabaseClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (roleError || userRole?.role !== 'super_admin') {
+        return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
     }
-
-    // Check if user is super admin
-    const { data: userRole, error: roleError } = await supabaseClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-
-    if (roleError || userRole?.role !== 'super_admin') {
-      return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const { airtableData } = await req.json();
     
     if (!airtableData || !Array.isArray(airtableData)) {
       return new Response(JSON.stringify({ error: 'Invalid airtable data' }), {
@@ -206,11 +221,13 @@ serve(async (req) => {
 
     result.success = result.errors.length === 0;
 
-    console.log('Import completed:', {
+    const logMessage = isWebhookCall ? 'Webhook import completed' : 'Manual import completed';
+    console.log(logMessage, {
       totalProcessed: airtableData.length,
       newLeads: result.newLeads,
       updatedLeads: result.updatedLeads,
-      errors: result.errors.length
+      errors: result.errors.length,
+      source: isWebhookCall ? 'webhook' : 'ui'
     });
 
     return new Response(JSON.stringify(result), {

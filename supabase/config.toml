@@ -1,4 +1,4 @@
 project_id = "fhsjhoygllcchfinalih"
 
 [functions.import-airtable-leads]
-verify_jwt = true
+verify_jwt = false
