@@ -298,14 +298,19 @@ export default function ImportLeads() {
   "webhookSecret": "your-secure-webhook-secret",
   "airtableData": [
     {
-      "id": "rec123",
-      "createdTime": "2025-01-01T00:00:00.000Z",
-      "Name": "John Doe",
-      "Automation": "IB",
-      "Clinic": "Atascocita",
-      "Email": "john@example.com",
-      "Phone": "+1234567890",
-      "Lead Created": "Yes"
+      "product_id": "34675d35-0665-4941-892b-5d96b3ea29b7",
+      "clinic_name": "Atascocita",
+      "client_name": "John Doe",
+      "email": "john@example.com",
+      "phone": "+1234567890",
+      "created_at": "2025-06-19T14:20:09.000Z",
+      "clinic_id": "c77bf6d1-159f-4845-8146-15b3fa37e42d",
+      "engaged": false,
+      "lead": true,
+      "booked": false,
+      "booking": null,
+      "old_user_id": null,
+      "automation": "IB"
     }
   ]
 }`}

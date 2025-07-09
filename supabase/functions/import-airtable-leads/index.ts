@@ -6,15 +6,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface AirtableRecord {
-  id: string;
-  createdTime: string;
-  Name: string;
-  Automation?: string;
-  Clinic: string;
-  Email: string;
-  Phone: string;
-  "Lead Created"?: string;
+interface LeadRecord {
+  product_id?: string;
+  clinic_name: string;
+  client_name: string;
+  email?: string;
+  phone?: string;
+  created_at: string;
+  clinic_id: string;
+  engaged?: boolean;
+  lead?: boolean;
+  booked?: boolean;
+  booking?: string;
+  old_user_id?: string;
+  automation?: string;
 }
 
 interface ImportResult {
@@ -91,29 +96,13 @@ serve(async (req) => {
     }
     
     if (!airtableData || !Array.isArray(airtableData)) {
-      return new Response(JSON.stringify({ error: 'Invalid airtable data' }), {
+      return new Response(JSON.stringify({ error: 'Invalid lead data' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Get all clinics for name mapping
-    const { data: clinics, error: clinicsError } = await supabaseClient
-      .from('clinics')
-      .select('id, name');
-
-    if (clinicsError) {
-      return new Response(JSON.stringify({ error: 'Failed to fetch clinics' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Create clinic lookup map
-    const clinicMap = new Map<string, string>();
-    clinics?.forEach(clinic => {
-      clinicMap.set(clinic.name, clinic.id);
-    });
+    console.log(`Processing ${airtableData.length} leads...`);
 
     const result: ImportResult = {
       success: true,
@@ -123,99 +112,161 @@ serve(async (req) => {
       details: []
     };
 
-    // Process each Airtable record
-    for (const record of airtableData as AirtableRecord[]) {
-      try {
-        // Find clinic ID
-        const clinicId = clinicMap.get(record.Clinic);
-        if (!clinicId) {
-          result.errors.push(`Clinic not found: ${record.Clinic} for ${record.Name}`);
-          result.details.push({
-            name: record.Name,
-            status: 'error',
-            message: `Clinic not found: ${record.Clinic}`
-          });
-          continue;
-        }
-
-        // Map Airtable record to Supabase lead
-        const leadData = {
-          old_user_id: record.id,
-          client_name: record.Name,
-          email: record.Email,
-          phone: record.Phone,
-          automation: record.Automation || null,
-          clinic_id: clinicId,
-          lead: record["Lead Created"] === "Yes",
-          created_at: new Date(record.createdTime).toISOString()
-        };
-
-        // Check if lead already exists
-        const { data: existingLead, error: findError } = await supabaseClient
-          .from('leads')
-          .select('id')
-          .eq('old_user_id', record.id)
-          .single();
-
-        if (findError && findError.code !== 'PGRST116') {
-          result.errors.push(`Error checking existing lead for ${record.Name}: ${findError.message}`);
-          result.details.push({
-            name: record.Name,
-            status: 'error',
-            message: `Database error: ${findError.message}`
-          });
-          continue;
-        }
-
-        if (existingLead) {
-          // Update existing lead
-          const { error: updateError } = await supabaseClient
-            .from('leads')
-            .update(leadData)
-            .eq('id', existingLead.id);
-
-          if (updateError) {
-            result.errors.push(`Failed to update lead ${record.Name}: ${updateError.message}`);
-            result.details.push({
-              name: record.Name,
-              status: 'error',
-              message: `Update failed: ${updateError.message}`
-            });
-          } else {
-            result.updatedLeads++;
-            result.details.push({
-              name: record.Name,
-              status: 'updated'
-            });
+    const leadRecords = airtableData as LeadRecord[];
+    
+    // Batch size for processing
+    const BATCH_SIZE = 100;
+    
+    // Get all existing leads with old_user_id or email for comparison
+    const existingLeadsMap = new Map<string, string>();
+    
+    try {
+      const { data: existingLeads, error: fetchError } = await supabaseClient
+        .from('leads')
+        .select('id, old_user_id, email, client_name');
+        
+      if (fetchError) {
+        console.error('Error fetching existing leads:', fetchError);
+      } else {
+        existingLeads?.forEach(lead => {
+          if (lead.old_user_id) {
+            existingLeadsMap.set(`old_id:${lead.old_user_id}`, lead.id);
           }
-        } else {
-          // Create new lead
+          if (lead.email) {
+            existingLeadsMap.set(`email:${lead.email}`, lead.id);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error building existing leads map:', error);
+    }
+
+    // Process records in batches
+    for (let i = 0; i < leadRecords.length; i += BATCH_SIZE) {
+      const batch = leadRecords.slice(i, i + BATCH_SIZE);
+      const newLeads: any[] = [];
+      const updateOps: Promise<any>[] = [];
+      
+      console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(leadRecords.length / BATCH_SIZE)}`);
+
+      for (const record of batch) {
+        try {
+          // Validate clinic_id exists
+          if (!record.clinic_id) {
+            result.errors.push(`Missing clinic_id for ${record.client_name}`);
+            result.details.push({
+              name: record.client_name,
+              status: 'error',
+              message: 'Missing clinic_id'
+            });
+            continue;
+          }
+
+          // Map the record to Supabase lead format
+          const leadData = {
+            product_id: record.product_id || null,
+            client_name: record.client_name,
+            email: record.email || null,
+            phone: record.phone || null,
+            clinic_id: record.clinic_id,
+            engaged: record.engaged ?? false,
+            lead: record.lead ?? false,
+            booked: record.booked ?? false,
+            booking: record.booking || null,
+            old_user_id: record.old_user_id || null,
+            automation: record.automation || null,
+            created_at: record.created_at
+          };
+
+          // Check if lead exists by old_user_id or email
+          let existingLeadId = null;
+          if (record.old_user_id) {
+            existingLeadId = existingLeadsMap.get(`old_id:${record.old_user_id}`);
+          }
+          if (!existingLeadId && record.email) {
+            existingLeadId = existingLeadsMap.get(`email:${record.email}`);
+          }
+
+          if (existingLeadId) {
+            // Queue update operation
+            updateOps.push(
+              supabaseClient
+                .from('leads')
+                .update(leadData)
+                .eq('id', existingLeadId)
+                .then(({ error }) => {
+                  if (error) {
+                    result.errors.push(`Failed to update lead ${record.client_name}: ${error.message}`);
+                    result.details.push({
+                      name: record.client_name,
+                      status: 'error',
+                      message: `Update failed: ${error.message}`
+                    });
+                  } else {
+                    result.updatedLeads++;
+                    result.details.push({
+                      name: record.client_name,
+                      status: 'updated'
+                    });
+                  }
+                })
+            );
+          } else {
+            // Add to new leads batch
+            newLeads.push(leadData);
+          }
+        } catch (error) {
+          result.errors.push(`Error processing ${record.client_name}: ${error.message}`);
+          result.details.push({
+            name: record.client_name,
+            status: 'error',
+            message: error.message
+          });
+        }
+      }
+
+      // Execute batch insert for new leads
+      if (newLeads.length > 0) {
+        try {
           const { error: insertError } = await supabaseClient
             .from('leads')
-            .insert([leadData]);
+            .insert(newLeads);
 
           if (insertError) {
-            result.errors.push(`Failed to create lead ${record.Name}: ${insertError.message}`);
-            result.details.push({
-              name: record.Name,
-              status: 'error',
-              message: `Creation failed: ${insertError.message}`
+            console.error('Batch insert error:', insertError);
+            newLeads.forEach(lead => {
+              result.errors.push(`Failed to create lead ${lead.client_name}: ${insertError.message}`);
+              result.details.push({
+                name: lead.client_name,
+                status: 'error',
+                message: `Creation failed: ${insertError.message}`
+              });
             });
           } else {
-            result.newLeads++;
-            result.details.push({
-              name: record.Name,
-              status: 'created'
+            result.newLeads += newLeads.length;
+            newLeads.forEach(lead => {
+              result.details.push({
+                name: lead.client_name,
+                status: 'created'
+              });
             });
           }
+        } catch (error) {
+          console.error('Batch insert exception:', error);
+          newLeads.forEach(lead => {
+            result.errors.push(`Failed to create lead ${lead.client_name}: ${error.message}`);
+            result.details.push({
+              name: lead.client_name,
+              status: 'error',
+              message: error.message
+            });
+          });
         }
-      } catch (error) {
-        result.errors.push(`Error processing ${record.Name}: ${error.message}`);
-        result.details.push({
-          name: record.Name,
-          status: 'error',
-          message: error.message
-        });
+      }
+
+      // Execute all update operations
+      if (updateOps.length > 0) {
+        await Promise.all(updateOps);
       }
     }
 
