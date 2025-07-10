@@ -136,6 +136,22 @@ serve(async (req) => {
             };
           }
 
+          // Validate product_id exists in clinic_product_categories if provided
+          let validatedProductId = null;
+          if (record.product_id) {
+            const { data: productExists } = await supabaseClient
+              .from('clinic_product_categories')
+              .select('id')
+              .eq('id', record.product_id)
+              .single();
+            
+            if (productExists) {
+              validatedProductId = record.product_id;
+            } else {
+              console.log(`Product ID ${record.product_id} not found in clinic_product_categories, setting to null for ${record.name}`);
+            }
+          }
+
           // Prepare booking data
           const bookingData = {
             name: record.name.trim(),
@@ -143,7 +159,7 @@ serve(async (req) => {
             phone: record.phone?.trim() || null,
             booking_time: record.booking_time,
             clinic_id: record.clinic_id || null,
-            product_id: record.product_id || null,
+            product_id: validatedProductId,
             created_at: new Date().toISOString()
           };
 
