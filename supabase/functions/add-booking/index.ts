@@ -16,236 +16,211 @@ interface BookingData {
   product_id?: string;
 }
 
-interface BatchBookingData {
-  bookings: BookingData[];
-  total_count?: number;
-}
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    console.log('Received request:', req.method);
+    const { airtableData, webhookSecret } = await req.json();
 
-    if (req.method !== 'POST') {
-      return new Response(
-        JSON.stringify({ error: 'Method not allowed. Use POST.' }), 
-        { 
-          status: 405, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    const requestData = await req.json();
-    console.log('Received data:', requestData);
-
-    // Check if it's batch or single booking
-    const isBatch = requestData.bookings && Array.isArray(requestData.bookings);
+    // Check if this is a webhook call (has webhookSecret) or UI call (has auth header)
+    const authHeader = req.headers.get('Authorization');
+    const isWebhookCall = webhookSecret && !authHeader;
     
-    if (isBatch) {
-      // Handle batch processing
-      const batchData = requestData as BatchBookingData;
-      const bookings = batchData.bookings;
-      
-      if (!bookings || bookings.length === 0) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'No bookings provided in batch request.' 
-          }), 
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
+    if (isWebhookCall) {
+      // Verify webhook secret
+      const expectedSecret = Deno.env.get('WEBHOOK_SECRET') || 'your-secure-webhook-secret';
+      if (webhookSecret !== expectedSecret) {
+        return new Response(JSON.stringify({ error: 'Invalid webhook secret' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
-
-      console.log(`Processing batch of ${bookings.length} bookings`);
-
-      // Validate and prepare all bookings
-      const validBookings = [];
-      const errors = [];
-
-      for (let i = 0; i < bookings.length; i++) {
-        const booking = bookings[i];
-        
-        // Validate required fields
-        if (!booking.name || !booking.booking_time) {
-          errors.push(`Booking ${i + 1}: Missing required fields (name, booking_time)`);
-          continue;
-        }
-
-        // Validate booking_time is a valid date
-        const bookingTime = new Date(booking.booking_time);
-        if (isNaN(bookingTime.getTime())) {
-          errors.push(`Booking ${i + 1}: Invalid booking_time format`);
-          continue;
-        }
-
-        // Prepare valid booking
-        validBookings.push({
-          name: booking.name.trim(),
-          email: booking.email?.trim() || null,
-          phone: booking.phone?.trim() || null,
-          booking_time: booking.booking_time,
-          clinic_id: booking.clinic_id || null,
-          product_id: booking.product_id || null,
-          created_at: new Date().toISOString()
+      console.log('Processing webhook booking import request');
+    } else {
+      // Original UI authentication flow
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'No authorization header' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
 
-      console.log(`Valid bookings: ${validBookings.length}, Errors: ${errors.length}`);
-
-      if (validBookings.length === 0) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'No valid bookings to process', 
-            details: errors 
-          }), 
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      // Bulk insert valid bookings
-      const { data, error } = await supabase
-        .from('bookings')
-        .insert(validBookings)
-        .select();
-
-      if (error) {
-        console.error('Database error:', error);
-        return new Response(
-          JSON.stringify({ 
-            error: 'Failed to create bookings', 
-            details: error.message,
-            validation_errors: errors 
-          }), 
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      console.log(`Successfully created ${data.length} bookings`);
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          bookings_created: data.length,
-          bookings_failed: errors.length,
-          total_processed: bookings.length,
-          validation_errors: errors.length > 0 ? errors : undefined,
-          message: `Successfully processed ${data.length} out of ${bookings.length} bookings` 
-        }), 
-        { 
-          status: 201, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-
-    } else {
-      // Handle single booking (backward compatibility)
-      const bookingData = requestData as BookingData;
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
       
-      // Validate required fields
-      if (!bookingData.name || !bookingData.booking_time) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Missing required fields. Name and booking_time are required.' 
-          }), 
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Invalid token' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
 
-      // Validate booking_time is a valid date
-      const bookingTime = new Date(bookingData.booking_time);
-      if (isNaN(bookingTime.getTime())) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Invalid booking_time format. Please use ISO 8601 format.' 
-          }), 
-          { 
-            status: 400, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-
-      // Prepare booking data for insertion
-      const bookingToInsert = {
-        name: bookingData.name.trim(),
-        email: bookingData.email?.trim() || null,
-        phone: bookingData.phone?.trim() || null,
-        booking_time: bookingData.booking_time,
-        clinic_id: bookingData.clinic_id || null,
-        product_id: bookingData.product_id || null,
-        created_at: new Date().toISOString()
-      };
-
-      console.log('Inserting single booking:', bookingToInsert);
-
-      // Insert booking into database
-      const { data, error } = await supabase
-        .from('bookings')
-        .insert([bookingToInsert])
-        .select()
+      // Check if user is super admin
+      const { data: userRole, error: roleError } = await supabaseClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
         .single();
 
-      if (error) {
-        console.error('Database error:', error);
-        return new Response(
-          JSON.stringify({ 
-            error: 'Failed to create booking', 
-            details: error.message 
-          }), 
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
+      if (roleError || userRole?.role !== 'super_admin') {
+        return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
-
-      console.log('Booking created successfully:', data);
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          booking: data,
-          message: 'Booking created successfully' 
-        }), 
-        { 
-          status: 201, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+    }
+    
+    console.log('Starting booking import process...');
+    
+    if (!airtableData || !Array.isArray(airtableData)) {
+      return new Response(JSON.stringify({ error: 'Invalid booking data' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
-  } catch (error) {
-    console.error('Error in add-booking function:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error', 
-        details: error.message 
-      }), 
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    console.log(`Processing ${airtableData.length} bookings...`);
+
+    const result = {
+      success: true,
+      newBookings: 0,
+      errors: [],
+      details: []
+    };
+
+    const bookingRecords = airtableData as BookingData[];
+    
+    // Process records in smaller batches
+    const BATCH_SIZE = 10;
+    const batches = [];
+    
+    for (let i = 0; i < bookingRecords.length; i += BATCH_SIZE) {
+      batches.push(bookingRecords.slice(i, i + BATCH_SIZE));
+    }
+    
+    console.log(`Processing ${bookingRecords.length} records in ${batches.length} batches of ${BATCH_SIZE}`);
+
+    // Process each batch
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex];
+      console.log(`Processing batch ${batchIndex + 1}/${batches.length}`);
+      
+      // Process batch records in parallel
+      const batchPromises = batch.map(async (record) => {
+        try {
+          // Validate required fields
+          if (!record.name || !record.booking_time) {
+            return {
+              error: `Missing required fields for ${record.name}`,
+              name: record.name,
+              status: 'error' as const,
+              message: 'Missing name or booking_time'
+            };
+          }
+
+          // Validate booking_time is a valid date
+          const bookingTime = new Date(record.booking_time);
+          if (isNaN(bookingTime.getTime())) {
+            return {
+              error: `Invalid booking_time format for ${record.name}`,
+              name: record.name,
+              status: 'error' as const,
+              message: 'Invalid booking_time format'
+            };
+          }
+
+          // Prepare booking data
+          const bookingData = {
+            name: record.name.trim(),
+            email: record.email?.trim() || null,
+            phone: record.phone?.trim() || null,
+            booking_time: record.booking_time,
+            clinic_id: record.clinic_id || null,
+            product_id: record.product_id || null,
+            created_at: new Date().toISOString()
+          };
+
+          // Insert booking
+          const insertResult = await supabaseClient
+            .from('bookings')
+            .insert(bookingData)
+            .select('id');
+
+          if (insertResult.error) {
+            return {
+              error: `Failed to create booking for ${record.name}: ${insertResult.error.message}`,
+              name: record.name,
+              status: 'error' as const,
+              message: insertResult.error.message
+            };
+          } else {
+            return {
+              name: record.name,
+              status: 'created' as const
+            };
+          }
+
+        } catch (error) {
+          return {
+            error: `Error processing booking for ${record.name}: ${error.message}`,
+            name: record.name,
+            status: 'error' as const,
+            message: error.message
+          };
+        }
+      });
+
+      // Wait for batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      
+      // Process batch results
+      for (const batchResult of batchResults) {
+        if (batchResult.error) {
+          result.errors.push(batchResult.error);
+        }
+        
+        if (batchResult.status === 'created') {
+          result.newBookings++;
+        }
+        
+        result.details.push({
+          name: batchResult.name,
+          status: batchResult.status,
+          message: batchResult.message
+        });
       }
-    );
+      
+      console.log(`Batch ${batchIndex + 1} completed: ${batchResults.length} records processed`);
+      
+      // Add delay between batches
+      if (batchIndex < batches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+
+    result.success = result.errors.length === 0;
+
+    console.log(`Import completed: ${result.newBookings} new bookings, ${result.errors.length} errors`);
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
+  } catch (error) {
+    console.error('Import error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error',
+      details: error.message 
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 });
