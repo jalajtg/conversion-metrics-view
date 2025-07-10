@@ -27,7 +27,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { airtableData, webhookSecret } = await req.json();
+    const { bookings, webhookSecret } = await req.json();
 
     // Check if this is a webhook call (has webhookSecret) or UI call (has auth header)
     const authHeader = req.headers.get('Authorization');
@@ -79,14 +79,14 @@ serve(async (req) => {
     
     console.log('Starting booking import process...');
     
-    if (!airtableData || !Array.isArray(airtableData)) {
+    if (!bookings || !Array.isArray(bookings)) {
       return new Response(JSON.stringify({ error: 'Invalid booking data' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    console.log(`Processing ${airtableData.length} bookings...`);
+    console.log(`Processing ${bookings.length} bookings...`);
 
     const result = {
       success: true,
@@ -95,7 +95,7 @@ serve(async (req) => {
       details: []
     };
 
-    const bookingRecords = airtableData as BookingData[];
+    const bookingRecords = bookings as BookingData[];
     
     // Process records in smaller batches
     const BATCH_SIZE = 10;
