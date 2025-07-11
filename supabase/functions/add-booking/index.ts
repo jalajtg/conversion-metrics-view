@@ -165,27 +165,71 @@ serve(async (req) => {
             created_at: new Date().toISOString()
           };
 
-          // Upsert booking (update if exists based on name, email, phone combination)
-          const upsertResult = await supabaseClient
-            .from('bookings')
-            .upsert(bookingData, {
-              onConflict: 'name,email,phone',
-              ignoreDuplicates: false
-            })
-            .select('id');
+          // Check if booking already exists based on user_id or email
+          let existingBooking = null;
+          
+          // First try to find by user_id if provided
+          if (record.user_id) {
+            const { data } = await supabaseClient
+              .from('bookings')
+              .select('id')
+              .eq('user_id', record.user_id)
+              .single();
+            existingBooking = data;
+          }
+          
+          // If no match by user_id and no user_id provided, try by email
+          if (!existingBooking && record.email) {
+            const { data } = await supabaseClient
+              .from('bookings')
+              .select('id')
+              .eq('email', record.email)
+              .single();
+            existingBooking = data;
+          }
 
-          if (upsertResult.error) {
-            return {
-              error: `Failed to upsert booking for ${record.name}: ${upsertResult.error.message}`,
-              name: record.name,
-              status: 'error' as const,
-              message: upsertResult.error.message
-            };
+          let result;
+          if (existingBooking) {
+            // Update existing booking
+            const updateResult = await supabaseClient
+              .from('bookings')
+              .update(bookingData)
+              .eq('id', existingBooking.id)
+              .select('id');
+            
+            if (updateResult.error) {
+              return {
+                error: `Failed to update booking for ${record.name}: ${updateResult.error.message}`,
+                name: record.name,
+                status: 'error' as const,
+                message: updateResult.error.message
+              };
+            } else {
+              return {
+                name: record.name,
+                status: 'updated' as const
+              };
+            }
           } else {
-            return {
-              name: record.name,
-              status: 'upserted' as const
-            };
+            // Insert new booking
+            const insertResult = await supabaseClient
+              .from('bookings')
+              .insert(bookingData)
+              .select('id');
+
+            if (insertResult.error) {
+              return {
+                error: `Failed to create booking for ${record.name}: ${insertResult.error.message}`,
+                name: record.name,
+                status: 'error' as const,
+                message: insertResult.error.message
+              };
+            } else {
+              return {
+                name: record.name,
+                status: 'created' as const
+              };
+            }
           }
 
         } catch (error) {
@@ -207,7 +251,7 @@ serve(async (req) => {
           result.errors.push(batchResult.error);
         }
         
-        if (batchResult.status === 'upserted') {
+        if (batchResult.status === 'created' || batchResult.status === 'updated') {
           result.newBookings++;
         }
         
