@@ -136,19 +136,20 @@ serve(async (req) => {
             };
           }
 
-          // Validate product_id exists in clinic_product_categories if provided
+          // Map product_category_id to clinic_product_categories.id if provided
           let validatedProductId = null;
-          if (record.product_id) {
-            const { data: productExists } = await supabaseClient
+          if (record.product_id && record.clinic_id) {
+            const { data: clinicProduct } = await supabaseClient
               .from('clinic_product_categories')
               .select('id')
-              .eq('id', record.product_id)
+              .eq('product_category_id', record.product_id)
+              .eq('clinic_id', record.clinic_id)
               .single();
             
-            if (productExists) {
-              validatedProductId = record.product_id;
+            if (clinicProduct) {
+              validatedProductId = clinicProduct.id;
             } else {
-              console.log(`Product ID ${record.product_id} not found in clinic_product_categories, setting to null for ${record.name}`);
+              console.log(`No clinic_product_category found for product_category_id ${record.product_id} and clinic_id ${record.clinic_id} for ${record.name}`);
             }
           }
 
