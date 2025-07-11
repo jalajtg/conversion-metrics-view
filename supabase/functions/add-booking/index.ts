@@ -176,23 +176,26 @@ serve(async (req) => {
             created_at: new Date().toISOString()
           };
 
-          // Insert booking
-          const insertResult = await supabaseClient
+          // Upsert booking (update if exists based on name, email, phone combination)
+          const upsertResult = await supabaseClient
             .from('bookings')
-            .insert(bookingData)
+            .upsert(bookingData, {
+              onConflict: 'name,email,phone',
+              ignoreDuplicates: false
+            })
             .select('id');
 
-          if (insertResult.error) {
+          if (upsertResult.error) {
             return {
-              error: `Failed to create booking for ${record.name}: ${insertResult.error.message}`,
+              error: `Failed to upsert booking for ${record.name}: ${upsertResult.error.message}`,
               name: record.name,
               status: 'error' as const,
-              message: insertResult.error.message
+              message: upsertResult.error.message
             };
           } else {
             return {
               name: record.name,
-              status: 'created' as const
+              status: 'upserted' as const
             };
           }
 
@@ -215,7 +218,7 @@ serve(async (req) => {
           result.errors.push(batchResult.error);
         }
         
-        if (batchResult.status === 'created') {
+        if (batchResult.status === 'upserted') {
           result.newBookings++;
         }
         
