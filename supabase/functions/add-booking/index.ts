@@ -153,6 +153,17 @@ serve(async (req) => {
             }
           }
 
+          // Validate user_id is a valid UUID format, otherwise set to null
+          let validatedUserId = null;
+          if (record.user_id) {
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+            if (uuidRegex.test(record.user_id)) {
+              validatedUserId = record.user_id;
+            } else {
+              console.log(`Invalid UUID format for user_id "${record.user_id}" for ${record.name}, setting to null`);
+            }
+          }
+
           // Prepare booking data
           const bookingData = {
             name: record.name.trim(),
@@ -161,7 +172,7 @@ serve(async (req) => {
             booking_time: record.booking_time,
             clinic_id: record.clinic_id || null,
             product_id: validatedProductId,
-            user_id: record.user_id || null,
+            user_id: validatedUserId,
             created_at: new Date().toISOString()
           };
 
