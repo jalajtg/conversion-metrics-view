@@ -161,6 +161,7 @@ serve(async (req) => {
             booking_time: record.booking_time,
             clinic_id: record.clinic_id || null,
             product_id: validatedProductId,
+            user_id: record.user_id || null,
             created_at: new Date().toISOString()
           };
 
