@@ -144,6 +144,16 @@ export function EnhancedDashboardFilters({
               </div>
             </div>
             
+            {/* Selected Year */}
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">Selected Year</label>
+              <div className="min-h-[32px] flex items-start">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                  {filters.year}
+                </span>
+              </div>
+            </div>
+            
             {/* Selected Months */}
             <div>
               <label className="text-xs text-gray-400 mb-2 block">Selected Months</label>
@@ -161,16 +171,6 @@ export function EnhancedDashboardFilters({
                     );
                   })
                 )}
-              </div>
-            </div>
-            
-            {/* Selected Year */}
-            <div>
-              <label className="text-xs text-gray-400 mb-2 block">Selected Year</label>
-              <div className="min-h-[32px] flex items-start">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                  {filters.year}
-                </span>
               </div>
             </div>
           </div>
