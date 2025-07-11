@@ -118,6 +118,57 @@ export function EnhancedDashboardFilters({
             onSelectAll={handleSelectAllMonths}
           />
         </div>
+        
+        {/* Selected Filters Display */}
+        <div className="mt-4 space-y-3">
+          {/* Selected Clinics */}
+          {filters.clinicIds.length > 0 && (
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">Selected Clinics</label>
+              <div className="flex flex-wrap gap-2">
+                {filters.clinicIds.map((clinicId) => {
+                  const clinic = clinics.find(c => c.id === clinicId);
+                  return clinic ? (
+                    <span 
+                      key={clinicId}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-theme-blue/20 text-theme-blue border border-theme-blue/30"
+                    >
+                      {clinic.name}
+                    </span>
+                  ) : null;
+                })}
+              </div>
+            </div>
+          )}
+          
+          {/* Selected Months */}
+          {filters.selectedMonths.length > 0 && (
+            <div>
+              <label className="text-xs text-gray-400 mb-2 block">Selected Months</label>
+              <div className="flex flex-wrap gap-2">
+                {filters.selectedMonths.map((month) => {
+                  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                  return (
+                    <span 
+                      key={month}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    >
+                      {monthNames[month - 1]}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
+          {/* Selected Year */}
+          <div>
+            <label className="text-xs text-gray-400 mb-2 block">Selected Year</label>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+              {filters.year}
+            </span>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
