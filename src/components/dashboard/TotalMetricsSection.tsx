@@ -23,7 +23,8 @@ export function TotalMetricsSection({
     costs = [],
     bookings = [],
     conversations = [],
-    clinics = []
+    clinics = [],
+    totalPaidAmount = 0 // Use the calculated prorated amount from the service
   } = unifiedData;
 
   // Calculate totals across all available data (only count actual leads where lead = TRUE)
@@ -39,8 +40,7 @@ export function TotalMetricsSection({
   // Count engaged conversations from leads where engaged: true
   const totalEngagedConversations = actualLeads.filter((lead: any) => lead.engaged === true).length || 0;
 
-  // Calculate total paid amount from clinics' total_paid field
-  const totalPaidAmount = clinics.reduce((total: number, clinic: any) => total + (clinic.total_paid || 0), 0);
+  // Use the prorated total paid amount from the service
   const totalCostPerBooking = totalBookings > 0 ? totalPaidAmount / totalBookings : null;
   const totalCostPerLead = totalLeads > 0 ? totalPaidAmount / totalLeads : null;
 

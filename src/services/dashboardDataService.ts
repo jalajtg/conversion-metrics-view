@@ -1,5 +1,31 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { DashboardFilters } from "@/types/dashboard";
+
+// Helper function to calculate prorated monthly payment based on current day
+const getProratedMonthlyPayment = (amount: number, month: number, year: number): number => {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1; // getMonth() returns 0-11
+  const currentYear = now.getFullYear();
+  
+  // If the month/year is in the future, return 0
+  if (year > currentYear || (year === currentYear && month > currentMonth)) {
+    return 0;
+  }
+  
+  // If the month/year is in the past, return full amount
+  if (year < currentYear || (year === currentYear && month < currentMonth)) {
+    return amount;
+  }
+  
+  // If it's the current month, prorate based on days
+  if (year === currentYear && month === currentMonth) {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const currentDay = now.getDate();
+    return (amount * currentDay) / daysInMonth;
+  }
+  
+  return amount;
+};
 import { buildDateFilter, buildPostgRESTDateFilter } from "@/utils/dashboardFilters";
 import { automationToProductCategoryMap } from "@/constants/automationMapping";
 
@@ -13,6 +39,8 @@ interface DashboardData {
   costs: any[];
   conversations: any[];
   appointments: any[];
+  monthlyPayments: any[];
+  totalPaidAmount: number;
 }
 
 export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin: boolean): Promise<DashboardData> => {
@@ -34,7 +62,9 @@ export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin
     sales: [],
     costs: [],
     conversations: [],
-    appointments: []
+    appointments: [],
+    monthlyPayments: [],
+    totalPaidAmount: 0
   };
 
   try {
@@ -49,6 +79,42 @@ export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin
     const { data: clinicsData, error: clinicsError } = await clinicsQuery;
     if (clinicsError) throw clinicsError;
     dashboardData.clinics = clinicsData || [];
+
+    // Fetch monthly payments for the selected clinics and filtered months/year
+    console.log('Fetching monthly payments...');
+    let monthlyPaymentsQuery = supabase
+      .from('clinic_monthly_payments')
+      .select('*')
+      .eq('year', filters.year);
+    
+    // Apply clinic filtering
+    if (!isSuperAdmin) {
+      if (filters.clinicIds.length > 0) {
+        monthlyPaymentsQuery = monthlyPaymentsQuery.in('clinic_id', filters.clinicIds);
+      }
+    } else {
+      if (filters.clinicIds.length > 0) {
+        monthlyPaymentsQuery = monthlyPaymentsQuery.in('clinic_id', filters.clinicIds);
+      }
+    }
+    
+    // Apply month filtering
+    if (filters.selectedMonths && filters.selectedMonths.length > 0 && filters.selectedMonths.length < 12) {
+      monthlyPaymentsQuery = monthlyPaymentsQuery.in('month', filters.selectedMonths);
+    }
+
+    const { data: monthlyPaymentsData, error: monthlyPaymentsError } = await monthlyPaymentsQuery;
+    if (monthlyPaymentsError) throw monthlyPaymentsError;
+    dashboardData.monthlyPayments = monthlyPaymentsData || [];
+
+    // Calculate prorated total paid amount
+    dashboardData.totalPaidAmount = (monthlyPaymentsData || []).reduce((total, payment) => {
+      const proratedAmount = getProratedMonthlyPayment(payment.amount, payment.month, payment.year);
+      return total + proratedAmount;
+    }, 0);
+
+    console.log('Monthly payments data:', monthlyPaymentsData?.length, 'payments found');
+    console.log('Total prorated paid amount:', dashboardData.totalPaidAmount);
 
     // For super admin, if no clinics are selected, fetch all data
     // For regular users, return early if no clinics selected
