@@ -20,7 +20,6 @@ interface ClinicFormData {
   address: string;
   owner_id: string;
   productCategories: ProductCategoryWithPrice[];
-  total_paid?: number;
 }
 
 interface ClinicFormProps {
@@ -228,26 +227,6 @@ export function ClinicForm({
             onSelectionChange={onProductCategoriesChange}
             className="space-y-4"
           />
-
-          {/* Total Paid - Only for Super Admin */}
-          {isSuperAdmin && (
-            <div className="space-y-2">
-              <Label htmlFor="total_paid" className="text-gray-300">
-                Total Paid Amount ($)
-              </Label>
-              <Input
-                id="total_paid"
-                name="total_paid"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.total_paid || ''}
-                onChange={onInputChange}
-                placeholder="Enter total paid amount"
-                className="bg-theme-dark-lighter border-gray-600 text-white placeholder-gray-400 focus:border-theme-blue focus:ring-theme-blue"
-              />
-            </div>
-          )}
 
           <div className="flex justify-end gap-4 pt-6">
             <Button

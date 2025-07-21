@@ -27,7 +27,6 @@ interface ClinicFormData {
   email: string;
   phone: string;
   address: string;
-  total_paid?: number;
 }
 
 interface EditClinicDialogProps {
@@ -46,8 +45,7 @@ export function EditClinicDialog({ clinic, open, onOpenChange }: EditClinicDialo
       name: '',
       email: '',
       phone: '',
-      address: '',
-      total_paid: 0,
+      address: ''
     },
   });
 
@@ -57,8 +55,7 @@ export function EditClinicDialog({ clinic, open, onOpenChange }: EditClinicDialo
         name: clinic.name || '',
         email: clinic.email || '',
         phone: clinic.phone || '',
-        address: clinic.address || '',
-        total_paid: clinic.total_paid || 0,
+        address: clinic.address || ''
       });
     }
   }, [clinic, form]);
@@ -169,32 +166,6 @@ export function EditClinicDialog({ clinic, open, onOpenChange }: EditClinicDialo
                 </FormItem>
               )}
             />
-            
-            {/* Total Paid - Only for Super Admin */}
-            {isSuperAdmin && (
-              <FormField
-                control={form.control}
-                name="total_paid"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-300">Total Paid Amount ($)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={field.value || ''}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
-                        placeholder="Enter total paid amount"
-                        className="bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
             
             <div className="flex justify-end space-x-2 pt-4">
               <Button 

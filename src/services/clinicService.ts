@@ -89,8 +89,7 @@ export const createClinic = async (clinic: Omit<Clinic, 'id' | 'created_at' | 'u
       email: clinic.email,
       phone: clinic.phone,
       address: clinic.address,
-      owner_id: clinic.owner_id,
-      total_paid: clinic.total_paid || 0
+      owner_id: clinic.owner_id
     })
     .select()
     .single();
@@ -110,8 +109,7 @@ export const updateClinic = async (id: string, clinic: Partial<Clinic>): Promise
       name: clinic.name,
       email: clinic.email,
       phone: clinic.phone,
-      address: clinic.address,
-      total_paid: clinic.total_paid
+      address: clinic.address
     })
     .eq("id", id)
     .select()

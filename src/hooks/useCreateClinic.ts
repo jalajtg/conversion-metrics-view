@@ -15,7 +15,6 @@ interface ClinicFormData {
   address: string;
   owner_id: string;
   productCategories: ProductCategoryWithPrice[];
-  total_paid?: number;
 }
 
 export function useCreateClinic() {
@@ -29,8 +28,7 @@ export function useCreateClinic() {
     phone: '',
     address: '',
     owner_id: '',
-    productCategories: [],
-    total_paid: 0
+    productCategories: []
   });
 
   const createClinicMutation = useMutation({
@@ -42,8 +40,7 @@ export function useCreateClinic() {
         email: clinicData.email,
         phone: clinicData.phone,
         address: clinicData.address,
-        owner_id: clinicData.owner_id,
-        total_paid: clinicData.total_paid || 0
+        owner_id: clinicData.owner_id
       });
       
       if (!clinic) {
