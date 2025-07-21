@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { AddClinicHeader } from '@/components/clinics/AddClinicHeader';
 import { ClinicForm } from '@/components/clinics/ClinicForm';
+import { ClinicMonthlyPayments } from '@/components/clinics/ClinicMonthlyPayments';
 import { useEditClinic } from '@/hooks/useEditClinic';
 import { Loader2 } from 'lucide-react';
 
@@ -49,7 +50,7 @@ export default function EditClinicPage() {
   }
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-4xl">
+    <div className="container mx-auto py-6 px-4 max-w-4xl space-y-6">
       <AddClinicHeader isEdit />
       <ClinicForm
         formData={formData}
@@ -60,6 +61,10 @@ export default function EditClinicPage() {
         onCancel={handleCancel}
         isSubmitting={isSubmitting}
         isEdit
+      />
+      <ClinicMonthlyPayments 
+        clinicId={clinic.id} 
+        clinicName={clinic.name} 
       />
     </div>
   );

@@ -110,6 +110,36 @@ export type Database = {
           },
         ]
       }
+      clinic_monthly_payments: {
+        Row: {
+          amount: number
+          clinic_id: string
+          created_at: string
+          id: string
+          month: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          amount?: number
+          clinic_id: string
+          created_at?: string
+          id?: string
+          month: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          month?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       clinic_new: {
         Row: {
           address: string | null
