@@ -109,17 +109,23 @@ export function ClinicMonthlyPayments({ clinicId, clinicName }: ClinicMonthlyPay
   }
 
   return (
-    <Card>
+    <Card className="bg-theme-dark-card border-gray-700">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Monthly Payments - {clinicName}</CardTitle>
+        <CardTitle className="text-white">Monthly Payments - {clinicName}</CardTitle>
         <div className="flex items-center gap-2">
           <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-32 bg-theme-dark-lighter border-gray-600 text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-theme-dark-card border-gray-600 z-50">
               {Array.from({ length: 5 }, (_, i) => currentYear - 2 + i).map(year => (
-                <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                <SelectItem 
+                  key={year} 
+                  value={year.toString()}
+                  className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter"
+                >
+                  {year}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -133,18 +139,22 @@ export function ClinicMonthlyPayments({ clinicId, clinicName }: ClinicMonthlyPay
       </CardHeader>
       <CardContent className="space-y-4">
         {isAdding && (
-          <div className="p-4 border rounded-lg space-y-4">
-            <h4 className="font-medium">Add Monthly Payment</h4>
+          <div className="p-4 border border-gray-600 rounded-lg space-y-4 bg-theme-dark-lighter">
+            <h4 className="font-medium text-white">Add Monthly Payment</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="month">Month</Label>
+                <Label htmlFor="month" className="text-gray-300">Month</Label>
                 <Select value={selectedMonth?.toString() || ""} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
                     <SelectValue placeholder="Select month" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-theme-dark-card border-gray-600 z-50 max-h-60 overflow-y-auto">
                     {getAvailableMonths().map(month => (
-                      <SelectItem key={month.value} value={month.value.toString()}>
+                      <SelectItem 
+                        key={month.value} 
+                        value={month.value.toString()}
+                        className="text-white hover:bg-theme-dark-lighter focus:bg-theme-dark-lighter cursor-pointer"
+                      >
                         {month.label}
                       </SelectItem>
                     ))}
@@ -152,7 +162,7 @@ export function ClinicMonthlyPayments({ clinicId, clinicName }: ClinicMonthlyPay
                 </Select>
               </div>
               <div>
-                <Label htmlFor="amount">Amount ($)</Label>
+                <Label htmlFor="amount" className="text-gray-300">Amount ($)</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -161,6 +171,7 @@ export function ClinicMonthlyPayments({ clinicId, clinicName }: ClinicMonthlyPay
                   onChange={(e) => setAmount(e.target.value)}
                   step="0.01"
                   min="0"
+                  className="bg-theme-dark-lighter border-gray-600 text-white placeholder-gray-400"
                 />
               </div>
               <div className="flex items-end gap-2">
