@@ -102,10 +102,10 @@ export function SelectContent({ className, children }: SelectContentProps) {
 
   return (
     <div className={cn(
-      "absolute top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg max-h-96 overflow-y-auto z-50",
+      "absolute top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg max-h-96 overflow-y-auto z-50 pointer-events-auto",
       className
     )}>
-      <div className="p-1">
+      <div className="p-1 pointer-events-auto">
         {children}
       </div>
     </div>
@@ -116,10 +116,14 @@ export function SelectItem({ value, className, children }: SelectItemProps) {
   const { value: selectedValue, onValueChange, setIsOpen } = React.useContext(SelectContext);
   const isSelected = selectedValue === value;
 
-  const handleClick = () => {
+  const handleClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     console.log('SelectItem clicked, value:', value);
     if (onValueChange) {
+      console.log('Calling onValueChange with:', value);
       onValueChange(value);
+    } else {
+      console.log('No onValueChange handler found');
     }
     setIsOpen(false);
   };
@@ -127,13 +131,18 @@ export function SelectItem({ value, className, children }: SelectItemProps) {
   return (
     <div
       className={cn(
-        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
+        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground pointer-events-auto",
         isSelected && "bg-accent text-accent-foreground",
         className
       )}
       onClick={handleClick}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        console.log('SelectItem mousedown:', value);
+        handleClick();
+      }}
     >
-      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center" onClick={handleClick}>
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
         {isSelected && <Check className="h-4 w-4 text-white" />}
       </span>
       {children}
