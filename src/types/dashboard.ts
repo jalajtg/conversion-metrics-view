@@ -5,6 +5,7 @@ export interface Clinic {
   phone?: string;
   address?: string;
   owner_id?: string;
+  total_paid?: number;
   created_at: string;
   updated_at?: string;
 }

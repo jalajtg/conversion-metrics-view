@@ -110,6 +110,78 @@ export type Database = {
           },
         ]
       }
+      clinic_new: {
+        Row: {
+          address: string | null
+          address_description: string | null
+          available_time_slots: string | null
+          base_id: string | null
+          booking_calendar_id: string | null
+          booking_link: string | null
+          booking_workflow: string | null
+          calendar_id: string | null
+          clinic_email: string | null
+          clinic_name: string | null
+          clinicId: string | null
+          created_time: string | null
+          id: string
+          operation_hours: string | null
+          phone_number: string | null
+          plan_price: string | null
+          state: string | null
+          table_id: string | null
+          time_interval: string | null
+          time_zone: string | null
+          wellness_plan_prices: string | null
+        }
+        Insert: {
+          address?: string | null
+          address_description?: string | null
+          available_time_slots?: string | null
+          base_id?: string | null
+          booking_calendar_id?: string | null
+          booking_link?: string | null
+          booking_workflow?: string | null
+          calendar_id?: string | null
+          clinic_email?: string | null
+          clinic_name?: string | null
+          clinicId?: string | null
+          created_time?: string | null
+          id?: string
+          operation_hours?: string | null
+          phone_number?: string | null
+          plan_price?: string | null
+          state?: string | null
+          table_id?: string | null
+          time_interval?: string | null
+          time_zone?: string | null
+          wellness_plan_prices?: string | null
+        }
+        Update: {
+          address?: string | null
+          address_description?: string | null
+          available_time_slots?: string | null
+          base_id?: string | null
+          booking_calendar_id?: string | null
+          booking_link?: string | null
+          booking_workflow?: string | null
+          calendar_id?: string | null
+          clinic_email?: string | null
+          clinic_name?: string | null
+          clinicId?: string | null
+          created_time?: string | null
+          id?: string
+          operation_hours?: string | null
+          phone_number?: string | null
+          plan_price?: string | null
+          state?: string | null
+          table_id?: string | null
+          time_interval?: string | null
+          time_zone?: string | null
+          wellness_plan_prices?: string | null
+        }
+        Relationships: []
+      }
       clinic_product_categories: {
         Row: {
           clinic_id: string
@@ -164,6 +236,7 @@ export type Database = {
           name: string
           owner_id: string
           phone: string | null
+          total_paid: number | null
           updated_at: string
         }
         Insert: {
@@ -174,6 +247,7 @@ export type Database = {
           name: string
           owner_id: string
           phone?: string | null
+          total_paid?: number | null
           updated_at?: string
         }
         Update: {
@@ -184,6 +258,7 @@ export type Database = {
           name?: string
           owner_id?: string
           phone?: string | null
+          total_paid?: number | null
           updated_at?: string
         }
         Relationships: []

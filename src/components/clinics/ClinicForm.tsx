@@ -11,6 +11,7 @@ import { Loader2, ChevronDown, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { ProductCategoryManager, ProductCategoryWithPrice } from './ProductCategoryManager';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface ClinicFormData {
   name: string;
@@ -19,6 +20,7 @@ interface ClinicFormData {
   address: string;
   owner_id: string;
   productCategories: ProductCategoryWithPrice[];
+  total_paid?: number;
 }
 
 interface ClinicFormProps {
@@ -47,6 +49,8 @@ export function ClinicForm({
   isSubmitting,
   isEdit = false
 }: ClinicFormProps) {
+  const { isSuperAdmin } = useUserRole();
+  
   const {
     data: users = [],
     isLoading: isLoadingUsers
@@ -224,6 +228,26 @@ export function ClinicForm({
             onSelectionChange={onProductCategoriesChange}
             className="space-y-4"
           />
+
+          {/* Total Paid - Only for Super Admin */}
+          {isSuperAdmin && (
+            <div className="space-y-2">
+              <Label htmlFor="total_paid" className="text-gray-300">
+                Total Paid Amount ($)
+              </Label>
+              <Input
+                id="total_paid"
+                name="total_paid"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.total_paid || ''}
+                onChange={onInputChange}
+                placeholder="Enter total paid amount"
+                className="bg-theme-dark-lighter border-gray-600 text-white placeholder-gray-400 focus:border-theme-blue focus:ring-theme-blue"
+              />
+            </div>
+          )}
 
           <div className="flex justify-end gap-4 pt-6">
             <Button
