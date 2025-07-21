@@ -144,11 +144,17 @@ export function ClinicMonthlyPayments({ clinicId, clinicName }: ClinicMonthlyPay
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="month" className="text-gray-300">Month</Label>
-                <Select value={selectedMonth?.toString() || ""} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+                <Select 
+                  value={selectedMonth?.toString() || ""} 
+                  onValueChange={(value) => {
+                    console.log('Month selected:', value);
+                    setSelectedMonth(parseInt(value));
+                  }}
+                >
                   <SelectTrigger className="bg-theme-dark-lighter border-gray-600 text-white">
                     <SelectValue placeholder="Select month" />
                   </SelectTrigger>
-                  <SelectContent className="bg-theme-dark-card border-gray-600 z-50 max-h-60 overflow-y-auto">
+                  <SelectContent className="bg-theme-dark-card border-gray-600 z-[9999] max-h-60 overflow-y-auto">
                     {getAvailableMonths().map(month => (
                       <SelectItem 
                         key={month.value} 
