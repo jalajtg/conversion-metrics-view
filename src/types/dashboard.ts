@@ -32,7 +32,6 @@ export interface ClinicProductCategory {
 export interface Product {
   id: string;
   name: string;
-  price: number;
   description?: string;
   clinic_id: string;
   created_at: string;

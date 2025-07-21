@@ -28,7 +28,6 @@ import { cn } from "@/lib/utils";
 interface ProductFormData {
   name: string;
   description: string;
-  price: number;
   clinic_id: string;
 }
 
@@ -47,7 +46,6 @@ export function EditProductDialog({ product, open, onOpenChange }: EditProductDi
     defaultValues: {
       name: '',
       description: '',
-      price: 0,
       clinic_id: '',
     },
   });
@@ -57,7 +55,6 @@ export function EditProductDialog({ product, open, onOpenChange }: EditProductDi
       form.reset({
         name: product.name || '',
         description: product.description || '',
-        price: product.price || 0,
         clinic_id: product.clinic_id || '',
       });
     }
@@ -131,31 +128,6 @@ export function EditProductDialog({ product, open, onOpenChange }: EditProductDi
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="price"
-              rules={{ 
-                required: "Price is required",
-                min: { value: 0, message: "Price must be positive" }
-              }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-300">Price ($)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter price"
-                      className="bg-theme-dark-lighter border-gray-600 text-white placeholder:text-gray-400"
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="clinic_id"

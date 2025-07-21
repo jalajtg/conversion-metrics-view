@@ -529,7 +529,6 @@ export type Database = {
           description: string | null
           id: string
           name: string
-          price: number
         }
         Insert: {
           clinic_id?: string | null
@@ -537,7 +536,6 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
-          price: number
         }
         Update: {
           clinic_id?: string | null
@@ -545,7 +543,6 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
-          price?: number
         }
         Relationships: [
           {

@@ -30,7 +30,6 @@ export const createProduct = async (product: Omit<Product, 'id' | 'created_at'>)
     .insert({
       name: product.name,
       description: product.description,
-      price: product.price,
       clinic_id: product.clinic_id
     })
     .select()
@@ -50,7 +49,6 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
     .update({
       name: product.name,
       description: product.description,
-      price: product.price,
       clinic_id: product.clinic_id
     })
     .eq("id", id)

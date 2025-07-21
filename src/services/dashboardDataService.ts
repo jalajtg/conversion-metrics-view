@@ -188,7 +188,6 @@ export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin
       id: item.id,
       name: item.product_category?.name || 'Unknown Product',
       description: item.product_category?.description || '',
-      price: Number(item.price),
       clinic_id: item.clinic_id,
       created_at: item.created_at,
       month: item.month,

@@ -29,7 +29,6 @@ import { cn } from "@/lib/utils";
 interface ProductFormData {
   name: string;
   description: string;
-  price: number;
   clinic_id: string;
 }
 
@@ -43,7 +42,6 @@ export function AddProductDialog() {
     defaultValues: {
       name: '',
       description: '',
-      price: 0,
       clinic_id: '',
     },
   });
@@ -98,31 +96,6 @@ export function AddProductDialog() {
                       {...field}
                       placeholder="Enter product name"
                       className="bg-theme-dark-lighter border-theme-dark-lighter text-white placeholder:text-gray-400 focus:border-theme-blue focus:ring-theme-blue"
-                    />
-                  </FormControl>
-                  <FormMessage className="text-red-400" />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="price"
-              rules={{
-                required: "Price is required",
-                min: { value: 0, message: "Price must be positive" }
-              }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-200">Price ($)</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      className="bg-theme-dark-lighter border-theme-dark-lighter text-white placeholder:text-gray-400 focus:border-theme-blue focus:ring-theme-blue"
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage className="text-red-400" />

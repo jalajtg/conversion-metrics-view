@@ -59,12 +59,8 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
       const bookingsFromLeads = productLeads.filter((lead: any) => lead.booked === true).length;
       const productBookings = bookingsFromTable + bookingsFromLeads;
 
-      // Calculate price relative to current day in month
-      const currentDate = new Date();
-      const currentDay = currentDate.getDate();
-      const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-      const dayRatio = currentDay / daysInMonth;
-      const paidAmount = product.price * dayRatio;
+      // No longer calculating individual product prices - paid amount comes from clinic level
+      const paidAmount = 0;
       
       const totalCosts = productCosts.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0);
       
@@ -107,7 +103,6 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
                     </div>
                     <div className="flex-1 text-left">
                       <span className="text-sm font-medium text-white">{metrics.product.name}</span>
-                      <span className="text-xs text-gray-400 ml-2">${metrics.product.price}</span>
                     </div>
                   </div>
                 </AccordionTrigger>
@@ -197,9 +192,6 @@ function SingleProductSection({ metrics }: { metrics: ProductMetrics }) {
             </div>
             <span className="text-sm sm:text-base font-medium truncate">{product.name}</span>
           </div>
-          <span className="text-xs sm:text-sm font-normal text-gray-400 sm:ml-auto">
-            ${product.price}
-          </span>
         </CardTitle>
         {product.description && (
           <p className="text-gray-400 text-xs sm:text-sm mt-1 line-clamp-2">{product.description}</p>

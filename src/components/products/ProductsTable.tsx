@@ -206,15 +206,6 @@ export function ProductsTable() {
                           <SortIcon column="name" />
                         </div>
                       </TableHead>
-                      <TableHead 
-                        className="text-gray-300 font-semibold cursor-pointer select-none text-left py-3"
-                        onClick={() => handleSort('price')}
-                      >
-                        <div className="flex items-center">
-                          Price
-                          <SortIcon column="price" />
-                        </div>
-                      </TableHead>
                       <TableHead className="text-gray-300 font-semibold text-left py-3">Clinic</TableHead>
                       <TableHead 
                         className="text-gray-300 font-semibold cursor-pointer select-none text-left py-3"
@@ -232,7 +223,6 @@ export function ProductsTable() {
                     {paginatedData.map((product) => (
                       <TableRow key={product.id} className="border-gray-700 hover:bg-theme-dark-lighter transition-colors">
                         <TableCell className="font-medium text-white text-left py-3">{product.name}</TableCell>
-                        <TableCell className="text-gray-300 text-left py-3">${Number(product.price).toFixed(2)}</TableCell>
                         <TableCell className="text-gray-300 text-left py-3">
                           {clinics?.find(c => c.id === product.clinic_id)?.name || 'Unknown Clinic'}
                         </TableCell>

@@ -93,7 +93,6 @@ export const replicateProductsToAllClinics = async (sourceClinicId: string): Pro
         // Prepare products for insertion (remove id, created_at, and update clinic_id)
         const productsToInsert = sourceProducts.map(product => ({
           name: product.name,
-          price: product.price,
           description: product.description,
           clinic_id: clinic.id
         }));
@@ -215,7 +214,6 @@ export const replicateProductsToSpecificClinic = async (
       .filter(product => !existingProductNames.has(product.name))
       .map(product => ({
         name: product.name,
-        price: product.price,
         description: product.description,
         clinic_id: targetClinicId
       }));
