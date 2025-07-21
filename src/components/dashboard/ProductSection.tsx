@@ -157,24 +157,6 @@ function ProductContent({ metrics }: { metrics: ProductMetrics }) {
         />
       </div>
       
-      {/* Second row: Paid Amount, Cost per Booking, Cost per Lead */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
-        <MetricCard
-          title="Paid Amount"
-          value={`$${metrics.paidAmount.toFixed(2)}`}
-          icon={<DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />}
-        />
-        <MetricCard
-          title="Cost per Booking"
-          value={`$${metrics.costPerBooking.toFixed(2)}`}
-          icon={<Calculator className="h-3 w-3 sm:h-4 sm:w-4" />}
-        />
-        <MetricCard
-          title="Cost per Lead"
-          value={`$${metrics.costPerLead.toFixed(2)}`}
-          icon={<Calculator className="h-3 w-3 sm:h-4 sm:w-4" />}
-        />
-      </div>
     </div>
   );
 }
