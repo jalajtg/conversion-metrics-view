@@ -241,7 +241,7 @@ export const calculateProductMetrics = async (product: Product, filters: Dashboa
   
   // Calculate metrics
   const leadCount = leads.length;
-  const conversationCount = conversations.length;
+  const conversationCount = leads.filter(lead => lead.engaged === true).length; // Use engaged from leads table
   const paidAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
   
   const verbalAppointments = appointments.filter(apt => apt.type === 'verbal').length;

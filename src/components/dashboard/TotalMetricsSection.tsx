@@ -31,13 +31,10 @@ export function TotalMetricsSection({
   const actualLeads = leads.filter((lead: any) => lead.lead === true) || [];
   const totalLeads = actualLeads.length || 0;
   
-  // Count bookings from both the bookings table and leads where booked = true
-  const bookingsFromLeads = actualLeads.filter((lead: any) => lead.booked === true).length || 0;
-  const totalBookings = (bookings.length || 0) + bookingsFromLeads;
+  // Count bookings ONLY from the dedicated bookings table (not from leads)
+  const totalBookings = bookings.length || 0;
   
-  const totalConversations = conversations.length || 0;
-
-  // Count engaged conversations from leads where engaged: true
+  // Count conversations ONLY from leads where engaged = true (not from conversations table since it's empty)
   const totalEngagedConversations = actualLeads.filter((lead: any) => lead.engaged === true).length || 0;
 
   // Use the prorated total paid amount from the service
@@ -45,7 +42,7 @@ export function TotalMetricsSection({
   const totalCostPerLead = totalLeads > 0 ? totalPaidAmount / totalLeads : null;
 
   // Show the section if we have any meaningful data
-  const hasData = totalLeads > 0 || totalBookings > 0 || totalConversations > 0 || totalPaidAmount > 0;
+  const hasData = totalLeads > 0 || totalBookings > 0 || totalEngagedConversations > 0 || totalPaidAmount > 0;
   
   if (!hasData) {
     return null;
