@@ -7,13 +7,19 @@ import { useNewPatients } from '@/hooks/useNewPatients';
 
 interface TotalMetricsSectionProps {
   unifiedData?: any;
+  filters?: any;
 }
 
 export function TotalMetricsSection({
-  unifiedData
+  unifiedData,
+  filters
 }: TotalMetricsSectionProps) {
-  // Get new patients data from the actual database
-  const { totalNewPatients, isLoading: newPatientsLoading } = useNewPatients();
+  // Get new patients data from the actual database with current filters
+  const { totalNewPatients, isLoading: newPatientsLoading } = useNewPatients({
+    clinicIds: filters?.appliedFilters?.clinicIds || [],
+    selectedMonths: filters?.appliedFilters?.selectedMonths || [],
+    year: filters?.appliedFilters?.year
+  });
   
   // Show metrics if we have any data at all, not just products
   if (!unifiedData) {

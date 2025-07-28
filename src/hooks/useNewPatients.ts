@@ -11,7 +11,13 @@ export interface NewPatientData {
   updated_at: string;
 }
 
-export function useNewPatients() {
+export interface UseNewPatientsOptions {
+  clinicIds?: string[];
+  selectedMonths?: number[];
+  year?: number;
+}
+
+export function useNewPatients(options: UseNewPatientsOptions = {}) {
   const [newPatientsData, setNewPatientsData] = useState<NewPatientData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +50,27 @@ export function useNewPatients() {
     };
 
     fetchNewPatients();
-  }, []);
+  }, [options.clinicIds, options.selectedMonths, options.year]);
 
-  // Calculate total new patients across all clinics and time periods
-  const totalNewPatients = newPatientsData.reduce((sum, record) => sum + record.count, 0);
+  // Calculate filtered new patients based on provided options
+  const filteredNewPatients = newPatientsData.filter(record => {
+    // Filter by clinic if specified
+    if (options.clinicIds && options.clinicIds.length > 0) {
+      if (!options.clinicIds.includes(record.clinic_id)) return false;
+    }
+
+    // Filter by year if specified
+    if (options.year && record.year !== options.year) return false;
+
+    // Filter by months if specified
+    if (options.selectedMonths && options.selectedMonths.length > 0) {
+      if (!options.selectedMonths.includes(record.month)) return false;
+    }
+
+    return true;
+  });
+
+  const totalNewPatients = filteredNewPatients.reduce((sum, record) => sum + record.count, 0);
 
   // Calculate new patients for current month/year
   const currentDate = new Date();

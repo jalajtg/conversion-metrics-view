@@ -240,7 +240,7 @@ export function Dashboard() {
             <>
               {/* Total Metrics Overview Section - Show if we have any data */}
               {dashboardData && (
-                <TotalMetricsSection unifiedData={dashboardData} />
+                <TotalMetricsSection unifiedData={dashboardData} filters={filters} />
               )}
 
               {/* Main Dashboard Section */}
