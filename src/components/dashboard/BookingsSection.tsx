@@ -227,12 +227,6 @@ export function BookingsSection({
                         <span className="text-xs sm:text-sm">Appointment Time</span>
                       </div>
                     </TableHead>
-                    <TableHead className="hidden sm:table-cell text-gray-300 font-semibold px-2 sm:px-4 text-left">
-                      <div className="flex items-center gap-1 sm:gap-2">
-                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="text-xs sm:text-sm">Created</span>
-                      </div>
-                    </TableHead>
                     <TableHead className="sm:hidden text-gray-300 font-semibold px-2 text-left">
                       <div className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
@@ -294,28 +288,6 @@ export function BookingsSection({
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell px-2 sm:px-4 py-2 sm:py-4">
-                        <div className="flex items-center gap-1 sm:gap-2">
-                          <div className="p-0.5 sm:p-1 rounded bg-green-500/10">
-                            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-400" />
-                          </div>
-                          <div className="text-left">
-                            <div className="text-white font-medium text-xs sm:text-sm text-left">
-                              {new Date(booking.created_at).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </div>
-                            <div className="text-xs text-gray-400 text-left">
-                              {new Date(booking.created_at).toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
                       <TableCell className="sm:hidden px-2 py-2">
                         <div className="space-y-2 text-left">
                           <div className="flex items-center gap-1">
@@ -333,19 +305,6 @@ export function BookingsSection({
                                 {new Date(booking.booking_time).toLocaleTimeString('en-US', {
                                   hour: '2-digit',
                                   minute: '2-digit'
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="p-0.5 rounded bg-green-500/10">
-                              <Clock className="h-2.5 w-2.5 text-green-400" />
-                            </div>
-                            <div className="text-left">
-                              <div className="text-gray-300 text-xs text-left">
-                                Created {new Date(booking.created_at).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric'
                                 })}
                               </div>
                             </div>
