@@ -25,47 +25,6 @@ Deno.serve(async (req) => {
   try {
     console.log('Upsert new patients request received:', req.method);
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
-
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('No authorization header provided');
-      return new Response(
-        JSON.stringify({ error: 'Authorization header required' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Verify the user token
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      console.error('Auth error:', authError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid or expired token' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    console.log('Authenticated user:', user.id);
-
     if (req.method !== 'POST') {
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
@@ -137,59 +96,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Get unique clinic IDs to verify access
-    const uniqueClinicIds = [...new Set(records.map(r => r.clinic_id))];
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Verify user has access to all clinics
-    const { data: clinics, error: clinicsError } = await supabase
-      .from('clinics')
-      .select('id, owner_id')
-      .in('id', uniqueClinicIds);
-
-    if (clinicsError || !clinics || clinics.length !== uniqueClinicIds.length) {
-      console.error('Some clinics not found:', clinicsError);
-      return new Response(
-        JSON.stringify({ error: 'One or more clinics not found' }),
-        { 
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Check if user owns all clinics or is super admin
-    const { data: userRole } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'super_admin')
-      .single();
-
-    const isSuperAdmin = !!userRole;
-    
-    if (!isSuperAdmin) {
-      const unauthorizedClinics = clinics.filter(clinic => clinic.owner_id !== user.id);
-      if (unauthorizedClinics.length > 0) {
-        console.error('User does not have access to some clinics:', user.id, unauthorizedClinics.map(c => c.id));
-        return new Response(
-          JSON.stringify({ error: 'Access denied to one or more clinics' }),
-          { 
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
       }
-    }
+    });
 
-    console.log('User has access to all clinics, proceeding with upsert');
+    console.log('Proceeding with upsert (no authentication required)');
 
-    // Prepare data for batch upsert
+    // Prepare data for batch upsert (no user_id since no auth)
     const upsertData = records.map(record => ({
       clinic_id: record.clinic_id,
       month: record.month,
       year: record.year,
-      count: record.count,
-      user_id: user.id
+      count: record.count
     }));
 
     // Perform batch upsert operation
