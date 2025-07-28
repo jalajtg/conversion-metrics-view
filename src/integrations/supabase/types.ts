@@ -525,6 +525,47 @@ export type Database = {
           },
         ]
       }
+      new_patients: {
+        Row: {
+          clinic_id: string
+          count: number
+          created_at: string
+          id: string
+          month: number
+          updated_at: string
+          user_id: string | null
+          year: number
+        }
+        Insert: {
+          clinic_id: string
+          count?: number
+          created_at?: string
+          id?: string
+          month: number
+          updated_at?: string
+          user_id?: string | null
+          year: number
+        }
+        Update: {
+          clinic_id?: string
+          count?: number
+          created_at?: string
+          id?: string
+          month?: number
+          updated_at?: string
+          user_id?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "new_patients_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_category: {
         Row: {
           created_at: string
