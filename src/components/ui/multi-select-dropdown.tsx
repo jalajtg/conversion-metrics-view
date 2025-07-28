@@ -1,9 +1,10 @@
 
 import * as React from "react";
-import { Check, ChevronDown, X } from "lucide-react";
+import { Check, ChevronDown, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 interface MultiSelectOption {
   value: string;
@@ -28,6 +29,7 @@ export function MultiSelectDropdown({
   showChips = true,
 }: MultiSelectDropdownProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
 
@@ -68,10 +70,21 @@ export function MultiSelectDropdown({
     console.log("Clear All clicked - selection cleared, calling onSelectionChange with empty array");
   };
 
+  // Filter options based on search term
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const selectedOptions = options.filter((option) =>
     selectedValues.includes(option.value)
   );
-  console.log("Jalaj", selectedValues)
+
+  // Clear search when dropdown closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm("");
+    }
+  }, [isOpen]);
   return (
     <div className={cn("w-full relative", className)} ref={dropdownRef}>
       <Button
@@ -93,47 +106,62 @@ export function MultiSelectDropdown({
       </Button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-theme-dark-lighter border-2 border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto z-50">
-          <div className="p-1">
-            <div className="flex items-center justify-between px-3 py-2 text-white hover:bg-theme-blue/20 rounded">
-              <div 
-                className="flex items-center cursor-pointer flex-1"
-                onClick={handleSelectAll}
-              >
-                <div className="w-4 h-4 border border-gray-400 rounded flex items-center justify-center mr-2">
-                  {selectedValues.length === options.length && options.length > 0 && (
-                    <Check className="h-3 w-3 text-theme-blue" />
-                  )}
-                </div>
-                <span>Select All</span>
-              </div>
-              {selectedValues.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleClearAll}
-                  className="text-xs text-gray-400 hover:text-white px-2 py-1 h-auto bg-red-500/20 hover:bg-red-500/30 transition-colors ml-2"
-                  type="button"
-                >
-                  Clear All
-                </Button>
-              )}
+        <div className="absolute top-full left-0 right-0 mt-1 bg-theme-dark-lighter border-2 border-gray-700 rounded-md shadow-lg max-h-64 overflow-hidden z-50">
+          <div className="p-2">
+            {/* Search Input */}
+            <div className="relative mb-2">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search clinics..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-theme-dark border-gray-600 text-white placeholder-gray-400 focus:border-theme-blue rounded-md"
+                onClick={(e) => e.stopPropagation()}
+              />
             </div>
             
-            {options.map((option) => (
-              <div
-                key={option.value}
-                className="flex items-center px-3 py-2 text-white hover:bg-theme-blue/20 rounded cursor-pointer"
-                onClick={() => handleSelect(option.value, !selectedValues.includes(option.value))}
-              >
-                <div className="w-4 h-4 border border-gray-400 rounded flex items-center justify-center mr-2">
-                  {selectedValues.includes(option.value) && (
-                    <Check className="h-3 w-3 text-theme-blue" />
-                  )}
+            <div className="max-h-48 overflow-y-auto">
+              <div className="flex items-center justify-between px-3 py-2 text-white hover:bg-theme-blue/20 rounded">
+                <div 
+                  className="flex items-center cursor-pointer flex-1"
+                  onClick={handleSelectAll}
+                >
+                  <div className="w-4 h-4 border border-gray-400 rounded flex items-center justify-center mr-2">
+                    {selectedValues.length === options.length && options.length > 0 && (
+                      <Check className="h-3 w-3 text-theme-blue" />
+                    )}
+                  </div>
+                  <span>Select All</span>
                 </div>
-                <span>{option.label}</span>
+                {selectedValues.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearAll}
+                    className="text-xs text-gray-400 hover:text-white px-2 py-1 h-auto bg-red-500/20 hover:bg-red-500/30 transition-colors ml-2"
+                    type="button"
+                  >
+                    Clear All
+                  </Button>
+                )}
               </div>
-            ))}
+              
+              {filteredOptions.map((option) => (
+                <div
+                  key={option.value}
+                  className="flex items-center px-3 py-2 text-white hover:bg-theme-blue/20 rounded cursor-pointer"
+                  onClick={() => handleSelect(option.value, !selectedValues.includes(option.value))}
+                >
+                  <div className="w-4 h-4 border border-gray-400 rounded flex items-center justify-center mr-2">
+                    {selectedValues.includes(option.value) && (
+                      <Check className="h-3 w-3 text-theme-blue" />
+                    )}
+                  </div>
+                  <span>{option.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
