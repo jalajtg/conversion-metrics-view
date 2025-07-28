@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
-import { Users, MessageSquare, DollarSign, CheckCircle, Calculator, BarChart3 } from 'lucide-react';
+import { Users, MessageSquare, DollarSign, CheckCircle, Calculator, BarChart3, Calendar } from 'lucide-react';
 
 interface TotalMetricsSectionProps {
   unifiedData?: any;
@@ -34,6 +34,9 @@ export function TotalMetricsSection({
   // Count bookings ONLY from the dedicated bookings table (not from leads)
   const totalBookings = bookings.length || 0;
   
+  // Count new patients confirmed (same as bookings since each booking represents a confirmed patient)
+  const newPatientsConfirmed = totalBookings;
+  
   // Count conversations ONLY from leads where engaged = true (not from conversations table since it's empty)
   const totalEngagedConversations = actualLeads.filter((lead: any) => lead.engaged === true).length || 0;
 
@@ -42,7 +45,7 @@ export function TotalMetricsSection({
   const totalCostPerLead = totalLeads > 0 ? totalPaidAmount / totalLeads : null;
 
   // Show the section if we have any meaningful data
-  const hasData = totalLeads > 0 || totalBookings > 0 || totalEngagedConversations > 0 || totalPaidAmount > 0;
+  const hasData = totalLeads > 0 || totalBookings > 0 || totalEngagedConversations > 0 || newPatientsConfirmed > 0 || totalPaidAmount > 0;
   
   if (!hasData) {
     return null;
@@ -66,8 +69,8 @@ export function TotalMetricsSection({
       
       <CardContent className="p-6 bg-theme-dark-lighter">
         <div className="space-y-6">
-          {/* First row: Total Leads, Engaged Conversations, Bookings */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* First row: Total Leads, Engaged Conversations, New Patients Confirmed, Bookings */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <MetricCard 
               title="Total Leads" 
               value={totalLeads} 
@@ -83,9 +86,16 @@ export function TotalMetricsSection({
               className="shadow-md hover:shadow-lg transition-shadow duration-300"
             />
             <MetricCard 
+              title="New Patients Confirmed" 
+              value={newPatientsConfirmed} 
+              icon={<CheckCircle className="h-4 w-4" />} 
+              isHovered={true}
+              className="shadow-md hover:shadow-lg transition-shadow duration-300"
+            />
+            <MetricCard 
               title="Bookings" 
               value={totalBookings} 
-              icon={<CheckCircle className="h-4 w-4" />} 
+              icon={<Calendar className="h-4 w-4" />} 
               isHovered={true}
               className="shadow-md hover:shadow-lg transition-shadow duration-300"
             />
