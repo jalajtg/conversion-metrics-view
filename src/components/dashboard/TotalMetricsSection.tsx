@@ -41,8 +41,10 @@ export function TotalMetricsSection({
   const actualLeads = leads.filter((lead: any) => lead.lead === true) || [];
   const totalLeads = actualLeads.length || 0;
   
-  // Count bookings ONLY from the dedicated bookings table (not from leads)
-  const totalBookings = bookings.length || 0;
+  // Count bookings from both the bookings table and leads where booked: true (same as ProductSection)
+  const bookingsFromTable = bookings.length || 0;
+  const bookingsFromLeads = actualLeads.filter((lead: any) => lead.booked === true).length || 0;
+  const totalBookings = bookingsFromTable + bookingsFromLeads;
   
   // Use actual new patients data from the database instead of bookings
   const newPatientsConfirmed = newPatientsLoading ? totalBookings : totalNewPatients;
