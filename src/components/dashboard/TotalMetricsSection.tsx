@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
 import { Users, MessageSquare, DollarSign, CheckCircle, Calculator, BarChart3, Calendar } from 'lucide-react';
+import { useNewPatients } from '@/hooks/useNewPatients';
 
 interface TotalMetricsSectionProps {
   unifiedData?: any;
@@ -11,6 +12,9 @@ interface TotalMetricsSectionProps {
 export function TotalMetricsSection({
   unifiedData
 }: TotalMetricsSectionProps) {
+  // Get new patients data from the actual database
+  const { totalNewPatients, isLoading: newPatientsLoading } = useNewPatients();
+  
   // Show metrics if we have any data at all, not just products
   if (!unifiedData) {
     return null;
@@ -34,8 +38,8 @@ export function TotalMetricsSection({
   // Count bookings ONLY from the dedicated bookings table (not from leads)
   const totalBookings = bookings.length || 0;
   
-  // Count new patients confirmed (same as bookings since each booking represents a confirmed patient)
-  const newPatientsConfirmed = totalBookings;
+  // Use actual new patients data from the database instead of bookings
+  const newPatientsConfirmed = newPatientsLoading ? totalBookings : totalNewPatients;
   
   // Count conversations ONLY from leads where engaged = true (not from conversations table since it's empty)
   const totalEngagedConversations = actualLeads.filter((lead: any) => lead.engaged === true).length || 0;
