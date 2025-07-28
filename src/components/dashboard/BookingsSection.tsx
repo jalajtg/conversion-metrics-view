@@ -68,8 +68,28 @@ export function BookingsSection({
     }
   });
 
+  // Fetch bookings from leads table where booked = true (like ProductSection does)
+  const {
+    data: leadsBookings,
+    isLoading: leadsBookingsLoading,
+    error: leadsBookingsError
+  } = useQuery({
+    queryKey: ['leads-bookings', filters],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('booked', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   console.log('Bookings data:', bookings);
   console.log('Appointments data:', appointments);
+  console.log('Leads bookings data:', leadsBookings);
   console.log('Current filters:', filters);
 
   const allBookingsAndAppointments = useMemo(() => {
@@ -84,8 +104,19 @@ export function BookingsSection({
       clinic_id: apt.clinic_id
     }));
     
-    return [...allBookings, ...allAppointments];
-  }, [bookings, appointments]);
+    // Add bookings from leads table where booked = true
+    const allLeadsBookings: Booking[] = (leadsBookings || []).map((lead: any) => ({
+      id: `lead-${lead.id}`,
+      name: lead.client_name || 'Unknown Patient',
+      email: lead.email || null,
+      phone: lead.phone || null,
+      booking_time: lead.created_at, // Use created_at as booking time since there's no specific booking time field
+      created_at: lead.created_at,
+      clinic_id: lead.clinic_id
+    }));
+    
+    return [...allBookings, ...allAppointments, ...allLeadsBookings];
+  }, [bookings, appointments, leadsBookings]);
 
   const filteredBookings = useMemo(() => {
     if (!allBookingsAndAppointments) return [];
@@ -123,8 +154,8 @@ export function BookingsSection({
     return filtered;
   }, [allBookingsAndAppointments, filters]);
 
-  const isLoading = bookingsLoading || appointmentsLoading;
-  const error = bookingsError || appointmentsError;
+  const isLoading = bookingsLoading || appointmentsLoading || leadsBookingsLoading;
+  const error = bookingsError || appointmentsError || leadsBookingsError;
 
   if (isLoading) {
     return (
