@@ -86,16 +86,16 @@ export function TotalMetricsSection({
               className="shadow-md hover:shadow-lg transition-shadow duration-300"
             />
             <MetricCard 
-              title="New Patients Confirmed" 
-              value={newPatientsConfirmed} 
-              icon={<CheckCircle className="h-4 w-4" />} 
+              title="Bookings" 
+              value={totalBookings} 
+              icon={<Calendar className="h-4 w-4" />} 
               isHovered={true}
               className="shadow-md hover:shadow-lg transition-shadow duration-300"
             />
             <MetricCard 
-              title="Bookings" 
-              value={totalBookings} 
-              icon={<Calendar className="h-4 w-4" />} 
+              title="New Patients Confirmed" 
+              value={newPatientsConfirmed} 
+              icon={<CheckCircle className="h-4 w-4" />} 
               isHovered={true}
               className="shadow-md hover:shadow-lg transition-shadow duration-300"
             />
