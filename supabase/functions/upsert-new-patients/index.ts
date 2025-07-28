@@ -12,6 +12,10 @@ interface UpsertNewPatientsRequest {
   count: number;
 }
 
+interface BatchUpsertNewPatientsRequest {
+  records: UpsertNewPatientsRequest[];
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -73,72 +77,79 @@ Deno.serve(async (req) => {
     }
 
     // Parse request body
-    const body: UpsertNewPatientsRequest = await req.json();
-    console.log('Request body:', body);
+    const requestBody = await req.json();
+    console.log('Request body:', requestBody);
 
-    // Validate required fields
-    if (!body.clinic_id || !body.month || !body.year || body.count === undefined) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Missing required fields: clinic_id, month, year, count' 
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+    // Check if this is a batch request or single request
+    const isBatchRequest = requestBody.records && Array.isArray(requestBody.records);
+    const records = isBatchRequest ? requestBody.records : [requestBody];
+
+    // Validate all records
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i];
+      
+      if (!record.clinic_id || !record.month || !record.year || record.count === undefined) {
+        return new Response(
+          JSON.stringify({ 
+            error: `Missing required fields in record ${i}: clinic_id, month, year, count` 
+          }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      if (record.month < 1 || record.month > 12) {
+        return new Response(
+          JSON.stringify({ 
+            error: `Month must be between 1 and 12 in record ${i}` 
+          }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      if (record.year < 2020 || record.year > 2100) {
+        return new Response(
+          JSON.stringify({ 
+            error: `Year must be between 2020 and 2100 in record ${i}` 
+          }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      if (record.count < 0) {
+        return new Response(
+          JSON.stringify({ 
+            error: `Count must be non-negative in record ${i}` 
+          }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
     }
 
-    // Validate month range
-    if (body.month < 1 || body.month > 12) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Month must be between 1 and 12' 
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Validate year range
-    if (body.year < 2020 || body.year > 2100) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Year must be between 2020 and 2100' 
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Validate count is non-negative
-    if (body.count < 0) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Count must be non-negative' 
-        }),
-        { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Verify user has access to this clinic
-    const { data: clinic, error: clinicError } = await supabase
+    // Get unique clinic IDs to verify access
+    const uniqueClinicIds = [...new Set(records.map(r => r.clinic_id))];
+    
+    // Verify user has access to all clinics
+    const { data: clinics, error: clinicsError } = await supabase
       .from('clinics')
       .select('id, owner_id')
-      .eq('id', body.clinic_id)
-      .single();
+      .in('id', uniqueClinicIds);
 
-    if (clinicError || !clinic) {
-      console.error('Clinic not found:', clinicError);
+    if (clinicsError || !clinics || clinics.length !== uniqueClinicIds.length) {
+      console.error('Some clinics not found:', clinicsError);
       return new Response(
-        JSON.stringify({ error: 'Clinic not found' }),
+        JSON.stringify({ error: 'One or more clinics not found' }),
         { 
           status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -146,7 +157,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check if user owns this clinic or is super admin
+    // Check if user owns all clinics or is super admin
     const { data: userRole } = await supabase
       .from('user_roles')
       .select('role')
@@ -155,37 +166,39 @@ Deno.serve(async (req) => {
       .single();
 
     const isSuperAdmin = !!userRole;
-    const isOwner = clinic.owner_id === user.id;
-
-    if (!isSuperAdmin && !isOwner) {
-      console.error('User does not have access to clinic:', user.id, clinic.id);
-      return new Response(
-        JSON.stringify({ error: 'Access denied to this clinic' }),
-        { 
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+    
+    if (!isSuperAdmin) {
+      const unauthorizedClinics = clinics.filter(clinic => clinic.owner_id !== user.id);
+      if (unauthorizedClinics.length > 0) {
+        console.error('User does not have access to some clinics:', user.id, unauthorizedClinics.map(c => c.id));
+        return new Response(
+          JSON.stringify({ error: 'Access denied to one or more clinics' }),
+          { 
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
     }
 
-    console.log('User has access to clinic, proceeding with upsert');
+    console.log('User has access to all clinics, proceeding with upsert');
 
-    // Perform upsert operation
+    // Prepare data for batch upsert
+    const upsertData = records.map(record => ({
+      clinic_id: record.clinic_id,
+      month: record.month,
+      year: record.year,
+      count: record.count,
+      user_id: user.id
+    }));
+
+    // Perform batch upsert operation
     const { data, error } = await supabase
       .from('new_patients')
-      .upsert(
-        {
-          clinic_id: body.clinic_id,
-          month: body.month,
-          year: body.year,
-          count: body.count,
-          user_id: user.id
-        },
-        {
-          onConflict: 'clinic_id,month,year',
-          ignoreDuplicates: false
-        }
-      )
+      .upsert(upsertData, {
+        onConflict: 'clinic_id,month,year',
+        ignoreDuplicates: false
+      })
       .select();
 
     if (error) {
@@ -199,13 +212,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Successfully upserted new patients data:', data);
+    console.log(`Successfully upserted ${data.length} new patients records`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        data: data[0],
-        message: 'New patients data saved successfully'
+        data: data,
+        message: `${data.length} new patients records saved successfully`,
+        recordsProcessed: data.length
       }),
       { 
         status: 200,
