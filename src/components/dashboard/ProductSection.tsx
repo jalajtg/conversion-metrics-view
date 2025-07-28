@@ -39,6 +39,25 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
         // Only count actual leads (where lead = TRUE)
         if (!lead.lead) return false;
         
+        // Ensure clinic match for all cases
+        if (lead.clinic_id !== product.clinic_id) return false;
+        
+        // Check if lead date matches product month/year (if product has month specified)
+        if (product.month) {
+          const leadDate = new Date(lead.created_at);
+          const leadMonth = leadDate.getMonth() + 1; // getMonth() returns 0-11
+          const leadYear = leadDate.getFullYear();
+          
+          // For clinic_product_categories, we need to match the specific month
+          // Since the product is tied to a specific month, only count leads from that month
+          if (leadMonth !== product.month) return false;
+          
+          // Also check year if we're dealing with historical data
+          // For now, assume current year context, but this could be made more flexible
+          const currentYear = new Date().getFullYear();
+          if (leadYear !== currentYear) return false;
+        }
+        
         // First try direct ID match (for any updated records)
         if (lead.product_id === product.id) return true;
         
@@ -47,10 +66,9 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
           return true;
         }
         
-        // Finally, try to match by automation code and clinic
+        // Finally, try to match by automation code, clinic, and date
         if (lead.automation && product.automationCodes && 
-            product.automationCodes.includes(lead.automation) && 
-            lead.clinic_id === product.clinic_id) {
+            product.automationCodes.includes(lead.automation)) {
           return true;
         }
         
