@@ -6,6 +6,15 @@ import { Calculator, Users, MessageSquare, DollarSign, Calendar, CheckCircle } f
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { ProductMetrics } from '@/types/dashboard';
 
+// Helper function to get month name
+const getMonthName = (monthNumber: number): string => {
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  return months[monthNumber - 1] || 'Unknown';
+};
+
 interface ProductSectionProps {
   metrics: ProductMetrics | null;
   unifiedData?: any;
@@ -102,7 +111,14 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
                       <Calculator className="h-4 w-4 text-theme-blue" />
                     </div>
                     <div className="flex-1 text-left">
-                      <span className="text-sm font-medium text-white">{metrics.product.name}</span>
+                      <span className="text-sm font-medium text-white">
+                        {metrics.product.name}
+                        {metrics.product.month && (
+                          <span className="ml-2 text-xs text-gray-400 bg-gray-700/50 px-2 py-1 rounded">
+                            {getMonthName(metrics.product.month)}
+                          </span>
+                        )}
+                      </span>
                     </div>
                   </div>
                 </AccordionTrigger>
@@ -172,7 +188,17 @@ function SingleProductSection({ metrics }: { metrics: ProductMetrics }) {
             <div className="p-2 rounded-lg bg-theme-blue/10">
               <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-theme-blue" />
             </div>
-            <span className="text-sm sm:text-base font-medium truncate">{product.name}</span>
+            <div className="flex-1">
+              <span className="text-sm sm:text-base font-medium truncate">{product.name}</span>
+              {product.month && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Calendar className="h-3 w-3 text-gray-400" />
+                  <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-1 rounded">
+                    {getMonthName(product.month)}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </CardTitle>
         {product.description && (
