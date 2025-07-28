@@ -701,6 +701,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       replicate_products_to_all_clinics: {
         Args: { source_clinic_id: string }
         Returns: {
