@@ -39,7 +39,8 @@ export default function ImportLeads() {
   useEffect(() => {
     // Generate webhook URL and secret on component mount
     const projectUrl = 'https://fhsjhoygllcchfinalih.supabase.co';
-    const generatedSecret = 'your-secure-webhook-secret'; // In production, this should be configurable
+    // SECURITY WARNING: This should be moved to Supabase secrets for production
+    const generatedSecret = 'REPLACE_WITH_SECURE_SECRET'; // Should be configured via Supabase secrets
     setWebhookUrl(`${projectUrl}/functions/v1/import-airtable-leads`);
     setWebhookSecret(generatedSecret);
   }, []);

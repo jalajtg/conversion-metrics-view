@@ -21,37 +21,7 @@ export function useUserRole() {
       try {
         console.log('Fetching role for user:', user.email);
         
-        // Check if user has super_admin email - expanded list
-        const superAdminEmails = ['admin@toratech.ai', 'hellomrsatinder@gmail.com'];
-        if (superAdminEmails.includes(user.email || '')) {
-          console.log('Super admin email detected, setting role to super_admin');
-          
-          // Ensure the user has the super_admin role in the database
-          try {
-            const { error: upsertError } = await supabase
-              .from('user_roles')
-              .upsert({ 
-                user_id: user.id, 
-                role: 'super_admin' 
-              }, {
-                onConflict: 'user_id'
-              });
-            
-            if (upsertError) {
-              console.error('Error upserting super admin role:', upsertError);
-            } else {
-              console.log('Super admin role ensured in database');
-            }
-          } catch (upsertError) {
-            console.error('Error ensuring super admin role:', upsertError);
-          }
-          
-          setRole('super_admin');
-          setIsLoading(false);
-          return;
-        }
-
-        // For other users, get their role from database
+        // Get user role from database - no hardcoded emails
         const { data, error } = await supabase.rpc('get_user_role', {
           _user_id: user.id
         });
