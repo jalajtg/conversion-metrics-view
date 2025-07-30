@@ -72,7 +72,6 @@ export function BookingsSection({
   // actual scheduled appointments, not conversion bookings from leads
 
   console.log('Bookings data:', bookings);
-  console.log('Appointments data:', appointments);
   console.log('Current filters:', filters);
 
   const allBookingsAndAppointments = useMemo(() => {
@@ -127,8 +126,8 @@ export function BookingsSection({
     return filtered;
   }, [allBookingsAndAppointments, filters]);
 
-  const isLoading = bookingsLoading || appointmentsLoading;
-  const error = bookingsError || appointmentsError;
+  const isLoading = bookingsLoading;
+  const error = bookingsError;
 
   if (isLoading) {
     return (

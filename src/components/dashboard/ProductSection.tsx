@@ -81,10 +81,8 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
       // Count engaged conversations directly from leads where engaged: true
       const engagedConversationsCount = productLeads.filter((lead: any) => lead.engaged === true).length;
       
-      // Count bookings from both the bookings table and leads where booked: true
-      const bookingsFromTable = bookings.filter((booking: any) => booking.product_id === product.id).length;
-      const bookingsFromLeads = productLeads.filter((lead: any) => lead.booked === true).length;
-      const productBookings = bookingsFromTable + bookingsFromLeads;
+      // Count bookings ONLY from leads where booked = true
+      const productBookings = productLeads.filter((lead: any) => lead.booked === true).length;
 
       // No longer calculating individual product prices - paid amount comes from clinic level
       const paidAmount = 0;
