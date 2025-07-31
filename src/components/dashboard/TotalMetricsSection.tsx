@@ -37,18 +37,44 @@ export function TotalMetricsSection({
     totalPaidAmount = 0 // Use the calculated prorated amount from the service
   } = unifiedData;
 
-  // Calculate totals across all available data (only count actual leads where lead = TRUE)
-  const actualLeads = leads.filter((lead: any) => lead.lead === true) || [];
-  const totalLeads = actualLeads.length || 0;
+  // Apply date filtering to leads based on the applied filters
+  const filteredLeads = leads.filter((lead: any) => {
+    if (!lead.lead) return false;
+    
+    // Apply date filtering if we have filter criteria
+    if (filters?.appliedFilters?.selectedMonths?.length > 0 && filters?.appliedFilters?.year) {
+      const leadDate = new Date(lead.created_at);
+      const leadMonth = leadDate.getMonth() + 1; // getMonth() returns 0-11
+      const leadYear = leadDate.getFullYear();
+      
+      // Check if lead month is in selected months and year matches
+      if (!filters.appliedFilters.selectedMonths.includes(leadMonth) || 
+          leadYear !== filters.appliedFilters.year) {
+        return false;
+      }
+    }
+    
+    // Apply clinic filtering if we have clinic criteria
+    if (filters?.appliedFilters?.clinicIds?.length > 0) {
+      if (!filters.appliedFilters.clinicIds.includes(lead.clinic_id)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }) || [];
+
+  // Calculate totals across filtered data
+  const totalLeads = filteredLeads.length || 0;
   
-  // Count bookings from leads where booked = 'true' (string)
-  const totalBookings = actualLeads.filter((lead: any) => lead.booked === 'true').length || 0;
+  // Count bookings from filtered leads where booked = 'true' (string)
+  const totalBookings = filteredLeads.filter((lead: any) => lead.booked === 'true').length || 0;
   
   // Use actual new patients data from the database instead of bookings
   const newPatientsConfirmed = newPatientsLoading ? totalBookings : totalNewPatients;
   
   // Count conversations ONLY from leads where engaged = true (not from conversations table since it's empty)
-  const totalEngagedConversations = actualLeads.filter((lead: any) => lead.engaged === true).length || 0;
+  const totalEngagedConversations = filteredLeads.filter((lead: any) => lead.engaged === true).length || 0;
 
   // Use the prorated total paid amount from the service
   const totalCostPerBooking = totalBookings > 0 ? totalPaidAmount / totalBookings : null;
