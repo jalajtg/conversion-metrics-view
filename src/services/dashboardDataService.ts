@@ -274,16 +274,14 @@ export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin
       .select('*')
       .range(0, 999999); // Increased range
 
-    // Apply same logic for leads
-    if (!isSuperAdmin) {
-      if (filters.clinicIds.length > 0) {
-        leadsQuery = leadsQuery.in('clinic_id', filters.clinicIds);
-      }
-    } else {
+    // Apply clinic filtering logic
+    if (!isSuperAdmin || filters.clinicIds.length > 0) {
+      // For regular users OR super admin with specific clinics selected
       if (filters.clinicIds.length > 0) {
         leadsQuery = leadsQuery.in('clinic_id', filters.clinicIds);
       }
     }
+    // For super admin with empty clinicIds array, no clinic filtering is applied (gets ALL data)
 
     if (dateConditions && dateConditions.length > 0) {
       if (dateConditions.length === 1) {
@@ -315,12 +313,8 @@ export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin
       .select('*')
       .range(0, 999999); // Increased range
 
-    // Apply same logic for sales
-    if (!isSuperAdmin) {
-      if (filters.clinicIds.length > 0) {
-        salesQuery = salesQuery.in('clinic_id', filters.clinicIds);
-      }
-    } else {
+    // Apply clinic filtering logic for sales
+    if (!isSuperAdmin || filters.clinicIds.length > 0) {
       if (filters.clinicIds.length > 0) {
         salesQuery = salesQuery.in('clinic_id', filters.clinicIds);
       }
@@ -347,12 +341,8 @@ export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin
       .select('*')
       .range(0, 999999); // Increased range
 
-    // Apply same logic for costs
-    if (!isSuperAdmin) {
-      if (filters.clinicIds.length > 0) {
-        costsQuery = costsQuery.in('clinic_id', filters.clinicIds);
-      }
-    } else {
+    // Apply clinic filtering logic for costs
+    if (!isSuperAdmin || filters.clinicIds.length > 0) {
       if (filters.clinicIds.length > 0) {
         costsQuery = costsQuery.in('clinic_id', filters.clinicIds);
       }
@@ -379,12 +369,8 @@ export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin
       .select('*')
       .range(0, 999999); // Increased range
 
-    // Apply same logic for conversations
-    if (!isSuperAdmin) {
-      if (filters.clinicIds.length > 0) {
-        conversationsQuery = conversationsQuery.in('clinic_id', filters.clinicIds);
-      }
-    } else {
+    // Apply clinic filtering logic for conversations
+    if (!isSuperAdmin || filters.clinicIds.length > 0) {
       if (filters.clinicIds.length > 0) {
         conversationsQuery = conversationsQuery.in('clinic_id', filters.clinicIds);
       }
