@@ -2,8 +2,6 @@ import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar, Mail, Phone, User, Clock } from 'lucide-react';
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import type { DashboardFilters } from '@/types/dashboard';
 import { useBookings } from '@/hooks/useBookings';
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval } from 'date-fns';
@@ -23,16 +21,6 @@ interface Booking {
   clinic_id: string | null;
 }
 
-interface Appointment {
-  id: string;
-  lead_id: string;
-  clinic_id: string | null;
-  type: string;
-  status: string;
-  scheduled_at: string;
-  created_at: string;
-}
-
 export function BookingsSection({
   filters,
   unifiedData
@@ -43,56 +31,12 @@ export function BookingsSection({
     error: bookingsError
   } = useBookings(filters);
 
-  // Fetch all appointments (actual scheduled appointments)
-  const {
-    data: appointments,
-    isLoading: appointmentsLoading,
-    error: appointmentsError
-  } = useQuery({
-    queryKey: ['appointments'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          leads (
-            client_name,
-            email,
-            phone
-          )
-        `)
-        .order('scheduled_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Note: We removed the leads bookings query since this section should only show 
-  // actual scheduled appointments, not conversion bookings from leads
-
   console.log('Bookings data:', bookings);
   console.log('Current filters:', filters);
 
-  const allBookingsAndAppointments = useMemo(() => {
-    const allBookings: Booking[] = bookings || [];
-    const allAppointments: Booking[] = (appointments || []).map((apt: any) => ({
-      id: apt.id,
-      name: apt.leads?.client_name || 'Unknown Patient',
-      email: apt.leads?.email || null,
-      phone: apt.leads?.phone || null,
-      booking_time: apt.scheduled_at,
-      created_at: apt.created_at,
-      clinic_id: apt.clinic_id
-    }));
-    
-    // Only show actual scheduled appointments and real bookings (not conversion bookings from leads)
-    return [...allBookings, ...allAppointments];
-  }, [bookings, appointments]);
-
   const filteredBookings = useMemo(() => {
-    if (!allBookingsAndAppointments) return [];
-    let filtered = allBookingsAndAppointments;
+    if (!bookings) return [];
+    let filtered = bookings;
 
     // Filter by clinic IDs if specified
     if (filters.clinicIds && filters.clinicIds.length > 0) {
@@ -124,7 +68,7 @@ export function BookingsSection({
 
     console.log('Filtered bookings result:', filtered.length, 'items');
     return filtered;
-  }, [allBookingsAndAppointments, filters]);
+  }, [bookings, filters]);
 
   const isLoading = bookingsLoading;
   const error = bookingsError;
