@@ -299,6 +299,14 @@ export const fetchDashboardData = async (filters: DashboardFilters, isSuperAdmin
     if (leadsError) throw leadsError;
     dashboardData.leads = leadsData || [];
     console.log('Leads data:', leadsData?.length, 'leads found');
+    
+    // Additional debugging for booked leads
+    const bookedLeads = leadsData?.filter(lead => lead.booked === true) || [];
+    const leadAndBookedLeads = leadsData?.filter(lead => lead.lead === true && lead.booked === true) || [];
+    console.log('Booked leads (booked=true):', bookedLeads.length);
+    console.log('Lead AND booked leads (lead=true AND booked=true):', leadAndBookedLeads.length);
+    console.log('Leads with NULL clinic_id:', leadsData?.filter(lead => lead.clinic_id === null).length || 0);
+    console.log('First 5 booked leads sample:', bookedLeads.slice(0, 5).map(l => ({ id: l.id, clinic_id: l.clinic_id, created_at: l.created_at, lead: l.lead, booked: l.booked })));
 
     // Fetch sales with optimized query
     console.log('Fetching sales...');

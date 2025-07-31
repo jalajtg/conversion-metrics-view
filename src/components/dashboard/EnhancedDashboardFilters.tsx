@@ -7,6 +7,7 @@ import { FilterHeader } from './filters/FilterHeader';
 import { ClinicFilter } from './filters/ClinicFilter';
 import { YearFilter } from './filters/YearFilter';
 import { MonthFilter } from './filters/MonthFilter';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface EnhancedDashboardFiltersProps {
   clinics: Clinic[];
@@ -24,6 +25,7 @@ export function EnhancedDashboardFilters({
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth() + 1;
+  const { isSuperAdmin } = useUserRole();
 
   const handleClinicSelectionChange = useCallback((selectedIds: string[]) => {
     onFiltersChange({ 
@@ -57,13 +59,18 @@ export function EnhancedDashboardFilters({
   }, [filters, onFiltersChange]);
 
   const handleSelectAllClinics = useCallback(() => {
-    const allClinicIds = clinics.map(clinic => clinic.id);
+    // For Super Admin: Set empty array to show ALL data without clinic filtering
+    // For Regular users: Select all clinic IDs
+    const clinicIds = isSuperAdmin ? [] : clinics.map(clinic => clinic.id);
+    
+    console.log('Select All Clinics - Super Admin:', isSuperAdmin, 'Setting clinicIds to:', clinicIds);
+    
     onFiltersChange({
       ...filters,
-      clinicIds: allClinicIds,
+      clinicIds: clinicIds,
       pendingChanges: true
     });
-  }, [clinics, filters, onFiltersChange]);
+  }, [clinics, filters, onFiltersChange, isSuperAdmin]);
 
   const handleSelectAllMonths = useCallback(() => {
     const availableMonths = filters.year === currentYear 
