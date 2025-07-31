@@ -67,8 +67,8 @@ export function TotalMetricsSection({
   // Calculate totals across filtered data
   const totalLeads = filteredLeads.length || 0;
   
-  // Count bookings from filtered leads where booked = 'true' (string)
-  const totalBookings = filteredLeads.filter((lead: any) => lead.booked === 'true').length || 0;
+  // Count bookings from filtered leads where booked = true (boolean) - matching ProductSection logic
+  const totalBookings = filteredLeads.filter((lead: any) => lead.booked === true).length || 0;
   
   // Use actual new patients data from the database instead of bookings
   const newPatientsConfirmed = newPatientsLoading ? totalBookings : totalNewPatients;
