@@ -5,6 +5,7 @@ import { MetricCard } from './MetricCard';
 import { Calculator, Users, MessageSquare, DollarSign, Calendar, CheckCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { ProductMetrics } from '@/types/dashboard';
+import { calculateStandardizedMetrics } from '@/services/metricsCalculationService';
 
 // Helper function to get month name
 const getMonthName = (monthNumber: number): string => {
@@ -26,121 +27,33 @@ export function ProductSection({ metrics, unifiedData }: ProductSectionProps) {
 
   // If we have unified data, process it to create metrics
   if (unifiedData && !metrics) {
-    const { products, leads, sales, costs, bookings } = unifiedData;
+    const { products } = unifiedData;
     
     if (!products || products.length === 0) {
       return null;
     }
-    console.log('Products:', products, leads, sales, costs, bookings);
 
-    const productSections = products.map((product: any, index: number) => {
-      // Filter leads by matching direct ID, old product IDs, and automation codes (only count leads where lead = TRUE)
-      const productLeads = leads?.filter((lead: any) => {
-        // Only count actual leads (where lead = TRUE)
-        if (!lead.lead) return false;
-        
-        // Ensure clinic match for all cases
-        if (lead.clinic_id !== product.clinic_id) return false;
-        
-        // Check if lead date matches product month/year (if product has month specified)
-        if (product.month) {
-          const leadDate = new Date(lead.created_at);
-          const leadMonth = leadDate.getMonth() + 1; // getMonth() returns 0-11
-          const leadYear = leadDate.getFullYear();
-          
-          // For clinic_product_categories, we need to match the specific month
-          // Since the product is tied to a specific month, only count leads from that month
-          if (leadMonth !== product.month) return false;
-          
-          // Also check year if we're dealing with historical data
-          // For now, assume current year context, but this could be made more flexible
-          const currentYear = new Date().getFullYear();
-          if (leadYear !== currentYear) return false;
-        }
-        
-        // First try direct ID match (for any updated records)
-        if (lead.product_id === product.id) return true;
-        
-        // Then try to match using old product IDs mapping
-        if (product.oldProductIds && product.oldProductIds.includes(lead.product_id)) {
-          return true;
-        }
-        
-        // Finally, try to match by automation code, clinic, and date
-        if (lead.automation && product.automationCodes && 
-            product.automationCodes.includes(lead.automation)) {
-          return true;
-        }
-        
-        return false;
-      }) || [];
-      
-      const productSales = sales?.filter((sale: any) => sale.product_id === product.id) || [];
-      const productCosts = costs?.filter((cost: any) => cost.product_id === product.id) || [];
-      
-      // Count engaged conversations from ALL leads where engaged = true (no lead.lead filter needed)
-      const allLeadsForEngagement = leads?.filter((lead: any) => {
-        // Ensure clinic match for all cases
-        if (lead.clinic_id !== product.clinic_id) return false;
-        
-        // Check if lead date matches product month/year (if product has month specified)
-        if (product.month) {
-          const leadDate = new Date(lead.created_at);
-          const leadMonth = leadDate.getMonth() + 1; // getMonth() returns 0-11
-          const leadYear = leadDate.getFullYear();
-          
-          // For clinic_product_categories, we need to match the specific month
-          // Since the product is tied to a specific month, only count leads from that month
-          if (leadMonth !== product.month) return false;
-          
-          // Also check year if we're dealing with historical data
-          // For now, assume current year context, but this could be made more flexible
-          const currentYear = new Date().getFullYear();
-          if (leadYear !== currentYear) return false;
-        }
-        
-        // First try direct ID match (for any updated records)
-        if (lead.product_id === product.id) return true;
-        
-        // Then try to match using old product IDs mapping
-        if (product.oldProductIds && product.oldProductIds.includes(lead.product_id)) {
-          return true;
-        }
-        
-        // Finally, try to match by automation code, clinic, and date
-        if (lead.automation && product.automationCodes && 
-            product.automationCodes.includes(lead.automation)) {
-          return true;
-        }
-        
-        return false;
-      }) || [];
-      
-      const engagedConversationsCount = allLeadsForEngagement.filter((lead: any) => lead.engaged === true).length;
-      
-      // Count bookings ONLY from leads where booked = true
-      const productBookings = productLeads.filter((lead: any) => lead.booked === true).length;
+    // Use standardized metrics calculation
+    const standardizedMetrics = calculateStandardizedMetrics(unifiedData);
 
-      // No longer calculating individual product prices - paid amount comes from clinic level
-      const paidAmount = 0;
-      
-      const totalCosts = productCosts.reduce((sum: number, cost: any) => sum + (cost.amount || 0), 0);
-      
-      const verbalAppointments = 0;
+    const productSections = standardizedMetrics.leadsByProduct.map((productMetrics, index) => {
+      // Find the corresponding product object
+      const product = products.find((p: any) => p.id === productMetrics.productId);
+      if (!product) return null;
 
-      const productMetrics: ProductMetrics = {
+      const metrics: ProductMetrics = {
         product,
-        leadCount: productLeads.length,
-        conversationCount: engagedConversationsCount,
-        paidAmount,
-        verbalAppointments,
-        bookings: productBookings,
-        costPerBooking: productBookings > 0 ? paidAmount / productBookings : 0,
-        costPerLead: productLeads.length > 0 ? paidAmount / productLeads.length : 0,
+        leadCount: productMetrics.leadCount,
+        conversationCount: productMetrics.engagedCount,
+        paidAmount: 0, // No longer calculating individual product prices
+        verbalAppointments: 0,
+        bookings: productMetrics.bookingCount,
+        costPerBooking: 0,
+        costPerLead: 0,
       };
 
-      return { metrics: productMetrics, index };
-    });
+      return { metrics, index };
+    }).filter(Boolean);
 
     // Mobile accordion layout
     if (isMobile) {

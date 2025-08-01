@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from './MetricCard';
 import { Users, MessageSquare, DollarSign, CheckCircle, Calculator, BarChart3, Calendar } from 'lucide-react';
 import { useNewPatients } from '@/hooks/useNewPatients';
+import { calculateStandardizedMetrics, debugLeadDistribution } from '@/services/metricsCalculationService';
 
 interface TotalMetricsSectionProps {
   unifiedData?: any;
@@ -37,68 +38,16 @@ export function TotalMetricsSection({
     totalPaidAmount = 0 // Use the calculated prorated amount from the service
   } = unifiedData;
 
-  // Apply date filtering to leads based on the applied filters
-  const filteredLeads = leads.filter((lead: any) => {
-    if (!lead.lead) return false;
-    
-    // Apply date filtering if we have filter criteria
-    if (filters?.appliedFilters?.selectedMonths?.length > 0 && filters?.appliedFilters?.year) {
-      const leadDate = new Date(lead.created_at);
-      const leadMonth = leadDate.getMonth() + 1; // getMonth() returns 0-11
-      const leadYear = leadDate.getFullYear();
-      
-      // Check if lead month is in selected months and year matches
-      if (!filters.appliedFilters.selectedMonths.includes(leadMonth) || 
-          leadYear !== filters.appliedFilters.year) {
-        return false;
-      }
-    }
-    
-    // Apply clinic filtering if we have clinic criteria
-    if (filters?.appliedFilters?.clinicIds?.length > 0) {
-      if (!filters.appliedFilters.clinicIds.includes(lead.clinic_id)) {
-        return false;
-      }
-    }
-    
-    return true;
-  }) || [];
-
-  // Calculate totals across filtered data
-  const totalLeads = filteredLeads.length || 0;
+  // Use standardized metrics calculation
+  const standardizedMetrics = calculateStandardizedMetrics(unifiedData, filters);
   
-  // Count bookings from filtered leads where booked = true (boolean) - matching ProductSection logic
-  const totalBookings = filteredLeads.filter((lead: any) => lead.booked === true).length || 0;
+  // Debug lead distribution for troubleshooting
+  debugLeadDistribution(unifiedData, filters);
+  
+  const { totalLeads, totalEngagedConversations, totalBookings } = standardizedMetrics;
   
   // Use actual new patients data from the database instead of bookings
   const newPatientsConfirmed = newPatientsLoading ? totalBookings : totalNewPatients;
-  
-  // Count engaged conversations directly from leads where engaged = true (no lead.lead filter needed)
-  const engagedLeadsFiltered = leads.filter((lead: any) => {
-    // Apply date filtering if we have filter criteria
-    if (filters?.appliedFilters?.selectedMonths?.length > 0 && filters?.appliedFilters?.year) {
-      const leadDate = new Date(lead.created_at);
-      const leadMonth = leadDate.getMonth() + 1; // getMonth() returns 0-11
-      const leadYear = leadDate.getFullYear();
-      
-      // Check if lead month is in selected months and year matches
-      if (!filters.appliedFilters.selectedMonths.includes(leadMonth) || 
-          leadYear !== filters.appliedFilters.year) {
-        return false;
-      }
-    }
-    
-    // Apply clinic filtering if we have clinic criteria
-    if (filters?.appliedFilters?.clinicIds?.length > 0) {
-      if (!filters.appliedFilters.clinicIds.includes(lead.clinic_id)) {
-        return false;
-      }
-    }
-    
-    return lead.engaged === true;
-  }) || [];
-  
-  const totalEngagedConversations = engagedLeadsFiltered.length || 0;
 
   // Use the prorated total paid amount from the service
   const totalCostPerBooking = totalBookings > 0 ? totalPaidAmount / totalBookings : null;
